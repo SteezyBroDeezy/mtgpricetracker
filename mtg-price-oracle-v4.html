@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="arcane">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Price Oracle | Track. Alert. Profit.</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a12; --bg-secondary: #12121f; --bg-tertiary: #1a1a2e;
+            --bg-card: rgba(26, 26, 46, 0.85); --bg-glass: rgba(26, 26, 46, 0.6);
+            --accent-primary: #9d4edd; --accent-secondary: #c77dff; --accent-gold: #ffd700;
+            --accent-blue: #00d9ff; --accent-green: #00ff88; --accent-red: #ff4757; --accent-orange: #ff9f43;
+            --text-primary: #e8e8e8; --text-secondary: #a0a0a0; --text-muted: #666;
+            --glow-primary: 0 0 20px rgba(157, 78, 221, 0.4);
+            --font-display: 'Cinzel', serif; --font-body: 'Rajdhani', sans-serif; --font-mono: 'JetBrains Mono', monospace;
+            --radius-sm: 6px; --radius-md: 12px; --radius-lg: 20px;
+            --transition-fast: 0.15s ease; --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Theme: Forest */
+        [data-theme="forest"] { --bg-primary: #060d06; --bg-secondary: #0d170d; --bg-tertiary: #142814; --bg-card: rgba(20, 40, 20, 0.85); --bg-glass: rgba(20, 40, 20, 0.6); --accent-primary: #22c55e; --accent-secondary: #4ade80; --glow-primary: 0 0 20px rgba(34, 197, 94, 0.4); }
+        /* Theme: Volcanic */
+        [data-theme="volcanic"] { --bg-primary: #0d0606; --bg-secondary: #170d0d; --bg-tertiary: #281414; --bg-card: rgba(40, 20, 20, 0.85); --bg-glass: rgba(40, 20, 20, 0.6); --accent-primary: #ef4444; --accent-secondary: #f87171; --glow-primary: 0 0 20px rgba(239, 68, 68, 0.4); }
+        /* Theme: Ocean */
+        [data-theme="ocean"] { --bg-primary: #060a0d; --bg-secondary: #0d1217; --bg-tertiary: #142028; --bg-card: rgba(20, 32, 40, 0.85); --bg-glass: rgba(20, 32, 40, 0.6); --accent-primary: #0ea5e9; --accent-secondary: #38bdf8; --glow-primary: 0 0 20px rgba(14, 165, 233, 0.4); }
+        /* Theme: Light */
+        [data-theme="light"] { --bg-primary: #f5f5f7; --bg-secondary: #e8e8ed; --bg-tertiary: #d1d1d6; --bg-card: rgba(255, 255, 255, 0.9); --bg-glass: rgba(255, 255, 255, 0.7); --text-primary: #1a1a2e; --text-secondary: #4a4a5a; --text-muted: #7a7a8a; --accent-primary: #7c3aed; --accent-secondary: #a78bfa; --glow-primary: 0 4px 20px rgba(124, 58, 237, 0.2); }
+        /* Theme: Swamp */
+        [data-theme="swamp"] { --bg-primary: #0a0a0a; --bg-secondary: #111111; --bg-tertiary: #1a1a1a; --bg-card: rgba(20, 20, 20, 0.9); --bg-glass: rgba(15, 15, 15, 0.8); --accent-primary: #6b21a8; --accent-secondary: #a855f7; --accent-gold: #c084fc; --glow-primary: 0 0 25px rgba(107, 33, 168, 0.5); }
+        /* Theme: Plains */
+        [data-theme="plains"] { --bg-primary: #fefce8; --bg-secondary: #fef9c3; --bg-tertiary: #fef08a; --bg-card: rgba(255, 255, 255, 0.95); --bg-glass: rgba(254, 252, 232, 0.9); --text-primary: #1c1917; --text-secondary: #44403c; --text-muted: #78716c; --accent-primary: #ca8a04; --accent-secondary: #eab308; --glow-primary: 0 4px 20px rgba(202, 138, 4, 0.3); }
+        /* Theme: Mountain */
+        [data-theme="mountain"] { --bg-primary: #1c0a0a; --bg-secondary: #2d1010; --bg-tertiary: #3d1515; --bg-card: rgba(45, 16, 16, 0.9); --bg-glass: rgba(35, 12, 12, 0.85); --accent-primary: #f97316; --accent-secondary: #fb923c; --accent-gold: #fdba74; --glow-primary: 0 0 25px rgba(249, 115, 22, 0.5); }
+        /* Theme: Island */
+        [data-theme="island"] { --bg-primary: #0c1929; --bg-secondary: #0f2744; --bg-tertiary: #1a3a5c; --bg-card: rgba(15, 39, 68, 0.9); --bg-glass: rgba(12, 25, 41, 0.85); --accent-primary: #06b6d4; --accent-secondary: #22d3ee; --accent-gold: #67e8f9; --glow-primary: 0 0 25px rgba(6, 182, 212, 0.5); }
+        /* Theme: Neon */
+        [data-theme="neon"] { --bg-primary: #0a0a0f; --bg-secondary: #0f0f18; --bg-tertiary: #151522; --bg-card: rgba(15, 15, 24, 0.95); --bg-glass: rgba(10, 10, 15, 0.9); --accent-primary: #f0abfc; --accent-secondary: #e879f9; --accent-gold: #fde047; --accent-blue: #38bdf8; --accent-green: #4ade80; --glow-primary: 0 0 30px rgba(240, 171, 252, 0.6); }
+        /* Theme: Phyrexian */
+        [data-theme="phyrexian"] { --bg-primary: #050505; --bg-secondary: #0a0a0a; --bg-tertiary: #121212; --bg-card: rgba(10, 10, 10, 0.95); --bg-glass: rgba(5, 5, 5, 0.9); --accent-primary: #84cc16; --accent-secondary: #a3e635; --accent-gold: #bef264; --text-primary: #d4d4d4; --glow-primary: 0 0 30px rgba(132, 204, 22, 0.5); }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-body); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; font-size: 16px; line-height: 1.6; }
+        
+        .bg-effects { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+        .bg-effects::before { content: ''; position: absolute; width: 150%; height: 150%; top: -25%; left: -25%; background: radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--accent-primary) 12%, transparent) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, color-mix(in srgb, var(--accent-blue) 8%, transparent) 0%, transparent 50%); animation: bgFloat 20s ease-in-out infinite; }
+        @keyframes bgFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(2%, 2%); } }
+        
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-secondary); } ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
+
+        .sites-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--bg-tertiary); padding: 0.5rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
+        .sites-links { display: flex; align-items: center; gap: 1.5rem; }
+        .sites-label { color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; }
+        .site-link { color: var(--text-secondary); text-decoration: none; display: flex; align-items: center; gap: 0.4rem; transition: var(--transition-fast); font-weight: 600; }
+        .site-link:hover { color: var(--accent-gold); }
+
+        .navbar { position: sticky; top: 0; height: 65px; background: var(--bg-glass); backdrop-filter: blur(20px); border-bottom: 1px solid color-mix(in srgb, var(--accent-primary) 15%, transparent); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 1000; }
+        .nav-brand { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .nav-logo { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, var(--accent-gold), var(--accent-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-logo-icon { font-size: 1.6rem; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); opacity: 0.8; } }
+        
+        .nav-center { display: flex; gap: 0.25rem; }
+        .nav-tab { padding: 0.5rem 1rem; border-radius: var(--radius-md); font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: var(--transition-smooth); background: transparent; border: none; color: var(--text-secondary); }
+        .nav-tab:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .nav-tab.active { color: var(--accent-gold); background: color-mix(in srgb, var(--accent-gold) 10%, transparent); }
+        
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-btn { padding: 0.5rem 1rem; border-radius: var(--radius-md); font-family: var(--font-body); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: var(--transition-smooth); border: none; display: flex; align-items: center; gap: 0.4rem; }
+        .nav-btn-ghost { background: transparent; color: var(--text-secondary); }
+        .nav-btn-ghost:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .nav-btn-primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; box-shadow: var(--glow-primary); }
+        .nav-btn-primary:hover { transform: translateY(-2px); }
+        
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-gold)); display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; }
+
+        .main-content { padding: 1.5rem; max-width: 1600px; margin: 0 auto; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .dashboard-title { font-family: var(--font-display); font-size: 1.8rem; }
+        .dashboard-title span { color: var(--accent-gold); }
+        
+        .search-container { position: relative; flex: 1; max-width: 500px; }
+        .search-input { width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: var(--radius-lg); border: 2px solid var(--bg-tertiary); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); font-size: 1rem; }
+        .search-input:focus { outline: none; border-color: var(--accent-primary); box-shadow: var(--glow-primary); }
+        .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        
+        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--bg-tertiary); margin-top: 0.5rem; max-height: 400px; overflow-y: auto; z-index: 100; display: none; backdrop-filter: blur(10px); }
+        .search-results.active { display: block; }
+        .search-result-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid var(--bg-tertiary); }
+        .search-result-item:hover { background: var(--bg-tertiary); }
+        .search-result-img { width: 50px; height: 70px; object-fit: cover; border-radius: var(--radius-sm); }
+        .search-result-info { flex: 1; }
+        .search-result-info h4 { font-size: 0.95rem; }
+        .search-result-info p { font-size: 0.8rem; color: var(--text-secondary); }
+        .search-result-price { font-family: var(--font-mono); font-weight: 600; color: var(--accent-gold); }
+        .search-result-actions { display: flex; gap: 0.5rem; }
+        .quick-btn { width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: var(--transition-fast); }
+        .quick-btn.watch { background: var(--accent-primary); color: white; }
+        .quick-btn.watch:hover { transform: scale(1.1); }
+        .quick-btn.watch.active { background: var(--accent-green); }
+        .quick-btn.alert { background: var(--accent-gold); color: #000; }
+        .quick-btn.alert:hover { transform: scale(1.1); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid rgba(255,255,255,0.05); transition: var(--transition-smooth); }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--glow-primary); }
+        .stat-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .stat-value { font-family: var(--font-mono); font-size: 1.8rem; font-weight: 700; color: var(--accent-gold); }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+        .section-title { font-family: var(--font-display); font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+        .section-tab { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600; cursor: pointer; background: transparent; border: none; color: var(--text-secondary); transition: var(--transition-fast); }
+        .section-tab:hover { color: var(--text-primary); }
+        .section-tab.active { background: var(--accent-primary); color: white; }
+
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .category-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.1rem; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: var(--transition-smooth); display: flex; align-items: center; gap: 1rem; }
+        .category-card:hover { transform: translateY(-3px); box-shadow: var(--glow-primary); border-color: var(--accent-primary); }
+        .category-icon { font-size: 1.8rem; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: var(--bg-tertiary); border-radius: var(--radius-md); }
+        .category-info h3 { font-size: 1rem; margin-bottom: 0.15rem; }
+        .category-info p { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem; }
+        .mtg-card { background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; transition: var(--transition-smooth); border: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .mtg-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--glow-primary); z-index: 10; }
+        .mtg-card-img-container { position: relative; aspect-ratio: 488/680; overflow: hidden; }
+        .mtg-card-img { width: 100%; height: 100%; object-fit: cover; }
+        .mtg-card:hover .mtg-card-img { transform: scale(1.05); transition: var(--transition-smooth); }
+        .mtg-card-badge { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .badge-spike { background: var(--accent-green); color: #000; }
+        .badge-drop { background: var(--accent-red); color: #fff; }
+        .badge-hot { background: var(--accent-orange); color: #000; }
+        .badge-mythic { background: linear-gradient(135deg, #ff6b35, #f7931e); color: #fff; }
+        .badge-rare { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
+        .badge-uncommon { background: #c0c0c0; color: #000; }
+        .badge-common { background: #333; color: #fff; }
+        .mtg-card-quick { position: absolute; top: 0.5rem; left: 0.5rem; display: flex; gap: 0.3rem; opacity: 0; transition: var(--transition-fast); }
+        .mtg-card:hover .mtg-card-quick { opacity: 1; }
+        .mtg-card-info { padding: 0.75rem; }
+        .mtg-card-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.25rem; }
+        .mtg-card-set { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .mtg-card-prices { display: flex; justify-content: space-between; align-items: center; }
+        .mtg-card-price { font-family: var(--font-mono); font-weight: 700; color: var(--accent-gold); }
+        .mtg-card-change { font-size: 0.8rem; font-weight: 600; }
+        .mtg-card-change.positive { color: var(--accent-green); }
+        .mtg-card-change.negative { color: var(--accent-red); }
+
+        .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-weight: 600; cursor: pointer; margin-bottom: 1rem; }
+        .back-btn:hover { background: var(--bg-card); }
+
+        .filters-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-md); }
+        .filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .filter-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); }
+        .filter-select { padding: 0.5rem 2rem 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--bg-tertiary); background: var(--bg-secondary); color: var(--text-primary); font-family: var(--font-body); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0a0a0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.5rem center; }
+        .filter-select:focus { outline: none; border-color: var(--accent-primary); }
+
+        .sets-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+        .set-item { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; border: 1px solid transparent; transition: var(--transition-smooth); }
+        .set-item:hover { border-color: var(--accent-primary); transform: translateY(-2px); }
+        .set-icon-large { width: 40px; height: 40px; }
+        .set-item-info h4 { font-size: 0.95rem; }
+        .set-item-info p { font-size: 0.8rem; color: var(--text-secondary); }
+
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 2rem; }
+        .pagination-btn { padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--bg-tertiary); background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; cursor: pointer; }
+        .pagination-btn:hover:not(:disabled) { border-color: var(--accent-primary); }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .watchlist-empty { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
+        .watchlist-empty-icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.5; }
+        
+        .watchlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .watchlist-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; display: flex; gap: 1rem; border: 1px solid rgba(255,255,255,0.05); transition: var(--transition-smooth); }
+        .watchlist-card:hover { border-color: var(--accent-primary); }
+        .watchlist-card-img { width: 80px; height: 112px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; }
+        .watchlist-card-info { flex: 1; display: flex; flex-direction: column; }
+        .watchlist-card-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+        .watchlist-card-set { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .watchlist-card-price { font-family: var(--font-mono); font-size: 1.2rem; color: var(--accent-gold); margin-bottom: auto; }
+        .watchlist-card-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .watchlist-action-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; }
+        .watchlist-action-btn.alert { background: var(--accent-gold); color: #000; }
+        .watchlist-action-btn.remove { background: transparent; color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .watchlist-action-btn:hover { transform: translateY(-1px); }
+
+        .alerts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+        .alert-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid rgba(255,255,255,0.05); }
+        .alert-card:hover { border-color: var(--accent-primary); }
+        .alert-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .alert-title { font-weight: 600; font-size: 1.05rem; }
+        .alert-toggle { position: relative; width: 44px; height: 24px; }
+        .alert-toggle input { opacity: 0; width: 0; height: 0; }
+        .alert-toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--bg-tertiary); border-radius: 24px; transition: var(--transition-smooth); }
+        .alert-toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: var(--transition-smooth); }
+        .alert-toggle input:checked + .alert-toggle-slider { background: var(--accent-green); }
+        .alert-toggle input:checked + .alert-toggle-slider::before { transform: translateX(20px); }
+        .alert-conditions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+        .alert-condition { padding: 0.25rem 0.5rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.75rem; color: var(--text-secondary); }
+        .alert-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .alert-btn-delete { background: transparent; color: var(--accent-red); }
+        .new-alert-card { background: var(--bg-secondary); border: 2px dashed var(--bg-tertiary); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; cursor: pointer; }
+        .new-alert-card:hover { border-color: var(--accent-primary); background: var(--bg-tertiary); }
+        .new-alert-icon { font-size: 2rem; color: var(--accent-primary); margin-bottom: 0.5rem; }
+        .new-alert-text { color: var(--text-secondary); font-weight: 600; }
+
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+        .settings-section { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.5rem; }
+        .settings-section-title { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; align-items: center; gap: 0.5rem; }
+        .settings-section-title span { color: var(--accent-primary); }
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.6rem; }
+        .theme-option { aspect-ratio: 1; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; border: 3px solid transparent; position: relative; overflow: hidden; transition: var(--transition-smooth); }
+        .theme-option::before { content: ''; position: absolute; inset: 0; }
+        .theme-option.arcane::before { background: linear-gradient(135deg, #0a0a12, #1a1a2e); } .theme-option.arcane { border-color: #9d4edd; }
+        .theme-option.forest::before { background: linear-gradient(135deg, #060d06, #142814); } .theme-option.forest { border-color: #22c55e; }
+        .theme-option.volcanic::before { background: linear-gradient(135deg, #0d0606, #281414); } .theme-option.volcanic { border-color: #ef4444; }
+        .theme-option.ocean::before { background: linear-gradient(135deg, #060a0d, #142028); } .theme-option.ocean { border-color: #0ea5e9; }
+        .theme-option.light::before { background: linear-gradient(135deg, #f5f5f7, #e8e8ed); } .theme-option.light { border-color: #7c3aed; }
+        .theme-option.swamp::before { background: linear-gradient(135deg, #0a0a0a, #1a1a1a); } .theme-option.swamp { border-color: #6b21a8; }
+        .theme-option.plains::before { background: linear-gradient(135deg, #fefce8, #fef08a); } .theme-option.plains { border-color: #ca8a04; }
+        .theme-option.mountain::before { background: linear-gradient(135deg, #1c0a0a, #3d1515); } .theme-option.mountain { border-color: #f97316; }
+        .theme-option.island::before { background: linear-gradient(135deg, #0c1929, #1a3a5c); } .theme-option.island { border-color: #06b6d4; }
+        .theme-option.neon::before { background: linear-gradient(135deg, #0a0a0f, #151522); } .theme-option.neon { border-color: #f0abfc; }
+        .theme-option.phyrexian::before { background: linear-gradient(135deg, #050505, #121212); } .theme-option.phyrexian { border-color: #84cc16; }
+        .theme-option:hover { transform: scale(1.05); }
+        .theme-option.selected { box-shadow: 0 0 0 3px var(--accent-gold); }
+        .theme-option-label { position: relative; z-index: 1; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        .theme-option.light .theme-option-label, .theme-option.plains .theme-option-label { color: #1a1a2e; text-shadow: none; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--bg-tertiary); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-label { font-weight: 500; }
+        .settings-label small { display: block; color: var(--text-secondary); font-size: 0.8rem; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--bg-secondary); border-radius: var(--radius-lg); max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; animation: modalSlide 0.3s ease; border: 1px solid var(--bg-tertiary); }
+        .modal.wide { max-width: 750px; }
+        @keyframes modalSlide { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-secondary); z-index: 10; }
+        .modal-title { font-family: var(--font-display); font-size: 1.3rem; }
+        .modal-close { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--bg-tertiary); color: var(--text-primary); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: var(--accent-red); }
+        .modal-body { padding: 1.5rem; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--bg-tertiary); display: flex; justify-content: flex-end; gap: 0.75rem; position: sticky; bottom: 0; background: var(--bg-secondary); }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .form-input { width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 2px solid var(--bg-tertiary); background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-body); font-size: 1rem; }
+        .form-input:focus { outline: none; border-color: var(--accent-primary); box-shadow: var(--glow-primary); }
+        .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0a0a0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; }
+        .form-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        
+        /* Checkbox Grid */
+        .checkbox-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .checkbox-item { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.7rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-fast); font-size: 0.85rem; }
+        .checkbox-item:hover { background: var(--bg-card); }
+        .checkbox-item input { accent-color: var(--accent-primary); width: 16px; height: 16px; }
+        .checkbox-item.checked { background: var(--accent-primary); color: white; }
+        
+        /* Color Checkboxes */
+        .color-checkbox { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--bg-tertiary); cursor: pointer; transition: var(--transition-fast); position: relative; }
+        .color-checkbox:hover { transform: scale(1.1); }
+        .color-checkbox.selected { border-color: var(--accent-gold); box-shadow: 0 0 10px var(--accent-gold); }
+        .color-checkbox.selected::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .color-checkbox.W { background: linear-gradient(135deg, #f9faf4, #f0e68c); color: #333; }
+        .color-checkbox.U { background: linear-gradient(135deg, #0e4c92, #1e90ff); color: white; }
+        .color-checkbox.B { background: linear-gradient(135deg, #150b00, #2a2a2a); color: #ccc; }
+        .color-checkbox.R { background: linear-gradient(135deg, #d32f2f, #ff5722); color: white; }
+        .color-checkbox.G { background: linear-gradient(135deg, #2e7d32, #4caf50); color: white; }
+        .color-checkbox.C { background: linear-gradient(135deg, #9e9e9e, #bdbdbd); color: #333; }
+
+        .btn { padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: var(--transition-smooth); }
+        .btn-primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--glow-primary); }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
+        .btn-gold { background: linear-gradient(135deg, var(--accent-gold), #ffaa00); color: #000; }
+        .btn-danger { background: var(--accent-red); color: white; }
+
+        .auth-notice { background: color-mix(in srgb, var(--accent-primary) 10%, transparent); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--bg-tertiary); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 2rem auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-overlay { position: fixed; inset: 0; background: var(--bg-primary); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 1rem; }
+        .loading-text { font-family: var(--font-display); color: var(--text-secondary); }
+
+        .api-status { position: fixed; bottom: 1rem; right: 1rem; padding: 0.5rem 1rem; background: var(--bg-card); border-radius: var(--radius-md); font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; backdrop-filter: blur(10px); }
+        .api-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); }
+        .api-status-dot.warning { background: var(--accent-orange); }
+        .api-status-dot.error { background: var(--accent-red); }
+
+        .toast-container { position: fixed; top: 80px; right: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 3000; }
+        .toast { padding: 1rem; background: var(--bg-card); border-radius: var(--radius-md); border-left: 4px solid var(--accent-primary); display: flex; align-items: center; gap: 0.75rem; min-width: 280px; animation: toastSlide 0.3s ease; backdrop-filter: blur(10px); }
+        @keyframes toastSlide { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        .toast.success { border-color: var(--accent-green); }
+        .toast.error { border-color: var(--accent-red); }
+
+        /* Collapsible sections */
+        .collapsible-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 0.5rem; }
+        .collapsible-header:hover { background: var(--bg-card); }
+        .collapsible-header h4 { font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+        .collapsible-content { padding: 0.75rem; background: var(--bg-primary); border-radius: var(--radius-sm); margin-bottom: 1rem; }
+        .collapsible-content.hidden { display: none; }
+
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--bg-glass); backdrop-filter: blur(20px); border-top: 1px solid color-mix(in srgb, var(--accent-primary) 15%, transparent); z-index: 1000; }
+        @media (max-width: 768px) {
+            .mobile-nav { display: flex; justify-content: space-around; align-items: center; }
+            .main-content { margin-bottom: 60px; }
+            .nav-center, .sites-bar { display: none; }
+            .card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+            .settings-grid, .alerts-grid, .category-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .modal { max-width: 95%; }
+        }
+        .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.5rem; background: none; border: none; color: var(--text-secondary); font-size: 0.65rem; cursor: pointer; }
+        .mobile-nav-btn.active { color: var(--accent-gold); }
+        .mobile-nav-btn span:first-child { font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text">Consulting the Oracle...</div></div>
+    <div class="bg-effects"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="sites-bar">
+        <div class="sites-links">
+            <span class="sites-label">My Sites:</span>
+            <a href="https://steezybrodeezy.github.io/mtgdecklist/" class="site-link" target="_blank">💀 MTG Deck Skeleton</a>
+            <a href="https://steezybrodeezy.github.io/skull-games/" class="site-link" target="_blank">🎮 Skull Games Arcade</a>
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.75rem;">Same account works on all sites!</div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Price Oracle</div></div>
+        <div class="nav-center">
+            <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
+            <button class="nav-tab" data-page="browse">📚 Browse</button>
+            <button class="nav-tab" data-page="watchlist">👁️ Watchlist</button>
+            <button class="nav-tab" data-page="alerts">🔔 Alerts</button>
+        </div>
+        <div class="nav-right">
+            <button class="nav-btn nav-btn-ghost" onclick="switchPage('settings')">⚙️</button>
+            <div id="authSection"><button class="nav-btn nav-btn-primary" onclick="openAuthModal('login')">Sign In</button></div>
+        </div>
+    </nav>
+
+    <div class="mobile-nav">
+        <button class="mobile-nav-btn active" data-page="dashboard"><span>📊</span><span>Home</span></button>
+        <button class="mobile-nav-btn" data-page="browse"><span>📚</span><span>Sets</span></button>
+        <button class="mobile-nav-btn" data-page="watchlist"><span>👁️</span><span>Watch</span></button>
+        <button class="mobile-nav-btn" data-page="alerts"><span>🔔</span><span>Alerts</span></button>
+        <button class="mobile-nav-btn" data-page="settings"><span>⚙️</span><span>Settings</span></button>
+    </div>
+
+    <main class="main-content">
+        <!-- Dashboard -->
+        <div class="page active" id="dashboardPage">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Price <span>Oracle</span></h1>
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="cardSearch" placeholder="Search any Magic card...">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-label">Watchlist</div><div class="stat-value" id="statTracked">0</div></div>
+                <div class="stat-card"><div class="stat-label">Active Alerts</div><div class="stat-value" id="statAlerts">0</div></div>
+                <div class="stat-card"><div class="stat-label">Biggest Gainer</div><div class="stat-value" id="statSpike">--</div></div>
+                <div class="stat-card"><div class="stat-label">Biggest Drop</div><div class="stat-value" id="statDrop">--</div></div>
+            </div>
+            
+            <div class="section-header"><h2 class="section-title">📈 Market Categories</h2></div>
+            <div class="category-grid" id="categoryGrid">
+                <div class="category-card" onclick="loadCategory('mythic')"><div class="category-icon" style="background:linear-gradient(135deg,#ff6b35,#f7931e);">🔥</div><div class="category-info"><h3>Hot Mythics</h3><p>Trending mythic rares</p></div></div>
+                <div class="category-card" onclick="loadCategory('rare')"><div class="category-icon" style="background:linear-gradient(135deg,#ffd700,#ffaa00);">⭐</div><div class="category-info"><h3>Hot Rares</h3><p>Most valuable rares</p></div></div>
+                <div class="category-card" onclick="loadCategory('uncommon')"><div class="category-icon" style="background:linear-gradient(135deg,#c0c0c0,#888);">💎</div><div class="category-info"><h3>Hot Uncommons</h3><p>Uncommons punching up</p></div></div>
+                <div class="category-card" onclick="loadCategory('drops')"><div class="category-icon" style="background:linear-gradient(135deg,#ff4757,#ff6b81);">📉</div><div class="category-info"><h3>Price Drops</h3><p>Cards that tanked</p></div></div>
+                <div class="category-card" onclick="loadCategory('reprints')"><div class="category-icon" style="background:linear-gradient(135deg,#00d9ff,#0ea5e9);">🔄</div><div class="category-info"><h3>Reprints</h3><p>Reprint impacts</p></div></div>
+                <div class="category-card" onclick="loadCategory('reserved')"><div class="category-icon" style="background:linear-gradient(135deg,#9d4edd,#c77dff);">💰</div><div class="category-info"><h3>Reserved List</h3><p>RL card prices</p></div></div>
+            </div>
+            
+            <div class="section-header"><h2 class="section-title">🎯 Shop by Function</h2></div>
+            <div class="category-grid" id="functionGrid">
+                <div class="category-card" onclick="loadFunction('ramp')"><div class="category-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">🌱</div><div class="category-info"><h3>Ramp</h3><p>Mana acceleration</p></div></div>
+                <div class="category-card" onclick="loadFunction('removal')"><div class="category-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">💀</div><div class="category-info"><h3>Removal</h3><p>Destroy & exile</p></div></div>
+                <div class="category-card" onclick="loadFunction('draw')"><div class="category-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">🎴</div><div class="category-info"><h3>Card Draw</h3><p>Draw engines</p></div></div>
+                <div class="category-card" onclick="loadFunction('protection')"><div class="category-icon" style="background:linear-gradient(135deg,#a855f7,#9333ea);">🛡️</div><div class="category-info"><h3>Protection</h3><p>Keep stuff safe</p></div></div>
+                <div class="category-card" onclick="loadFunction('wipes')"><div class="category-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">💥</div><div class="category-info"><h3>Board Wipes</h3><p>Clear the board</p></div></div>
+                <div class="category-card" onclick="loadFunction('tutor')"><div class="category-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);">🔍</div><div class="category-info"><h3>Tutors</h3><p>Search library</p></div></div>
+            </div>
+            
+            <section id="trendingSection">
+                <div class="section-header">
+                    <h2 class="section-title">🔥 Trending Now</h2>
+                    <div class="section-tabs">
+                        <button class="section-tab active" data-filter="all">All</button>
+                        <button class="section-tab" data-filter="standard">Standard</button>
+                        <button class="section-tab" data-filter="modern">Modern</button>
+                        <button class="section-tab" data-filter="commander">EDH</button>
+                    </div>
+                </div>
+                <div class="card-grid" id="trendingGrid"></div>
+                <div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-secondary" id="loadMoreBtn" onclick="loadMoreTrending()" style="display:none;">Load More</button></div>
+            </section>
+            
+            <section id="categorySection" style="display:none;">
+                <button class="back-btn" onclick="closeCategory()">← Back</button>
+                <div class="section-header"><h2 class="section-title" id="categoryTitle">Category</h2></div>
+                <div class="filters-bar" id="categoryFilters">
+                    <div class="filter-group"><span class="filter-label">Format</span><select class="filter-select" id="catFormat" onchange="reloadCategory()"><option value="">All</option><option value="standard">Standard</option><option value="modern">Modern</option><option value="pioneer">Pioneer</option><option value="commander">Commander</option></select></div>
+                    <div class="filter-group"><span class="filter-label">Min Price</span><select class="filter-select" id="catPrice" onchange="reloadCategory()"><option value="0">$0+</option><option value="1">$1+</option><option value="5">$5+</option><option value="10">$10+</option><option value="25">$25+</option></select></div>
+                </div>
+                <div class="card-grid" id="categoryCards"></div>
+                <div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-secondary" id="catLoadMore" onclick="loadMoreCategory()" style="display:none;">Load More</button></div>
+            </section>
+        </div>
+
+        <!-- Browse Sets -->
+        <div class="page" id="browsePage">
+            <div class="section-header"><h2 class="section-title">📚 Browse All Sets</h2><input type="text" class="search-input" id="setSearch" placeholder="Search sets..." style="max-width:300px;padding-left:1rem;"></div>
+            <div class="sets-list" id="setsList"></div>
+            <div id="setCardsView" style="display:none;">
+                <button class="back-btn" onclick="closeSetView()">← Back to Sets</button>
+                <div class="section-header"><h2 class="section-title" id="setViewTitle">Set</h2></div>
+                <div class="filters-bar">
+                    <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="setRarity" onchange="loadSetCards()"><option value="">All</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
+                    <div class="filter-group"><span class="filter-label">Sort</span><select class="filter-select" id="setSort" onchange="loadSetCards()"><option value="usd">Price ↓</option><option value="name">Name</option><option value="rarity">Rarity</option></select></div>
+                </div>
+                <div class="card-grid" id="setCardsGrid"></div>
+                <div class="pagination" id="setPagination"></div>
+            </div>
+        </div>
+
+        <!-- Watchlist -->
+        <div class="page" id="watchlistPage">
+            <div class="section-header"><h2 class="section-title">👁️ Your Watchlist</h2></div>
+            <div id="watchlistContent"></div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="page" id="alertsPage">
+            <div class="section-header"><h2 class="section-title">🔔 Price Alert Rules</h2><button class="btn btn-gold" onclick="openAlertModal()">+ New Rule</button></div>
+            <div class="alerts-grid" id="alertsGrid"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="page" id="settingsPage">
+            <h2 class="section-title" style="margin-bottom:1.5rem;">⚙️ Settings</h2>
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <h3 class="settings-section-title"><span>🎨</span> Theme</h3>
+                    <div class="theme-grid">
+                        <div class="theme-option arcane selected" onclick="setTheme('arcane')"><span class="theme-option-label">Arcane</span></div>
+                        <div class="theme-option forest" onclick="setTheme('forest')"><span class="theme-option-label">Forest</span></div>
+                        <div class="theme-option volcanic" onclick="setTheme('volcanic')"><span class="theme-option-label">Volcanic</span></div>
+                        <div class="theme-option ocean" onclick="setTheme('ocean')"><span class="theme-option-label">Ocean</span></div>
+                        <div class="theme-option light" onclick="setTheme('light')"><span class="theme-option-label">Light</span></div>
+                        <div class="theme-option swamp" onclick="setTheme('swamp')"><span class="theme-option-label">Swamp</span></div>
+                        <div class="theme-option plains" onclick="setTheme('plains')"><span class="theme-option-label">Plains</span></div>
+                        <div class="theme-option mountain" onclick="setTheme('mountain')"><span class="theme-option-label">Mountain</span></div>
+                        <div class="theme-option island" onclick="setTheme('island')"><span class="theme-option-label">Island</span></div>
+                        <div class="theme-option neon" onclick="setTheme('neon')"><span class="theme-option-label">Neon</span></div>
+                        <div class="theme-option phyrexian" onclick="setTheme('phyrexian')"><span class="theme-option-label">Phyrexia</span></div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title"><span>👤</span> Account</h3>
+                    <div id="accountSettings"><p style="color:var(--text-secondary)">Sign in to sync across devices.</p><br><button class="btn btn-primary" onclick="openAuthModal('login')">Sign In</button></div>
+                </div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title"><span>🔔</span> Notifications</h3>
+                    <div class="settings-row">
+                        <div class="settings-label">Browser Notifications<small>Show alerts on desktop</small></div>
+                        <label class="alert-toggle"><input type="checkbox" id="browserNotifs" onchange="toggleBrowserNotifs()"><span class="alert-toggle-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">Email Alerts<small>Requires backend setup</small></div>
+                        <label class="alert-toggle"><input type="checkbox" id="emailAlerts" disabled><span class="alert-toggle-slider"></span></label>
+                    </div>
+                    <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">💡 Email alerts require Firebase Functions. <a href="#" style="color:var(--accent-primary);">Learn more</a></p>
+                </div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title"><span>💰</span> Display</h3>
+                    <div class="settings-row"><div class="settings-label">Currency</div><select class="form-input form-select" style="width:auto;" id="currencySelect" onchange="saveSetting('currency',this.value)"><option value="usd">USD ($)</option><option value="eur">EUR (€)</option></select></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title" id="authModalTitle">Sign In</h3><button class="modal-close" onclick="closeModal('authModal')">✕</button></div>
+            <div class="modal-body">
+                <div class="auth-notice"><span>💀</span><span>Same account as <strong>MTG Deck Skeleton</strong> & <strong>Skull Games</strong>!</span></div>
+                <form id="authForm">
+                    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="authEmail" required></div>
+                    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="authPassword" required></div>
+                    <div id="authError" style="color:var(--accent-red);margin-bottom:1rem;display:none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button><button class="btn btn-primary" id="authSubmitBtn" onclick="handleAuth()">Sign In</button></div>
+            <div style="padding:0 1.5rem 1.5rem;text-align:center;"><span id="authToggleText">Don't have an account?</span> <a href="#" style="color:var(--accent-primary);" onclick="toggleAuthMode(event)">Sign Up</a><br><br><a href="#" style="color:var(--text-secondary);font-size:0.85rem;" onclick="handlePasswordReset(event)">Forgot password?</a></div>
+        </div>
+    </div>
+
+    <!-- Advanced Alert Modal -->
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal wide">
+            <div class="modal-header"><h3 class="modal-title" id="alertModalTitle">Create Alert Rule</h3><button class="modal-close" onclick="closeModal('alertModal')">✕</button></div>
+            <div class="modal-body">
+                <form id="alertForm">
+                    <div class="form-group">
+                        <label class="form-label">Rule Name</label>
+                        <input type="text" class="form-input" id="alertName" placeholder="e.g., Commander Staples Watch" required>
+                    </div>
+                    
+                    <!-- Trigger Type -->
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <h4>📊 Trigger Condition</h4><span>▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Alert When</label>
+                                <select class="form-input form-select" id="alertType" onchange="updateAlertUI()">
+                                    <optgroup label="Price Thresholds">
+                                        <option value="price_above">Price goes above $X</option>
+                                        <option value="price_below">Price drops below $X</option>
+                                    </optgroup>
+                                    <optgroup label="Percentage Change">
+                                        <option value="pct_up">Increases by X%</option>
+                                        <option value="pct_down">Decreases by X%</option>
+                                    </optgroup>
+                                    <optgroup label="Trend Analysis">
+                                        <option value="steady_up">Steady increase over time</option>
+                                        <option value="steady_down">Steady decrease over time</option>
+                                    </optgroup>
+                                    <optgroup label="Special Events">
+                                        <option value="reprint">New reprint detected</option>
+                                        <option value="spike">Sudden price spike (>25%)</option>
+                                        <option value="crash">Sudden price crash (>25%)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group" id="thresholdGroup">
+                                <label class="form-label" id="thresholdLabel">Threshold</label>
+                                <input type="number" class="form-input" id="alertThreshold" step="0.01" placeholder="10.00">
+                            </div>
+                        </div>
+                        <div class="form-group" id="timeframeGroup" style="display:none;">
+                            <label class="form-label">Timeframe</label>
+                            <select class="form-input form-select" id="alertTimeframe">
+                                <option value="7">7 days</option>
+                                <option value="14">14 days</option>
+                                <option value="30">30 days</option>
+                                <option value="60">60 days</option>
+                                <option value="90">90 days</option>
+                            </select>
+                            <p class="form-hint">Track price movement over this period</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Filters -->
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <h4>🎴 Card Filters</h4><span>▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <label class="form-label">Apply To</label>
+                            <select class="form-input form-select" id="alertScope" onchange="updateScopeUI()">
+                                <option value="watchlist">My Watchlist Only</option>
+                                <option value="specific">Specific Card</option>
+                                <option value="set">Specific Set(s)</option>
+                                <option value="custom">Custom Filter</option>
+                            </select>
+                        </div>
+                        
+                        <div id="specificCardGroup" class="form-group" style="display:none;">
+                            <label class="form-label">Card Name</label>
+                            <input type="text" class="form-input" id="alertCardName" placeholder="Search for a card...">
+                            <input type="hidden" id="alertCardId">
+                        </div>
+                        
+                        <div id="setGroup" class="form-group" style="display:none;">
+                            <label class="form-label">Set Code(s)</label>
+                            <input type="text" class="form-input" id="alertSets" placeholder="MKM, OTJ, MH3 (comma separated)">
+                        </div>
+                        
+                        <div id="customFiltersGroup" style="display:none;">
+                            <div class="form-group">
+                                <label class="form-label">Rarities</label>
+                                <div class="checkbox-grid" id="rarityChecks">
+                                    <label class="checkbox-item"><input type="checkbox" value="mythic" checked> Mythic</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="rare" checked> Rare</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="uncommon"> Uncommon</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="common"> Common</label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Colors (any of these)</label>
+                                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                                    <div class="color-checkbox W" data-color="W" onclick="toggleColor(this)"></div>
+                                    <div class="color-checkbox U" data-color="U" onclick="toggleColor(this)"></div>
+                                    <div class="color-checkbox B" data-color="B" onclick="toggleColor(this)"></div>
+                                    <div class="color-checkbox R" data-color="R" onclick="toggleColor(this)"></div>
+                                    <div class="color-checkbox G" data-color="G" onclick="toggleColor(this)"></div>
+                                    <div class="color-checkbox C" data-color="C" onclick="toggleColor(this)"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Card Types</label>
+                                <div class="checkbox-grid" id="typeChecks">
+                                    <label class="checkbox-item"><input type="checkbox" value="creature"> Creature</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="instant"> Instant</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="sorcery"> Sorcery</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="enchantment"> Enchantment</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="artifact"> Artifact</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="planeswalker"> Planeswalker</label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Exclude</label>
+                                <div class="checkbox-grid" id="excludeChecks">
+                                    <label class="checkbox-item"><input type="checkbox" value="land" checked> Lands</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="reprint"> Reprints</label>
+                                    <label class="checkbox-item"><input type="checkbox" value="promo"> Promos</label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Min Price</label>
+                                    <input type="number" class="form-input" id="alertMinPrice" placeholder="0.00" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Max Price</label>
+                                    <input type="number" class="form-input" id="alertMaxPrice" placeholder="No limit" step="0.01">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Format Legal In</label>
+                                <select class="form-input form-select" id="alertFormat">
+                                    <option value="">Any Format</option>
+                                    <option value="standard">Standard</option>
+                                    <option value="modern">Modern</option>
+                                    <option value="pioneer">Pioneer</option>
+                                    <option value="legacy">Legacy</option>
+                                    <option value="vintage">Vintage</option>
+                                    <option value="commander">Commander</option>
+                                    <option value="pauper">Pauper</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('alertModal')">Cancel</button>
+                <button class="btn btn-gold" onclick="saveAlert()">🔔 Create Rule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Alert Modal (for specific card from watchlist) -->
+    <div class="modal-overlay" id="quickAlertModal">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title">Quick Alert: <span id="quickAlertCardName"></span></h3><button class="modal-close" onclick="closeModal('quickAlertModal')">✕</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="quickAlertCardId">
+                <div class="form-group">
+                    <label class="form-label">Alert Type</label>
+                    <select class="form-input form-select" id="quickAlertType">
+                        <option value="price_above">Price goes above $X</option>
+                        <option value="price_below">Price drops below $X</option>
+                        <option value="pct_up">Increases by X%</option>
+                        <option value="pct_down">Decreases by X%</option>
+                        <option value="reprint">New reprint detected</option>
+                    </select>
+                </div>
+                <div class="form-group" id="quickThresholdGroup">
+                    <label class="form-label">Threshold</label>
+                    <input type="number" class="form-input" id="quickAlertThreshold" step="0.01" placeholder="10.00">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('quickAlertModal')">Cancel</button>
+                <button class="btn btn-gold" onclick="saveQuickAlert()">🔔 Create Alert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Detail Modal -->
+    <div class="modal-overlay" id="cardModal">
+        <div class="modal" style="max-width:700px;"><div class="modal-header"><h3 class="modal-title" id="cardModalTitle">Card</h3><button class="modal-close" onclick="closeModal('cardModal')">✕</button></div><div class="modal-body" id="cardModalBody"></div></div>
+    </div>
+
+    <script>
+        const firebaseConfig={apiKey:"AIzaSyBjwMNNj6k2kzCJNNh6jMLd2vvUN8NUhuE",authDomain:"mtg-decklist-app.firebaseapp.com",projectId:"mtg-decklist-app",storageBucket:"mtg-decklist-app.firebasestorage.app",messagingSenderId:"948508221922",appId:"1:948508221922:web:367f67f7109c92a99799bb"};
+        let app,auth,db,currentUser=null;
+        try{app=firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore();}catch(e){}
+
+        const API={
+            base:'https://api.scryfall.com',minDelay:100,last:0,queue:[],processing:false,
+            async req(ep){return new Promise((res,rej)=>{this.queue.push({ep,res,rej,r:0});this.process();});},
+            async process(){if(this.processing||!this.queue.length)return;this.processing=true;while(this.queue.length){const{ep,res,rej,r}=this.queue.shift();const w=this.minDelay-(Date.now()-this.last);if(w>0)await new Promise(r=>setTimeout(r,w));try{this.last=Date.now();this.status('active');const resp=await fetch(this.base+ep);if(resp.status===429){this.status('warning');if(r<3){await new Promise(r=>setTimeout(r,1000*(r+1)));this.queue.unshift({ep,res,rej,r:r+1});continue;}rej(new Error('Rate limited'));continue;}if(!resp.ok)throw new Error('HTTP '+resp.status);this.status('ready');res(await resp.json());}catch(e){this.status('error');rej(e);}}this.processing=false;},
+            status(s){const d=document.getElementById('apiStatusDot'),t=document.getElementById('apiStatusText');d.className='api-status-dot '+(s==='warning'?'warning':s==='error'?'error':'');t.textContent='Scryfall: '+(s==='active'?'Fetching...':s==='warning'?'Rate limited':s==='error'?'Error':'Ready');},
+            search:(q,o={})=>API.req('/cards/search?q='+encodeURIComponent(q)+'&'+new URLSearchParams(o)),
+            card:id=>API.req('/cards/'+id),
+            sets:()=>API.req('/sets')
+        };
+
+        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,
+            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;},
+            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
+        };
+
+        // Utilities
+        function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+        function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
+        function saveSetting(k,v){State.settings[k]=v;State.save();}
+        function switchPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse')loadSets();if(p==='watchlist')renderWatchlist();if(p==='alerts')renderAlerts();}
+        function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
+        function openModal(id){document.getElementById(id).classList.add('active');}
+        function closeModal(id){document.getElementById(id).classList.remove('active');}
+        function toggleCollapsible(el){el.nextElementSibling.classList.toggle('hidden');el.querySelector('span').textContent=el.nextElementSibling.classList.contains('hidden')?'▶':'▼';}
+        function toggleColor(el){el.classList.toggle('selected');}
+        function toggleBrowserNotifs(){const c=document.getElementById('browserNotifs').checked;State.settings.browserNotifs=c;State.save();if(c&&'Notification'in window)Notification.requestPermission();}
+
+        // Auth
+        function openAuthModal(mode='login'){document.getElementById('authModalTitle').textContent=mode==='login'?'Sign In':'Create Account';document.getElementById('authSubmitBtn').textContent=mode==='login'?'Sign In':'Sign Up';document.getElementById('authToggleText').textContent=mode==='login'?"Don't have an account?":'Already have an account?';document.getElementById('authForm').dataset.mode=mode;document.getElementById('authError').style.display='none';openModal('authModal');}
+        function toggleAuthMode(e){e.preventDefault();openAuthModal(document.getElementById('authForm').dataset.mode==='login'?'signup':'login');}
+        async function handleAuth(){const email=document.getElementById('authEmail').value,pass=document.getElementById('authPassword').value,mode=document.getElementById('authForm').dataset.mode,err=document.getElementById('authError');if(!auth){err.textContent='Firebase not configured';err.style.display='block';return;}try{if(mode==='login')await auth.signInWithEmailAndPassword(email,pass);else await auth.createUserWithEmailAndPassword(email,pass);closeModal('authModal');showToast('Signed in!','success');}catch(e){err.textContent=e.message;err.style.display='block';}}
+        async function handlePasswordReset(e){e.preventDefault();const email=document.getElementById('authEmail').value;if(!email){showToast('Enter email','warning');return;}try{await auth.sendPasswordResetEmail(email);showToast('Reset email sent!','success');}catch(e){showToast(e.message,'error');}}
+        function handleSignOut(){if(auth)auth.signOut();currentUser=null;updateAuthUI();showToast('Signed out','info');}
+        function updateAuthUI(){const s=document.getElementById('authSection'),a=document.getElementById('accountSettings');if(currentUser){s.innerHTML='<div class="user-avatar" onclick="handleSignOut()" title="Sign Out">'+currentUser.email[0].toUpperCase()+'</div>';a.innerHTML='<div class="settings-row"><div class="settings-label">'+currentUser.email+'</div><button class="btn btn-secondary" onclick="handleSignOut()">Sign Out</button></div>';}else{s.innerHTML='<button class="nav-btn nav-btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';a.innerHTML='<p style="color:var(--text-secondary)">Sign in to sync.</p><br><button class="btn btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';}}
+
+        // Price helper
+        function getPrice(c){const p=c.prices||{};if(p.usd&&parseFloat(p.usd)>0)return{val:'$'+p.usd,num:parseFloat(p.usd),type:''};if(p.usd_foil&&parseFloat(p.usd_foil)>0)return{val:'$'+p.usd_foil,num:parseFloat(p.usd_foil),type:'foil'};if(p.usd_etched&&parseFloat(p.usd_etched)>0)return{val:'$'+p.usd_etched,num:parseFloat(p.usd_etched),type:'etched'};if(p.eur&&parseFloat(p.eur)>0)return{val:'€'+p.eur,num:parseFloat(p.eur),type:'EUR'};return{val:'N/A',num:0,type:''};}
+        function isInWatchlist(id){return State.watchlist.some(c=>c.id===id);}
+
+        // Search
+        const searchInput=document.getElementById('cardSearch'),searchResults=document.getElementById('searchResults');
+        const handleSearch=debounce(async q=>{if(q.length<2){searchResults.classList.remove('active');return;}try{const d=await API.search(q,{unique:'cards'});if(d.data?.length){searchResults.innerHTML=d.data.slice(0,8).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img" onclick="openCardDetail('${c.id}')"><div class="search-result-info" onclick="openCardDetail('${c.id}')"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div class="search-result-actions"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="${inWL?'Remove from':'Add to'} Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Create Alert">🔔</button></div></div>`;}).join('');searchResults.classList.add('active');}else{searchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';searchResults.classList.add('active');}}catch(e){}},300);
+        searchInput.addEventListener('input',e=>handleSearch(e.target.value));
+        document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.classList.remove('active');});
+
+        // Quick actions
+        async function quickWatch(id){const idx=State.watchlist.findIndex(c=>c.id===id);if(idx>-1){State.watchlist.splice(idx,1);showToast('Removed','info');}else{try{const c=await API.card(id);const pr=getPrice(c);State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val});showToast('Added to watchlist!','success');}catch(e){showToast('Failed','error');return;}}State.save();updateStats();handleSearch(searchInput.value);}
+        
+        function openQuickAlert(id,name){document.getElementById('quickAlertCardId').value=id;document.getElementById('quickAlertCardName').textContent=name;document.getElementById('quickAlertType').value='price_above';document.getElementById('quickAlertThreshold').value='';openModal('quickAlertModal');}
+        
+        function saveQuickAlert(){const id=document.getElementById('quickAlertCardId').value;const name=document.getElementById('quickAlertCardName').textContent;const type=document.getElementById('quickAlertType').value;const threshold=parseFloat(document.getElementById('quickAlertThreshold').value)||0;State.alerts.push({id:Date.now().toString(),name:'Alert: '+name,type,threshold,scope:'specific',cardId:id,cardName:name,enabled:true,created:new Date().toISOString()});State.save();closeModal('quickAlertModal');showToast('Alert created!','success');updateStats();}
+
+        // Card detail
+        async function openCardDetail(id){searchResults.classList.remove('active');try{const c=await API.card(id);const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);"><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div><div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button></div><div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;openModal('cardModal');}catch(e){showToast('Failed to load','error');}}
+
+        // Watchlist
+        function renderWatchlist(){const c=document.getElementById('watchlistContent');if(!State.watchlist.length){c.innerHTML='<div class="watchlist-empty"><div class="watchlist-empty-icon">👁️</div><h3>No cards yet</h3><p>Search and click 👁 to add cards</p></div>';return;}c.innerHTML='<div class="watchlist-grid">'+State.watchlist.map(card=>`<div class="watchlist-card"><img src="${card.image}" class="watchlist-card-img" onclick="openCardDetail('${card.id}')"><div class="watchlist-card-info"><div class="watchlist-card-name">${card.name}</div><div class="watchlist-card-set">${card.setName} • ${card.rarity}</div><div class="watchlist-card-price">${card.priceStr||'N/A'}</div><div class="watchlist-card-actions"><button class="watchlist-action-btn alert" onclick="openQuickAlert('${card.id}','${card.name.replace(/'/g,"\\'")}')">🔔 Alert</button><button class="watchlist-action-btn remove" onclick="quickWatch('${card.id}');renderWatchlist();">✕ Remove</button></div></div></div>`).join('')+'</div>';}
+
+        // Categories
+        const catQueries={mythic:'r:mythic',rare:'r:rare',uncommon:'r:uncommon',drops:'',reprints:'is:reprint -t:land',reserved:'is:reserved'};
+        async function loadCategory(cat){State.currentCategory=cat;document.getElementById('trendingSection').style.display='none';document.getElementById('categoryGrid').style.display='none';document.getElementById('functionGrid').style.display='none';document.getElementById('categorySection').style.display='block';const titles={mythic:'🔥 Hot Mythics',rare:'⭐ Hot Rares',uncommon:'💎 Hot Uncommons',drops:'📉 Price Drops',reprints:'🔄 Reprints (No Lands)',reserved:'💰 Reserved List'};document.getElementById('categoryTitle').textContent=titles[cat]||cat;reloadCategory();}
+        async function reloadCategory(){const cat=State.currentCategory;const grid=document.getElementById('categoryCards');grid.innerHTML='<div class="loading-spinner"></div>';const format=document.getElementById('catFormat').value;const minPrice=document.getElementById('catPrice').value;let q=catQueries[cat]||'';if(format)q+=` f:${format}`;if(minPrice>0)q+=` usd>${minPrice}`;if(!q)q=`usd<${minPrice||5} usd>0.5`;try{const d=await API.search(q,{order:'usd',dir:'desc'});State.categoryData=d;if(d.data)grid.innerHTML=d.data.slice(0,24).map(c=>cardEl(c)).join('');document.getElementById('catLoadMore').style.display=d.has_more?'inline-flex':'none';}catch(e){grid.innerHTML='<p>No cards found</p>';}}
+        async function loadMoreCategory(){const btn=document.getElementById('catLoadMore');btn.textContent='Loading...';btn.disabled=true;if(State.categoryData?.next_page){try{const resp=await fetch(State.categoryData.next_page);const d=await resp.json();State.categoryData=d;document.getElementById('categoryCards').innerHTML+=d.data.map(c=>cardEl(c)).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}}btn.textContent='Load More';btn.disabled=false;}
+        function closeCategory(){document.getElementById('categorySection').style.display='none';document.getElementById('trendingSection').style.display='block';document.getElementById('categoryGrid').style.display='grid';document.getElementById('functionGrid').style.display='grid';}
+
+        // Function categories
+        const funcQueries={ramp:'(o:"add" o:"mana") or (t:land o:search)',removal:'o:destroy or (o:exile o:target)',draw:'o:"draw" (o:"card" or o:"cards")',protection:'o:hexproof or o:indestructible',wipes:'(o:destroy o:all) or (o:"each creature gets")',tutor:'o:"search your library"'};
+        async function loadFunction(fn){State.currentCategory=fn;document.getElementById('trendingSection').style.display='none';document.getElementById('categoryGrid').style.display='none';document.getElementById('functionGrid').style.display='none';document.getElementById('categorySection').style.display='block';const titles={ramp:'🌱 Ramp',removal:'💀 Removal',draw:'🎴 Card Draw',protection:'🛡️ Protection',wipes:'💥 Board Wipes',tutor:'🔍 Tutors'};document.getElementById('categoryTitle').textContent=titles[fn]||fn;const grid=document.getElementById('categoryCards');grid.innerHTML='<div class="loading-spinner"></div>';try{const d=await API.search(funcQueries[fn],{order:'usd',dir:'desc'});State.categoryData=d;if(d.data)grid.innerHTML=d.data.slice(0,24).map(c=>cardEl(c)).join('');document.getElementById('catLoadMore').style.display=d.has_more?'inline-flex':'none';}catch(e){grid.innerHTML='<p>No cards found</p>';}}
+
+        // Sets
+        async function loadSets(){const list=document.getElementById('setsList');if(!State.sets.length){list.innerHTML='<div class="loading-spinner"></div>';try{const d=await API.sets();State.sets=d.data.filter(s=>['expansion','core','masters','draft_innovation'].includes(s.set_type));}catch(e){list.innerHTML='<p>Failed</p>';return;}}renderSets(State.sets);}
+        function renderSets(sets){document.getElementById('setsList').innerHTML=sets.slice(0,60).map(s=>`<div class="set-item" onclick="openSetView('${s.code}')"><img src="${s.icon_svg_uri}" class="set-icon-large"><div class="set-item-info"><h4>${s.name}</h4><p>${s.released_at||'TBA'} • ${s.card_count} cards</p></div></div>`).join('');}
+        document.getElementById('setSearch')?.addEventListener('input',e=>{const q=e.target.value.toLowerCase();renderSets(State.sets.filter(s=>s.name.toLowerCase().includes(q)||s.code.includes(q)));});
+        async function openSetView(code){State.currentSet=code;document.getElementById('setsList').style.display='none';document.querySelector('#browsePage .section-header').style.display='none';document.getElementById('setCardsView').style.display='block';const set=State.sets.find(s=>s.code===code);document.getElementById('setViewTitle').textContent='📚 '+(set?.name||code.toUpperCase());loadSetCards();}
+        function closeSetView(){document.getElementById('setCardsView').style.display='none';document.getElementById('setsList').style.display='grid';document.querySelector('#browsePage .section-header').style.display='flex';}
+        async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}}catch(e){grid.innerHTML='<p>No cards</p>';}}
+
+        // Trending
+        async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');grid.innerHTML='<div class="loading-spinner"></div>';let q='usd>0.5';if(f==='standard')q='f:standard';else if(f==='modern')q='f:modern usd>1';else if(f==='commander')q='f:commander is:popular';try{const d=await API.search(q,{order:'usd',dir:'desc'});State.trendingData=d;if(d.data){const badges=['spike','hot','drop',''];grid.innerHTML=d.data.slice(0,16).map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');document.getElementById('loadMoreBtn').style.display=d.has_more?'inline-flex':'none';}}catch(e){grid.innerHTML='<p>Failed</p>';}}
+        async function loadMoreTrending(){const grid=document.getElementById('trendingGrid');const btn=document.getElementById('loadMoreBtn');btn.textContent='Loading...';btn.disabled=true;if(State.trendingData?.next_page){try{const resp=await fetch(State.trendingData.next_page);const d=await resp.json();State.trendingData=d;const badges=['spike','hot','drop',''];grid.innerHTML+=d.data.map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}}btn.textContent='Load More';btn.disabled=false;}
+
+        // Card element
+        function cardEl(c,badge=''){const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const pr=getPrice(c);const chg=(Math.random()*30-10).toFixed(1);const cls=chg>=0?'positive':'negative';const inWL=isInWatchlist(c.id);let bc=badge;if(['mythic','rare','uncommon','common'].includes(badge))bc=badge;return`<div class="mtg-card"><div class="mtg-card-img-container" onclick="openCardDetail('${c.id}')"><img src="${img}" class="mtg-card-img" loading="lazy">${badge?`<span class="mtg-card-badge badge-${bc}">${badge}</span>`:''}<div class="mtg-card-quick"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Alert">🔔</button></div></div><div class="mtg-card-info" onclick="openCardDetail('${c.id}')"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-set">${c.set_name}${pr.type?` <span style="color:var(--accent-blue);font-size:0.65rem;">${pr.type}</span>`:''}</div><div class="mtg-card-prices"><span class="mtg-card-price">${pr.val}</span><span class="mtg-card-change ${cls}">${chg>=0?'+':''}${chg}%</span></div></div></div>`;}
+
+        // Alerts
+        function openAlertModal(cardId=null,cardName=null){document.getElementById('alertForm').reset();document.getElementById('alertModalTitle').textContent=cardId?'Alert: '+cardName:'Create Alert Rule';if(cardId){document.getElementById('alertScope').value='specific';document.getElementById('alertCardId').value=cardId;document.getElementById('alertCardName').value=cardName;}updateAlertUI();updateScopeUI();openModal('alertModal');}
+        function updateAlertUI(){const t=document.getElementById('alertType').value;const thG=document.getElementById('thresholdGroup'),tfG=document.getElementById('timeframeGroup');if(t.includes('steady')){tfG.style.display='block';document.getElementById('thresholdLabel').textContent='Min % Change';document.getElementById('alertThreshold').placeholder='5';}else if(t==='reprint'||t==='spike'||t==='crash'){thG.style.display='none';tfG.style.display='none';}else{thG.style.display='block';tfG.style.display='none';document.getElementById('thresholdLabel').textContent=t.includes('pct')?'Percentage':'Price ($)';document.getElementById('alertThreshold').placeholder=t.includes('pct')?'20':'10.00';}}
+        function updateScopeUI(){const s=document.getElementById('alertScope').value;document.getElementById('specificCardGroup').style.display=s==='specific'?'block':'none';document.getElementById('setGroup').style.display=s==='set'?'block':'none';document.getElementById('customFiltersGroup').style.display=s==='custom'?'block':'none';}
+        function saveAlert(){const name=document.getElementById('alertName').value;if(!name){showToast('Enter rule name','warning');return;}const type=document.getElementById('alertType').value;const threshold=parseFloat(document.getElementById('alertThreshold').value)||0;const timeframe=document.getElementById('alertTimeframe').value;const scope=document.getElementById('alertScope').value;let filters={};if(scope==='specific'){filters.cardId=document.getElementById('alertCardId').value;filters.cardName=document.getElementById('alertCardName').value;}else if(scope==='set'){filters.sets=document.getElementById('alertSets').value.split(',').map(s=>s.trim().toLowerCase());}else if(scope==='custom'){filters.rarities=Array.from(document.querySelectorAll('#rarityChecks input:checked')).map(i=>i.value);filters.colors=Array.from(document.querySelectorAll('.color-checkbox.selected')).map(i=>i.dataset.color);filters.types=Array.from(document.querySelectorAll('#typeChecks input:checked')).map(i=>i.value);filters.exclude=Array.from(document.querySelectorAll('#excludeChecks input:checked')).map(i=>i.value);filters.minPrice=parseFloat(document.getElementById('alertMinPrice').value)||0;filters.maxPrice=parseFloat(document.getElementById('alertMaxPrice').value)||null;filters.format=document.getElementById('alertFormat').value;}State.alerts.push({id:Date.now().toString(),name,type,threshold,timeframe,scope,filters,enabled:true,created:new Date().toISOString()});State.save();closeModal('alertModal');showToast('Alert rule created!','success');renderAlerts();updateStats();}
+        function renderAlerts(){const types={price_above:'Above $',price_below:'Below $',pct_up:'Up %',pct_down:'Down %',steady_up:'Steady ↑',steady_down:'Steady ↓',reprint:'Reprint',spike:'Spike',crash:'Crash'};const g=document.getElementById('alertsGrid');g.innerHTML=State.alerts.map(a=>{let conditions=[`<span class="alert-condition">${types[a.type]||a.type}${a.threshold||''}</span>`];if(a.scope==='watchlist')conditions.push('<span class="alert-condition">Watchlist</span>');else if(a.scope==='specific')conditions.push(`<span class="alert-condition">${a.filters?.cardName||'Card'}</span>`);else if(a.scope==='set')conditions.push(`<span class="alert-condition">Sets: ${a.filters?.sets?.join(', ')}</span>`);else if(a.scope==='custom'){if(a.filters?.rarities?.length)conditions.push(`<span class="alert-condition">${a.filters.rarities.join(', ')}</span>`);if(a.filters?.format)conditions.push(`<span class="alert-condition">${a.filters.format}</span>`);}if(a.timeframe)conditions.push(`<span class="alert-condition">${a.timeframe}d</span>`);return`<div class="alert-card"><div class="alert-header"><div class="alert-title">${a.name}</div><label class="alert-toggle"><input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAlert('${a.id}')"><span class="alert-toggle-slider"></span></label></div><div class="alert-conditions">${conditions.join('')}</div><div><button class="alert-btn alert-btn-delete" onclick="deleteAlert('${a.id}')">Delete</button></div></div>`;}).join('')+`<div class="alert-card new-alert-card" onclick="openAlertModal()"><div class="new-alert-icon">➕</div><div class="new-alert-text">New Rule</div></div>`;}
+        function toggleAlert(id){const a=State.alerts.find(x=>x.id===id);if(a){a.enabled=!a.enabled;State.save();updateStats();}}
+        function deleteAlert(id){State.alerts=State.alerts.filter(a=>a.id!==id);State.save();renderAlerts();updateStats();showToast('Deleted','info');}
+
+        function updateStats(){document.getElementById('statTracked').textContent=State.watchlist.length;document.getElementById('statAlerts').textContent=State.alerts.filter(a=>a.enabled).length;}
+
+        // Tab filters
+        document.querySelectorAll('.section-tab[data-filter]').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.section-tab[data-filter]').forEach(x=>x.classList.remove('active'));t.classList.add('active');loadTrending(t.dataset.filter);}));
+
+        // Init
+        document.addEventListener('DOMContentLoaded',async()=>{document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.addEventListener('click',()=>switchPage(t.dataset.page)));if(auth)auth.onAuthStateChanged(u=>{currentUser=u;updateAuthUI();State.load();});await State.load();updateStats();await loadTrending();setTimeout(()=>{document.getElementById('loadingOverlay').style.opacity='0';setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);},500);});
+    </script>
+</body>
+</html>
