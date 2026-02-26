@@ -140,7 +140,7 @@
         .mtg-card-img-container { position: relative; aspect-ratio: 488/680; overflow: hidden; }
         .mtg-card-img { width: 100%; height: 100%; object-fit: cover; }
         .mtg-card:hover .mtg-card-img { transform: scale(1.05); transition: var(--transition-smooth); }
-        .mtg-card-badge { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .mtg-card-badge { position: absolute; top: 2.5rem; right: 0.5rem; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .badge-spike { background: var(--accent-green); color: #000; }
         .badge-drop { background: var(--accent-red); color: #fff; }
         .badge-hot { background: var(--accent-orange); color: #000; }
@@ -328,6 +328,105 @@
         .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.5rem; background: none; border: none; color: var(--text-secondary); font-size: 0.65rem; cursor: pointer; }
         .mobile-nav-btn.active { color: var(--accent-gold); }
         .mobile-nav-btn span:first-child { font-size: 1.2rem; }
+
+        /* Dashboard Config */
+        .dashboard-config { background: var(--bg-primary); border-radius: var(--radius-md); padding: 1rem; }
+        .config-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .config-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); transition: var(--transition-fast); }
+        .config-item:hover { background: var(--bg-card); }
+        .config-drag { cursor: grab; color: var(--text-muted); font-size: 1rem; }
+        .config-drag:active { cursor: grabbing; }
+        .config-icon { font-size: 1.2rem; }
+        .config-name { flex: 1; font-weight: 500; }
+        .pinned-sets, .pinned-cards { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .pinned-tag { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 0.9rem; }
+        .pinned-tag img { width: 20px; height: 20px; }
+        .pinned-tag-remove { background: none; border: none; color: var(--accent-red); cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
+        .pinned-tag-remove:hover { transform: scale(1.2); }
+        
+        /* Customize button on dashboard */
+        .customize-btn { position: fixed; bottom: 80px; right: 1rem; padding: 0.75rem 1rem; background: var(--bg-card); border: 1px solid var(--bg-tertiary); border-radius: var(--radius-lg); color: var(--text-primary); font-weight: 600; cursor: pointer; display: none; align-items: center; gap: 0.5rem; backdrop-filter: blur(10px); z-index: 100; transition: var(--transition-smooth); }
+        .customize-btn:hover { border-color: var(--accent-primary); background: var(--bg-tertiary); }
+        .customize-btn.visible { display: flex; }
+        @media (max-width: 768px) { .customize-btn { bottom: 80px; } }
+
+        /* Hero Section */
+        .hero-section { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-tertiary) 100%); border-radius: var(--radius-lg); padding: 2rem; margin-bottom: 2rem; border: 1px solid color-mix(in srgb, var(--accent-gold) 20%, transparent); position: relative; overflow: hidden; }
+        .hero-section::before { content: ''; position: absolute; top: -50%; right: -20%; width: 60%; height: 200%; background: radial-gradient(circle, color-mix(in srgb, var(--accent-primary) 10%, transparent) 0%, transparent 70%); pointer-events: none; }
+        .hero-content { position: relative; z-index: 1; }
+        .hero-content h2 { font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .hero-highlight { background: linear-gradient(135deg, var(--accent-gold), var(--accent-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-subtitle { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 1.5rem; }
+        .hero-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .hero-feature { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; background: var(--bg-primary); border-radius: var(--radius-md); }
+        .hero-feature-icon { font-size: 1.5rem; }
+        .hero-feature strong { display: block; margin-bottom: 0.2rem; }
+        .hero-feature p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; }
+        .hero-cta { font-size: 1rem; padding: 0.85rem 2rem; }
+
+        /* Active Rules Section */
+        .active-rules-section { margin-bottom: 2rem; }
+        .active-rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .active-rule-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; border-left: 4px solid var(--accent-green); display: flex; align-items: center; gap: 1rem; }
+        .active-rule-card.disabled { border-left-color: var(--text-muted); opacity: 0.6; }
+        .active-rule-icon { font-size: 1.5rem; }
+        .active-rule-info { flex: 1; }
+        .active-rule-info h4 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .active-rule-info p { font-size: 0.8rem; color: var(--text-secondary); margin: 0; }
+        .active-rule-status { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); background: var(--accent-green); color: #000; font-weight: 600; }
+        .active-rule-status.paused { background: var(--text-muted); color: white; }
+        .no-rules-msg { grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--bg-card); border-radius: var(--radius-md); color: var(--text-secondary); }
+
+        /* Smart Rules Section */
+        .smart-rules-section { margin-bottom: 2rem; }
+        .section-subtitle { font-size: 0.85rem; color: var(--text-muted); }
+        .smart-rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .smart-rule-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; border: 1px solid transparent; transition: var(--transition-smooth); }
+        .smart-rule-card:hover { border-color: var(--accent-primary); transform: translateY(-2px); box-shadow: var(--glow-primary); }
+        .smart-rule-card.ai-rule-card { background: linear-gradient(135deg, var(--bg-card) 0%, color-mix(in srgb, var(--accent-primary) 10%, var(--bg-card)) 100%); border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent); }
+        .smart-rule-card.ai-rule-card:hover { border-color: var(--accent-primary); }
+        .smart-rule-icon { font-size: 2rem; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: var(--bg-tertiary); border-radius: var(--radius-md); }
+        .smart-rule-info { flex: 1; }
+        .smart-rule-info h4 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .smart-rule-info p { font-size: 0.8rem; color: var(--text-secondary); margin: 0; }
+        .smart-rule-add { font-size: 0.8rem; color: var(--accent-primary); font-weight: 600; white-space: nowrap; }
+        .ai-badge { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); }
+
+        /* AI Rule Builder Modal */
+        .ai-chat-container { background: var(--bg-primary); border-radius: var(--radius-md); padding: 1rem; min-height: 200px; max-height: 300px; overflow-y: auto; margin-bottom: 1rem; }
+        .ai-message { margin-bottom: 1rem; }
+        .ai-message.assistant { padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-md); border-left: 3px solid var(--accent-primary); }
+        .ai-message.user { padding: 0.75rem; background: color-mix(in srgb, var(--accent-primary) 10%, transparent); border-radius: var(--radius-md); margin-left: 2rem; }
+        .ai-input-row { display: flex; gap: 0.5rem; }
+        .ai-input-row input { flex: 1; }
+        .ai-suggestions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .ai-suggestion { padding: 0.4rem 0.8rem; background: var(--bg-tertiary); border-radius: var(--radius-lg); font-size: 0.8rem; cursor: pointer; transition: var(--transition-fast); border: 1px solid transparent; }
+        .ai-suggestion:hover { border-color: var(--accent-primary); background: var(--bg-card); }
+        .ai-generated-rule { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem; border: 1px solid var(--accent-green); }
+        .ai-generated-rule h4 { color: var(--accent-green); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .ai-rule-preview { font-size: 0.85rem; color: var(--text-secondary); }
+        
+        /* Wizard Styles */
+        .wizard-quick-input { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--bg-tertiary); }
+        .wizard-suggestions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; min-height: 30px; }
+        .wizard-suggestion { padding: 0.4rem 0.8rem; background: var(--accent-primary); color: white; border-radius: var(--radius-lg); font-size: 0.8rem; cursor: pointer; animation: fadeIn 0.2s ease; }
+        .wizard-suggestion:hover { transform: scale(1.05); }
+        .wizard-steps { }
+        .wizard-step { display: none; animation: fadeIn 0.3s ease; }
+        .wizard-step.active { display: block; }
+        .wizard-step h4 { margin-bottom: 1rem; color: var(--text-primary); }
+        .wizard-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
+        .wizard-option { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1rem; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-md); cursor: pointer; transition: var(--transition-smooth); font-family: var(--font-body); font-size: 0.9rem; color: var(--text-primary); }
+        .wizard-option:hover { border-color: var(--accent-primary); background: var(--bg-card); }
+        .wizard-option.selected { border-color: var(--accent-gold); background: color-mix(in srgb, var(--accent-gold) 10%, var(--bg-card)); }
+        .wizard-option span { font-size: 1.5rem; }
+        .wizard-config { display: flex; flex-direction: column; gap: 1rem; }
+        .wizard-filters { margin-top: 1rem; }
+        .wizard-preview { margin-top: 1.5rem; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md); border: 2px solid var(--accent-green); }
+        .wizard-preview h4 { color: var(--accent-green); margin-bottom: 0.75rem; }
+        .wizard-preview-content { font-size: 0.9rem; }
+        .wizard-preview-content p { margin: 0.3rem 0; }
+        .wizard-preview-content strong { color: var(--accent-gold); }
     </style>
 </head>
 <body>
@@ -383,6 +482,101 @@
                 <div class="stat-card"><div class="stat-label">Biggest Gainer</div><div class="stat-value" id="statSpike">--</div></div>
                 <div class="stat-card"><div class="stat-label">Biggest Drop</div><div class="stat-value" id="statDrop">--</div></div>
             </div>
+            
+            <!-- Hero Welcome Section (for new users) -->
+            <section class="hero-section" id="heroSection">
+                <div class="hero-content">
+                    <h2>Welcome to <span class="hero-highlight">MTG Price Oracle</span></h2>
+                    <p class="hero-subtitle">Track card prices, set smart alerts, and never miss a deal again.</p>
+                    <div class="hero-features">
+                        <div class="hero-feature"><span class="hero-feature-icon">👁️</span><div><strong>Watch Cards</strong><p>Track prices of any Magic card</p></div></div>
+                        <div class="hero-feature"><span class="hero-feature-icon">🔔</span><div><strong>Smart Alerts</strong><p>Get notified on price changes</p></div></div>
+                        <div class="hero-feature"><span class="hero-feature-icon">📈</span><div><strong>Spot Trends</strong><p>Find spikes, drops & specs</p></div></div>
+                        <div class="hero-feature"><span class="hero-feature-icon">🤖</span><div><strong>AI-Powered</strong><p>Let AI build complex rules</p></div></div>
+                    </div>
+                    <button class="btn btn-gold hero-cta" onclick="document.getElementById('heroSection').style.display='none';State.settings.hideHero=true;State.save();">Get Started →</button>
+                </div>
+            </section>
+            
+            <!-- Your Active Rules -->
+            <section class="active-rules-section" id="activeRulesSection">
+                <div class="section-header">
+                    <h2 class="section-title">🔔 Your Active Rules</h2>
+                    <button class="btn btn-secondary" onclick="switchPage('alerts')" style="padding:0.4rem 0.8rem;font-size:0.85rem;">Manage All</button>
+                </div>
+                <div class="active-rules-grid" id="activeRulesGrid">
+                    <div class="no-rules-msg" id="noRulesMsg">
+                        <p>No alert rules yet. Create one to get notified about price changes!</p>
+                        <button class="btn btn-primary" onclick="openAlertModal()" style="margin-top:0.5rem;">+ Create Your First Rule</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Smart Rule Templates -->
+            <section class="smart-rules-section">
+                <div class="section-header">
+                    <h2 class="section-title">🤖 Smart Rule Templates</h2>
+                    <span class="section-subtitle">One-click rules to get you started</span>
+                </div>
+                <div class="smart-rules-grid" id="smartRulesGrid">
+                    <div class="smart-rule-card" onclick="addSmartRule('commander_staples')">
+                        <div class="smart-rule-icon">🏰</div>
+                        <div class="smart-rule-info">
+                            <h4>Commander Staples Watch</h4>
+                            <p>Alert when popular EDH cards drop 15%+</p>
+                        </div>
+                        <span class="smart-rule-add">+ Add</span>
+                    </div>
+                    <div class="smart-rule-card" onclick="addSmartRule('reserved_list')">
+                        <div class="smart-rule-icon">💰</div>
+                        <div class="smart-rule-info">
+                            <h4>Reserved List Tracker</h4>
+                            <p>Track RL cards with steady gains over 30 days</p>
+                        </div>
+                        <span class="smart-rule-add">+ Add</span>
+                    </div>
+                    <div class="smart-rule-card" onclick="addSmartRule('reprint_alert')">
+                        <div class="smart-rule-icon">🔄</div>
+                        <div class="smart-rule-info">
+                            <h4>Reprint Price Drop</h4>
+                            <p>Alert when $10+ cards get reprinted</p>
+                        </div>
+                        <span class="smart-rule-add">+ Add</span>
+                    </div>
+                    <div class="smart-rule-card" onclick="addSmartRule('budget_gems')">
+                        <div class="smart-rule-icon">💎</div>
+                        <div class="smart-rule-info">
+                            <h4>Budget Gems Rising</h4>
+                            <p>Uncommons/commons over $1 gaining 20%+</p>
+                        </div>
+                        <span class="smart-rule-add">+ Add</span>
+                    </div>
+                    <div class="smart-rule-card" onclick="addSmartRule('spec_targets')">
+                        <div class="smart-rule-icon">📈</div>
+                        <div class="smart-rule-info">
+                            <h4>Spec Targets</h4>
+                            <p>Cards with steady increase over 14 days</p>
+                        </div>
+                        <span class="smart-rule-add">+ Add</span>
+                    </div>
+                    <div class="smart-rule-card" onclick="addSmartRule('mythic_crash')">
+                        <div class="smart-rule-icon">📉</div>
+                        <div class="smart-rule-info">
+                            <h4>Mythic Crash Alert</h4>
+                            <p>Mythics that drop 25%+ suddenly</p>
+                        </div>
+                        <span class="smart-rule-add">+ Add</span>
+                    </div>
+                    <div class="smart-rule-card ai-rule-card" onclick="openSmartWizard()">
+                        <div class="smart-rule-icon">🧙</div>
+                        <div class="smart-rule-info">
+                            <h4>Smart Rule Wizard</h4>
+                            <p>Build custom rules step-by-step</p>
+                        </div>
+                        <span class="smart-rule-add ai-badge">NEW ✨</span>
+                    </div>
+                </div>
+            </section>
             
             <div class="section-header"><h2 class="section-title">📈 Market Categories</h2></div>
             <div class="category-grid" id="categoryGrid">
@@ -498,11 +692,88 @@
                     <h3 class="settings-section-title"><span>💰</span> Display</h3>
                     <div class="settings-row"><div class="settings-label">Currency</div><select class="form-input form-select" style="width:auto;" id="currencySelect" onchange="saveSetting('currency',this.value)"><option value="usd">USD ($)</option><option value="eur">EUR (€)</option></select></div>
                 </div>
+                
+                <!-- Dashboard Customization -->
+                <div class="settings-section" style="grid-column: 1 / -1;">
+                    <h3 class="settings-section-title"><span>🏠</span> Dashboard Layout</h3>
+                    <p style="color:var(--text-secondary);margin-bottom:1rem;">Customize what appears on your homepage. Drag to reorder, toggle to show/hide.</p>
+                    
+                    <div class="dashboard-config">
+                        <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:var(--text-secondary);">📊 Market Categories</h4>
+                        <div class="config-list" id="configCategories">
+                            <div class="config-item" data-id="mythic"><span class="config-drag">☰</span><span class="config-icon">🔥</span><span class="config-name">Hot Mythics</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('mythic',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="rare"><span class="config-drag">☰</span><span class="config-icon">⭐</span><span class="config-name">Hot Rares</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('rare',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="uncommon"><span class="config-drag">☰</span><span class="config-icon">💎</span><span class="config-name">Hot Uncommons</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('uncommon',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="drops"><span class="config-drag">☰</span><span class="config-icon">📉</span><span class="config-name">Price Drops</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('drops',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="reprints"><span class="config-drag">☰</span><span class="config-icon">🔄</span><span class="config-name">Reprints</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('reprints',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="reserved"><span class="config-drag">☰</span><span class="config-icon">💰</span><span class="config-name">Reserved List</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('reserved',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                        </div>
+                        
+                        <h4 style="font-size:0.9rem;margin:1.5rem 0 0.75rem;color:var(--text-secondary);">🎯 Function Categories</h4>
+                        <div class="config-list" id="configFunctions">
+                            <div class="config-item" data-id="ramp"><span class="config-drag">☰</span><span class="config-icon">🌱</span><span class="config-name">Ramp</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('ramp',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="removal"><span class="config-drag">☰</span><span class="config-icon">💀</span><span class="config-name">Removal</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('removal',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="draw"><span class="config-drag">☰</span><span class="config-icon">🎴</span><span class="config-name">Card Draw</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('draw',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="protection"><span class="config-drag">☰</span><span class="config-icon">🛡️</span><span class="config-name">Protection</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('protection',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="wipes"><span class="config-drag">☰</span><span class="config-icon">💥</span><span class="config-name">Board Wipes</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('wipes',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                            <div class="config-item" data-id="tutor"><span class="config-drag">☰</span><span class="config-icon">🔍</span><span class="config-name">Tutors</span><label class="alert-toggle"><input type="checkbox" checked onchange="toggleDashboardItem('tutor',this.checked)"><span class="alert-toggle-slider"></span></label></div>
+                        </div>
+                        
+                        <h4 style="font-size:0.9rem;margin:1.5rem 0 0.75rem;color:var(--text-secondary);">📌 Pinned Sets (show on dashboard)</h4>
+                        <div class="pinned-sets" id="pinnedSets">
+                            <p style="color:var(--text-muted);font-size:0.85rem;" id="noPinnedSets">No pinned sets. Browse sets and click ⭐ to pin.</p>
+                        </div>
+                        <div class="form-group" style="margin-top:0.75rem;">
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" class="form-input" id="pinSetInput" placeholder="Enter set code (e.g., MKM, OTJ)" style="flex:1;">
+                                <button class="btn btn-secondary" onclick="pinSet()">+ Pin Set</button>
+                            </div>
+                        </div>
+                        
+                        <h4 style="font-size:0.9rem;margin:1.5rem 0 0.75rem;color:var(--text-secondary);">⭐ Pinned Cards (show on dashboard)</h4>
+                        <div class="pinned-cards" id="pinnedCards">
+                            <p style="color:var(--text-muted);font-size:0.85rem;" id="noPinnedCards">No pinned cards. Add cards from your watchlist!</p>
+                        </div>
+                        <div class="form-group" style="margin-top:0.75rem;">
+                            <select class="form-input form-select" id="pinCardSelect" style="flex:1;">
+                                <option value="">Select from watchlist...</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="pinCard()" style="margin-top:0.5rem;">+ Pin Card</button>
+                        </div>
+                        
+                        <h4 style="font-size:0.9rem;margin:1.5rem 0 0.75rem;color:var(--text-secondary);">💰 Default Price Filters</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Min Price to Show</label>
+                                <select class="form-input form-select" id="defaultMinPrice" onchange="saveSetting('defaultMinPrice',this.value)">
+                                    <option value="0">$0+ (all)</option>
+                                    <option value="0.5">$0.50+</option>
+                                    <option value="1">$1+</option>
+                                    <option value="5">$5+</option>
+                                    <option value="10">$10+</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Default Format</label>
+                                <select class="form-input form-select" id="defaultFormat" onchange="saveSetting('defaultFormat',this.value)">
+                                    <option value="">All Formats</option>
+                                    <option value="standard">Standard</option>
+                                    <option value="modern">Modern</option>
+                                    <option value="pioneer">Pioneer</option>
+                                    <option value="commander">Commander</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
+    
+    <!-- Customize Dashboard Button (shows when logged in) -->
+    <button class="customize-btn" id="customizeBtn" onclick="switchPage('settings');document.querySelector('.settings-section:last-child').scrollIntoView({behavior:'smooth'});">⚙️ Customize Dashboard</button>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -524,7 +795,7 @@
     <!-- Advanced Alert Modal -->
     <div class="modal-overlay" id="alertModal">
         <div class="modal wide">
-            <div class="modal-header"><h3 class="modal-title" id="alertModalTitle">Create Alert Rule</h3><button class="modal-close" onclick="closeModal('alertModal')">✕</button></div>
+            <div class="modal-header"><h3 class="modal-title" id="alertModalTitle">Create Alert Rule</h3><button class="btn btn-secondary" onclick="closeModal('alertModal');openSmartWizard();" style="margin-right:auto;margin-left:1rem;padding:0.4rem 0.8rem;font-size:0.8rem;">🧙 Use Wizard</button><button class="modal-close" onclick="closeModal('alertModal')">✕</button></div>
             <div class="modal-body">
                 <form id="alertForm">
                     <div class="form-group">
@@ -715,6 +986,96 @@
     <div class="modal-overlay" id="cardModal">
         <div class="modal" style="max-width:700px;"><div class="modal-header"><h3 class="modal-title" id="cardModalTitle">Card</h3><button class="modal-close" onclick="closeModal('cardModal')">✕</button></div><div class="modal-body" id="cardModalBody"></div></div>
     </div>
+    
+    <!-- Smart Rule Wizard Modal (No API needed!) -->
+    <div class="modal-overlay" id="aiRuleModal">
+        <div class="modal wide">
+            <div class="modal-header">
+                <h3 class="modal-title">🧙 Smart Rule Wizard</h3>
+                <button class="modal-close" onclick="closeModal('aiRuleModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Quick Input -->
+                <div class="wizard-quick-input">
+                    <p style="color:var(--text-secondary);margin-bottom:0.75rem;">Describe what you want, or use the wizard below:</p>
+                    <div class="ai-input-row">
+                        <input type="text" class="form-input" id="wizardInput" placeholder="e.g., mythics dropping 20%, commander staples under $10..." onkeyup="parseWizardInput(this.value)">
+                    </div>
+                    <div class="wizard-suggestions" id="wizardSuggestions"></div>
+                </div>
+                
+                <!-- Step Wizard -->
+                <div class="wizard-steps" id="wizardSteps">
+                    <div class="wizard-step active" data-step="1">
+                        <h4>1️⃣ What do you want to track?</h4>
+                        <div class="wizard-options" id="wizardScope">
+                            <button class="wizard-option" onclick="setWizardScope('watchlist')"><span>👁️</span>My Watchlist</button>
+                            <button class="wizard-option" onclick="setWizardScope('rarity')"><span>💎</span>By Rarity</button>
+                            <button class="wizard-option" onclick="setWizardScope('format')"><span>🎮</span>By Format</button>
+                            <button class="wizard-option" onclick="setWizardScope('set')"><span>📦</span>Specific Set</button>
+                            <button class="wizard-option" onclick="setWizardScope('type')"><span>🃏</span>Card Type</button>
+                            <button class="wizard-option" onclick="setWizardScope('all')"><span>🌍</span>All Cards</button>
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-step" data-step="2">
+                        <h4>2️⃣ What triggers the alert?</h4>
+                        <div class="wizard-options" id="wizardTrigger">
+                            <button class="wizard-option" onclick="setWizardTrigger('price_below')"><span>📉</span>Price Drops Below $X</button>
+                            <button class="wizard-option" onclick="setWizardTrigger('price_above')"><span>📈</span>Price Rises Above $X</button>
+                            <button class="wizard-option" onclick="setWizardTrigger('pct_down')"><span>💥</span>Drops by X%</button>
+                            <button class="wizard-option" onclick="setWizardTrigger('pct_up')"><span>🚀</span>Rises by X%</button>
+                            <button class="wizard-option" onclick="setWizardTrigger('steady_up')"><span>📊</span>Steady Gains Over Time</button>
+                            <button class="wizard-option" onclick="setWizardTrigger('crash')"><span>⚡</span>Sudden Crash (25%+)</button>
+                            <button class="wizard-option" onclick="setWizardTrigger('spike')"><span>🔥</span>Sudden Spike (25%+)</button>
+                            <button class="wizard-option" onclick="setWizardTrigger('reprint')"><span>🔄</span>Gets Reprinted</button>
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-step" data-step="3">
+                        <h4>3️⃣ Configure Details</h4>
+                        <div class="wizard-config" id="wizardConfig">
+                            <!-- Dynamically filled -->
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-step" data-step="4">
+                        <h4>4️⃣ Optional Filters</h4>
+                        <div class="wizard-filters">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Min Price</label>
+                                    <input type="number" class="form-input" id="wizardMinPrice" placeholder="0" step="0.5">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Max Price</label>
+                                    <input type="number" class="form-input" id="wizardMaxPrice" placeholder="No limit" step="0.5">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Exclude</label>
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item"><input type="checkbox" id="wizardExcludeLand" checked> Lands</label>
+                                    <label class="checkbox-item"><input type="checkbox" id="wizardExcludePromo"> Promos</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview -->
+                <div class="wizard-preview" id="wizardPreview" style="display:none;">
+                    <h4>✅ Your Rule</h4>
+                    <div class="wizard-preview-content" id="wizardPreviewContent"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('aiRuleModal')">Cancel</button>
+                <button class="btn btn-secondary" id="wizardBackBtn" onclick="wizardBack()" style="display:none;">← Back</button>
+                <button class="btn btn-gold" id="wizardCreateBtn" onclick="createWizardRule()" style="display:none;">🔔 Create Rule</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const firebaseConfig={apiKey:"AIzaSyBjwMNNj6k2kzCJNNh6jMLd2vvUN8NUhuE",authDomain:"mtg-decklist-app.firebaseapp.com",projectId:"mtg-decklist-app",storageBucket:"mtg-decklist-app.firebasestorage.app",messagingSenderId:"948508221922",appId:"1:948508221922:web:367f67f7109c92a99799bb"};
@@ -731,9 +1092,9 @@
             sets:()=>API.req('/sets')
         };
 
-        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,
-            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;},
-            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
+        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,defaultMinPrice:'0',defaultFormat:''},dashboard:{categories:{mythic:true,rare:true,uncommon:true,drops:true,reprints:true,reserved:true},functions:{ramp:true,removal:true,draw:true,protection:true,wipes:true,tutor:true},pinnedSets:[],pinnedCards:[]},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,
+            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.settings={...this.settings,...d.settings};this.dashboard={...this.dashboard,...d.dashboard};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.settings={...this.settings,...d.settings};this.dashboard={...this.dashboard,...d.dashboard};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;if(document.getElementById('defaultMinPrice'))document.getElementById('defaultMinPrice').value=this.settings.defaultMinPrice||'0';if(document.getElementById('defaultFormat'))document.getElementById('defaultFormat').value=this.settings.defaultFormat||'';applyDashboardSettings();},
+            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,settings:this.settings,dashboard:this.dashboard};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
         };
 
         // Utilities
@@ -754,7 +1115,7 @@
         async function handleAuth(){const email=document.getElementById('authEmail').value,pass=document.getElementById('authPassword').value,mode=document.getElementById('authForm').dataset.mode,err=document.getElementById('authError');if(!auth){err.textContent='Firebase not configured';err.style.display='block';return;}try{if(mode==='login')await auth.signInWithEmailAndPassword(email,pass);else await auth.createUserWithEmailAndPassword(email,pass);closeModal('authModal');showToast('Signed in!','success');}catch(e){err.textContent=e.message;err.style.display='block';}}
         async function handlePasswordReset(e){e.preventDefault();const email=document.getElementById('authEmail').value;if(!email){showToast('Enter email','warning');return;}try{await auth.sendPasswordResetEmail(email);showToast('Reset email sent!','success');}catch(e){showToast(e.message,'error');}}
         function handleSignOut(){if(auth)auth.signOut();currentUser=null;updateAuthUI();showToast('Signed out','info');}
-        function updateAuthUI(){const s=document.getElementById('authSection'),a=document.getElementById('accountSettings');if(currentUser){s.innerHTML='<div class="user-avatar" onclick="handleSignOut()" title="Sign Out">'+currentUser.email[0].toUpperCase()+'</div>';a.innerHTML='<div class="settings-row"><div class="settings-label">'+currentUser.email+'</div><button class="btn btn-secondary" onclick="handleSignOut()">Sign Out</button></div>';}else{s.innerHTML='<button class="nav-btn nav-btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';a.innerHTML='<p style="color:var(--text-secondary)">Sign in to sync.</p><br><button class="btn btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';}}
+        function updateAuthUI(){const s=document.getElementById('authSection'),a=document.getElementById('accountSettings'),customBtn=document.getElementById('customizeBtn');if(customBtn)customBtn.classList.add('visible');if(currentUser){s.innerHTML='<div class="user-avatar" onclick="handleSignOut()" title="Sign Out">'+currentUser.email[0].toUpperCase()+'</div>';a.innerHTML='<div class="settings-row"><div class="settings-label">'+currentUser.email+'</div><button class="btn btn-secondary" onclick="handleSignOut()">Sign Out</button></div>';}else{s.innerHTML='<button class="nav-btn nav-btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';a.innerHTML='<p style="color:var(--text-secondary)">Sign in to sync.</p><br><button class="btn btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';}}
 
         // Price helper
         function getPrice(c){const p=c.prices||{};if(p.usd&&parseFloat(p.usd)>0)return{val:'$'+p.usd,num:parseFloat(p.usd),type:''};if(p.usd_foil&&parseFloat(p.usd_foil)>0)return{val:'$'+p.usd_foil,num:parseFloat(p.usd_foil),type:'foil'};if(p.usd_etched&&parseFloat(p.usd_etched)>0)return{val:'$'+p.usd_etched,num:parseFloat(p.usd_etched),type:'etched'};if(p.eur&&parseFloat(p.eur)>0)return{val:'€'+p.eur,num:parseFloat(p.eur),type:'EUR'};return{val:'N/A',num:0,type:''};}
@@ -814,13 +1175,342 @@
         function toggleAlert(id){const a=State.alerts.find(x=>x.id===id);if(a){a.enabled=!a.enabled;State.save();updateStats();}}
         function deleteAlert(id){State.alerts=State.alerts.filter(a=>a.id!==id);State.save();renderAlerts();updateStats();showToast('Deleted','info');}
 
-        function updateStats(){document.getElementById('statTracked').textContent=State.watchlist.length;document.getElementById('statAlerts').textContent=State.alerts.filter(a=>a.enabled).length;}
+        function updateStats(){document.getElementById('statTracked').textContent=State.watchlist.length;document.getElementById('statAlerts').textContent=State.alerts.filter(a=>a.enabled).length;renderActiveRules();}
+
+        // Render active rules on dashboard
+        function renderActiveRules(){
+            const grid=document.getElementById('activeRulesGrid');
+            const noMsg=document.getElementById('noRulesMsg');
+            const enabledAlerts=State.alerts.filter(a=>a.enabled).slice(0,6);
+            
+            if(enabledAlerts.length===0){
+                grid.innerHTML='<div class="no-rules-msg" id="noRulesMsg"><p>No alert rules yet. Create one to get notified about price changes!</p><button class="btn btn-primary" onclick="openAlertModal()" style="margin-top:0.5rem;">+ Create Your First Rule</button></div>';
+                return;
+            }
+            
+            const typeIcons={price_above:'💵',price_below:'💸',pct_up:'📈',pct_down:'📉',steady_up:'📊',steady_down:'📉',reprint:'🔄',spike:'⚡',crash:'💥'};
+            grid.innerHTML=enabledAlerts.map(a=>`<div class="active-rule-card"><span class="active-rule-icon">${typeIcons[a.type]||'🔔'}</span><div class="active-rule-info"><h4>${a.name}</h4><p>${a.scope==='watchlist'?'Watchlist':a.scope==='specific'?a.filters?.cardName||'Card':a.scope}</p></div><span class="active-rule-status">Active</span></div>`).join('')+(State.alerts.length>6?`<div class="active-rule-card" onclick="switchPage('alerts')" style="cursor:pointer;justify-content:center;"><span style="color:var(--text-secondary);">+${State.alerts.length-6} more rules →</span></div>`:'');
+        }
+
+        // Smart Rule Templates
+        const smartRuleTemplates={
+            commander_staples:{name:'Commander Staples Watch',type:'pct_down',threshold:15,scope:'custom',filters:{rarities:['mythic','rare'],format:'commander',minPrice:5,exclude:['land']}},
+            reserved_list:{name:'Reserved List Tracker',type:'steady_up',threshold:10,timeframe:'30',scope:'custom',filters:{rarities:['mythic','rare','uncommon'],minPrice:20,exclude:['land']}},
+            reprint_alert:{name:'Reprint Price Drop Alert',type:'reprint',scope:'custom',filters:{rarities:['mythic','rare'],minPrice:10,exclude:['land']}},
+            budget_gems:{name:'Budget Gems Rising',type:'pct_up',threshold:20,scope:'custom',filters:{rarities:['uncommon','common'],minPrice:1,maxPrice:5,exclude:['land']}},
+            spec_targets:{name:'Spec Targets',type:'steady_up',threshold:10,timeframe:'14',scope:'custom',filters:{rarities:['mythic','rare'],minPrice:2,maxPrice:20,exclude:['land']}},
+            mythic_crash:{name:'Mythic Crash Alert',type:'crash',scope:'custom',filters:{rarities:['mythic'],minPrice:5,exclude:['land']}}
+        };
+        
+        function addSmartRule(templateId){
+            const template=smartRuleTemplates[templateId];
+            if(!template){showToast('Template not found','error');return;}
+            
+            // Check if similar rule exists
+            if(State.alerts.some(a=>a.name===template.name)){
+                showToast('You already have this rule!','warning');
+                return;
+            }
+            
+            State.alerts.push({
+                id:Date.now().toString(),
+                ...template,
+                enabled:true,
+                created:new Date().toISOString(),
+                source:'template'
+            });
+            State.save();
+            showToast(`"${template.name}" rule added!`,'success');
+            updateStats();
+        }
+
+        // ========== SMART WIZARD (No API needed - works offline!) ==========
+        let wizardState = { scope: null, scopeValue: null, trigger: null, threshold: null, timeframe: null, filters: { rarities: [], minPrice: null, maxPrice: null, exclude: ['land'] } };
+        
+        function openSmartWizard() {
+            wizardState = { scope: null, scopeValue: null, trigger: null, threshold: null, timeframe: null, filters: { rarities: [], minPrice: null, maxPrice: null, exclude: ['land'] } };
+            document.getElementById('wizardInput').value = '';
+            document.getElementById('wizardSuggestions').innerHTML = '';
+            document.getElementById('wizardPreview').style.display = 'none';
+            document.getElementById('wizardCreateBtn').style.display = 'none';
+            document.getElementById('wizardBackBtn').style.display = 'none';
+            document.querySelectorAll('.wizard-step').forEach((s,i) => s.classList.toggle('active', i === 0));
+            document.querySelectorAll('.wizard-option').forEach(o => o.classList.remove('selected'));
+            document.getElementById('wizardConfig').innerHTML = '';
+            openModal('aiRuleModal');
+        }
+        
+        // Local keyword parser - works 100% offline!
+        function parseWizardInput(text) {
+            const suggestions = document.getElementById('wizardSuggestions');
+            if (text.length < 3) { suggestions.innerHTML = ''; return; }
+            const lower = text.toLowerCase();
+            const parsed = { scope: null, trigger: null, threshold: null, rarities: [], format: null, minPrice: null, maxPrice: null };
+            
+            // Scope detection
+            if (lower.includes('watchlist') || lower.includes('my cards')) parsed.scope = 'watchlist';
+            
+            // Rarity detection
+            if (lower.includes('mythic')) parsed.rarities.push('mythic');
+            if (lower.includes('rare') && !lower.includes('rarity')) parsed.rarities.push('rare');
+            if (lower.includes('uncommon')) parsed.rarities.push('uncommon');
+            if (lower.includes('common') && !lower.includes('uncommon')) parsed.rarities.push('common');
+            
+            // Format detection
+            if (lower.includes('commander') || lower.includes('edh')) parsed.format = 'commander';
+            else if (lower.includes('standard')) parsed.format = 'standard';
+            else if (lower.includes('modern')) parsed.format = 'modern';
+            else if (lower.includes('pioneer')) parsed.format = 'pioneer';
+            else if (lower.includes('legacy')) parsed.format = 'legacy';
+            else if (lower.includes('pauper')) parsed.format = 'pauper';
+            
+            // Trigger detection
+            if (lower.includes('drop') || lower.includes('fall') || lower.includes('crash') || lower.includes('tank') || lower.includes('down')) {
+                parsed.trigger = (lower.includes('crash') || lower.includes('sudden') || lower.includes('tank')) ? 'crash' : 'pct_down';
+            } else if (lower.includes('rise') || lower.includes('gain') || lower.includes('increas') || lower.includes('spike') || lower.includes('up')) {
+                if (lower.includes('spike') || lower.includes('sudden')) parsed.trigger = 'spike';
+                else if (lower.includes('steady') || lower.includes('over time') || lower.includes('week') || lower.includes('day')) parsed.trigger = 'steady_up';
+                else parsed.trigger = 'pct_up';
+            }
+            if (lower.includes('below') || lower.includes('under') || lower.includes('less than')) parsed.trigger = 'price_below';
+            if (lower.includes('above') || lower.includes('over') && !lower.includes('over time')) parsed.trigger = 'price_above';
+            if (lower.includes('reprint')) parsed.trigger = 'reprint';
+            
+            // Number extraction
+            const priceMatch = lower.match(/\$(\d+(?:\.\d+)?)/);
+            const pctMatch = lower.match(/(\d+)\s*%/);
+            if (priceMatch) parsed.threshold = parseFloat(priceMatch[1]);
+            if (pctMatch) parsed.threshold = parseInt(pctMatch[1]);
+            
+            // Price range
+            const underMatch = lower.match(/under\s*\$?(\d+)/);
+            const overMatch = lower.match(/over\s*\$?(\d+)/);
+            if (underMatch) parsed.maxPrice = parseFloat(underMatch[1]);
+            if (overMatch) parsed.minPrice = parseFloat(overMatch[1]);
+            
+            // Generate suggestion
+            if (parsed.trigger || parsed.rarities.length || parsed.format) {
+                const parts = [];
+                if (parsed.rarities.length) parts.push(parsed.rarities.join('/'));
+                if (parsed.format) parts.push(parsed.format);
+                const triggers = { pct_down: 'dropping', pct_up: 'rising', price_below: 'under $'+(parsed.threshold||'X'), price_above: 'over $'+(parsed.threshold||'X'), steady_up: 'steady gains', crash: 'crashing', spike: 'spiking', reprint: 'reprints' };
+                if (parsed.trigger) parts.push(triggers[parsed.trigger] || parsed.trigger);
+                if (parsed.threshold && (parsed.trigger?.includes('pct') || parsed.trigger?.includes('steady'))) parts.push(parsed.threshold + '%');
+                
+                suggestions.innerHTML = `<div class="wizard-suggestion" onclick='applyParsedRule(${JSON.stringify(parsed)})'>${parts.join(' ')} → Click to create</div>`;
+            } else if (text.length > 5) {
+                suggestions.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">Keep typing or use wizard below...</span>';
+            } else {
+                suggestions.innerHTML = '';
+            }
+        }
+        
+        function applyParsedRule(parsed) {
+            if (parsed.scope) wizardState.scope = parsed.scope;
+            else if (parsed.format) { wizardState.scope = 'format'; wizardState.scopeValue = parsed.format; wizardState.filters.format = parsed.format; }
+            else if (parsed.rarities.length) { wizardState.scope = 'rarity'; wizardState.filters.rarities = parsed.rarities; }
+            else wizardState.scope = 'custom';
+            if (parsed.trigger) wizardState.trigger = parsed.trigger;
+            if (parsed.threshold) wizardState.threshold = parsed.threshold;
+            if (parsed.minPrice) wizardState.filters.minPrice = parsed.minPrice;
+            if (parsed.maxPrice) wizardState.filters.maxPrice = parsed.maxPrice;
+            if (parsed.rarities.length) wizardState.filters.rarities = parsed.rarities;
+            showWizardPreview();
+        }
+        
+        function setWizardScope(scope) {
+            wizardState.scope = scope;
+            document.querySelectorAll('#wizardScope .wizard-option').forEach(o => o.classList.remove('selected'));
+            event.target.closest('.wizard-option')?.classList.add('selected');
+            const configDiv = document.getElementById('wizardConfig');
+            if (scope === 'rarity') {
+                configDiv.innerHTML = `<label class="form-label">Select Rarities</label><div class="checkbox-grid"><label class="checkbox-item"><input type="checkbox" value="mythic" onchange="toggleWizardRarity('mythic')"> Mythic</label><label class="checkbox-item"><input type="checkbox" value="rare" onchange="toggleWizardRarity('rare')"> Rare</label><label class="checkbox-item"><input type="checkbox" value="uncommon" onchange="toggleWizardRarity('uncommon')"> Uncommon</label><label class="checkbox-item"><input type="checkbox" value="common" onchange="toggleWizardRarity('common')"> Common</label></div>`;
+            } else if (scope === 'format') {
+                configDiv.innerHTML = `<label class="form-label">Select Format</label><select class="form-input form-select" onchange="wizardState.scopeValue=this.value;wizardState.filters.format=this.value"><option value="standard">Standard</option><option value="modern">Modern</option><option value="pioneer">Pioneer</option><option value="commander" selected>Commander</option><option value="legacy">Legacy</option><option value="pauper">Pauper</option></select>`;
+                wizardState.scopeValue = 'commander'; wizardState.filters.format = 'commander';
+            } else if (scope === 'set') {
+                configDiv.innerHTML = `<label class="form-label">Set Code</label><input type="text" class="form-input" placeholder="e.g., MKM, OTJ, MH3" onchange="wizardState.scopeValue=this.value">`;
+            } else if (scope === 'type') {
+                configDiv.innerHTML = `<label class="form-label">Card Type</label><select class="form-input form-select" onchange="wizardState.scopeValue=this.value"><option value="creature">Creature</option><option value="instant">Instant</option><option value="sorcery">Sorcery</option><option value="enchantment">Enchantment</option><option value="artifact">Artifact</option><option value="planeswalker">Planeswalker</option></select>`;
+                wizardState.scopeValue = 'creature';
+            } else { configDiv.innerHTML = ''; }
+            goToWizardStep(2);
+        }
+        
+        function toggleWizardRarity(r) { const i = wizardState.filters.rarities.indexOf(r); if (i > -1) wizardState.filters.rarities.splice(i, 1); else wizardState.filters.rarities.push(r); }
+        
+        function setWizardTrigger(trigger) {
+            wizardState.trigger = trigger;
+            document.querySelectorAll('#wizardTrigger .wizard-option').forEach(o => o.classList.remove('selected'));
+            event.target.closest('.wizard-option')?.classList.add('selected');
+            const configDiv = document.getElementById('wizardConfig');
+            let html = configDiv.innerHTML;
+            if (['price_below', 'price_above'].includes(trigger)) {
+                html += `<div class="form-group" style="margin-top:1rem;"><label class="form-label">Price Threshold ($)</label><input type="number" class="form-input" id="wizardThreshold" placeholder="10.00" step="0.5" onchange="wizardState.threshold=parseFloat(this.value)"></div>`;
+            } else if (['pct_up', 'pct_down'].includes(trigger)) {
+                html += `<div class="form-group" style="margin-top:1rem;"><label class="form-label">Percentage Change (%)</label><input type="number" class="form-input" id="wizardThreshold" placeholder="20" onchange="wizardState.threshold=parseFloat(this.value)"></div>`;
+            } else if (['steady_up', 'steady_down'].includes(trigger)) {
+                html += `<div class="form-row" style="margin-top:1rem;"><div class="form-group"><label class="form-label">Min % Change</label><input type="number" class="form-input" id="wizardThreshold" placeholder="10" onchange="wizardState.threshold=parseFloat(this.value)"></div><div class="form-group"><label class="form-label">Over Period</label><select class="form-input form-select" onchange="wizardState.timeframe=this.value"><option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option><option value="60">60 days</option></select></div></div>`;
+                wizardState.timeframe = '14';
+            }
+            configDiv.innerHTML = html;
+            if (['reprint', 'spike', 'crash'].includes(trigger)) goToWizardStep(4);
+            else goToWizardStep(3);
+        }
+        
+        function goToWizardStep(step) {
+            document.querySelectorAll('.wizard-step').forEach((s, i) => s.classList.toggle('active', i === step - 1));
+            document.getElementById('wizardBackBtn').style.display = step > 1 ? 'inline-flex' : 'none';
+            if (step === 4) setTimeout(() => showWizardPreview(), 100);
+        }
+        
+        function wizardBack() {
+            const active = document.querySelector('.wizard-step.active');
+            const cur = parseInt(active?.dataset.step || 1);
+            if (cur > 1) { goToWizardStep(cur - 1); document.getElementById('wizardPreview').style.display = 'none'; document.getElementById('wizardCreateBtn').style.display = 'none'; }
+        }
+        
+        function showWizardPreview() {
+            wizardState.filters.minPrice = parseFloat(document.getElementById('wizardMinPrice')?.value) || wizardState.filters.minPrice;
+            wizardState.filters.maxPrice = parseFloat(document.getElementById('wizardMaxPrice')?.value) || wizardState.filters.maxPrice;
+            wizardState.filters.exclude = [];
+            if (document.getElementById('wizardExcludeLand')?.checked) wizardState.filters.exclude.push('land');
+            if (document.getElementById('wizardExcludePromo')?.checked) wizardState.filters.exclude.push('promo');
+            
+            const triggers = { price_below: 'Price drops below $'+(wizardState.threshold||'?'), price_above: 'Price rises above $'+(wizardState.threshold||'?'), pct_down: 'Drops by '+(wizardState.threshold||'?')+'%', pct_up: 'Rises by '+(wizardState.threshold||'?')+'%', steady_up: 'Steady gains of '+(wizardState.threshold||'?')+'% over '+(wizardState.timeframe||14)+' days', crash: 'Sudden crash (25%+)', spike: 'Sudden spike (25%+)', reprint: 'Gets reprinted' };
+            const scopes = { watchlist: 'Your watchlist', rarity: wizardState.filters.rarities?.join(', ') || 'Selected rarities', format: wizardState.scopeValue || 'Selected format', set: 'Set: '+(wizardState.scopeValue||'?'), type: 'Type: '+(wizardState.scopeValue||'?'), all: 'All cards', custom: 'Custom filter' };
+            
+            const content = document.getElementById('wizardPreviewContent');
+            content.innerHTML = `<p><strong>Trigger:</strong> ${triggers[wizardState.trigger]||'Not set'}</p><p><strong>Applies to:</strong> ${scopes[wizardState.scope]||'Not set'}</p>${wizardState.filters.minPrice?`<p><strong>Min price:</strong> $${wizardState.filters.minPrice}</p>`:''}${wizardState.filters.maxPrice?`<p><strong>Max price:</strong> $${wizardState.filters.maxPrice}</p>`:''}${wizardState.filters.exclude?.length?`<p><strong>Excluding:</strong> ${wizardState.filters.exclude.join(', ')}</p>`:''}`;
+            document.getElementById('wizardPreview').style.display = 'block';
+            document.getElementById('wizardCreateBtn').style.display = 'inline-flex';
+        }
+        
+        function createWizardRule() {
+            if (!wizardState.trigger) { showToast('Please select a trigger', 'warning'); return; }
+            const parts = [];
+            if (wizardState.filters.rarities?.length) parts.push(wizardState.filters.rarities.join('/'));
+            if (wizardState.filters.format) parts.push(wizardState.filters.format);
+            if (wizardState.scopeValue && wizardState.scope !== 'format') parts.push(wizardState.scopeValue);
+            const names = { pct_down: 'Drop', pct_up: 'Rise', price_below: 'Under', price_above: 'Over', steady_up: 'Gains', crash: 'Crash', spike: 'Spike', reprint: 'Reprint' };
+            parts.push(names[wizardState.trigger] || 'Alert');
+            if (wizardState.threshold) parts.push(wizardState.trigger.includes('pct') || wizardState.trigger.includes('steady') ? wizardState.threshold+'%' : '$'+wizardState.threshold);
+            
+            const rule = {
+                id: Date.now().toString(),
+                name: parts.join(' ') + ' Alert',
+                type: wizardState.trigger,
+                threshold: wizardState.threshold,
+                timeframe: wizardState.timeframe,
+                scope: wizardState.scope === 'watchlist' ? 'watchlist' : 'custom',
+                filters: { ...wizardState.filters, sets: wizardState.scope === 'set' ? [wizardState.scopeValue] : null, types: wizardState.scope === 'type' ? [wizardState.scopeValue] : null },
+                enabled: true,
+                created: new Date().toISOString(),
+                source: 'wizard'
+            };
+            State.alerts.push(rule);
+            State.save();
+            closeModal('aiRuleModal');
+            showToast(`"${rule.name}" created!`, 'success');
+            updateStats();
+        }
+        
+        // Hide hero section if user has activity
+        function checkHeroVisibility(){
+            if(State.settings.hideHero || State.watchlist.length > 0 || State.alerts.length > 0){
+                const hero = document.getElementById('heroSection');
+                if (hero) hero.style.display='none';
+            }
+        }
+
+        // Dashboard customization
+        function toggleDashboardItem(id,visible){if(State.dashboard.categories[id]!==undefined)State.dashboard.categories[id]=visible;else if(State.dashboard.functions[id]!==undefined)State.dashboard.functions[id]=visible;State.save();applyDashboardSettings();}
+        
+        function applyDashboardSettings(){
+            // Apply category visibility
+            document.querySelectorAll('#categoryGrid .category-card').forEach(card=>{
+                const id=card.getAttribute('onclick')?.match(/loadCategory\('(\w+)'\)/)?.[1];
+                if(id&&State.dashboard.categories[id]!==undefined){
+                    card.style.display=State.dashboard.categories[id]?'flex':'none';
+                }
+            });
+            document.querySelectorAll('#functionGrid .category-card').forEach(card=>{
+                const id=card.getAttribute('onclick')?.match(/loadFunction\('(\w+)'\)/)?.[1];
+                if(id&&State.dashboard.functions[id]!==undefined){
+                    card.style.display=State.dashboard.functions[id]?'flex':'none';
+                }
+            });
+            // Update checkboxes in settings
+            document.querySelectorAll('#configCategories .config-item').forEach(item=>{
+                const id=item.dataset.id;
+                const checkbox=item.querySelector('input[type="checkbox"]');
+                if(checkbox&&State.dashboard.categories[id]!==undefined)checkbox.checked=State.dashboard.categories[id];
+            });
+            document.querySelectorAll('#configFunctions .config-item').forEach(item=>{
+                const id=item.dataset.id;
+                const checkbox=item.querySelector('input[type="checkbox"]');
+                if(checkbox&&State.dashboard.functions[id]!==undefined)checkbox.checked=State.dashboard.functions[id];
+            });
+            // Render pinned sets and cards
+            renderPinnedSets();
+            renderPinnedCards();
+            updatePinCardSelect();
+        }
+        
+        function pinSet(){const code=document.getElementById('pinSetInput').value.trim().toLowerCase();if(!code){showToast('Enter a set code','warning');return;}if(State.dashboard.pinnedSets.includes(code)){showToast('Already pinned','info');return;}State.dashboard.pinnedSets.push(code);State.save();document.getElementById('pinSetInput').value='';renderPinnedSets();renderPinnedSetsOnDashboard();showToast('Set pinned!','success');}
+        
+        function unpinSet(code){State.dashboard.pinnedSets=State.dashboard.pinnedSets.filter(s=>s!==code);State.save();renderPinnedSets();renderPinnedSetsOnDashboard();}
+        
+        function renderPinnedSets(){const container=document.getElementById('pinnedSets');const noMsg=document.getElementById('noPinnedSets');if(!container)return;if(State.dashboard.pinnedSets.length===0){container.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem;" id="noPinnedSets">No pinned sets. Browse sets and click ⭐ to pin.</p>';return;}container.innerHTML=State.dashboard.pinnedSets.map(code=>{const set=State.sets.find(s=>s.code===code);return`<div class="pinned-tag">${set?`<img src="${set.icon_svg_uri}">`:''}${set?.name||code.toUpperCase()}<button class="pinned-tag-remove" onclick="unpinSet('${code}')">✕</button></div>`;}).join('');}
+        
+        function pinCard(){const select=document.getElementById('pinCardSelect');const id=select.value;if(!id){showToast('Select a card','warning');return;}if(State.dashboard.pinnedCards.some(c=>c.id===id)){showToast('Already pinned','info');return;}const card=State.watchlist.find(c=>c.id===id);if(card){State.dashboard.pinnedCards.push({id:card.id,name:card.name,image:card.image,price:card.priceStr});State.save();renderPinnedCards();renderPinnedCardsOnDashboard();showToast('Card pinned!','success');}}
+        
+        function unpinCard(id){State.dashboard.pinnedCards=State.dashboard.pinnedCards.filter(c=>c.id!==id);State.save();renderPinnedCards();renderPinnedCardsOnDashboard();}
+        
+        function renderPinnedCards(){const container=document.getElementById('pinnedCards');if(!container)return;if(State.dashboard.pinnedCards.length===0){container.innerHTML='<p style="color:var(--text-muted);font-size:0.85rem;" id="noPinnedCards">No pinned cards. Add cards from your watchlist!</p>';return;}container.innerHTML=State.dashboard.pinnedCards.map(c=>`<div class="pinned-tag"><img src="${c.image}" style="width:30px;height:42px;border-radius:3px;">${c.name}<button class="pinned-tag-remove" onclick="unpinCard('${c.id}')">✕</button></div>`).join('');}
+        
+        function updatePinCardSelect(){const select=document.getElementById('pinCardSelect');if(!select)return;select.innerHTML='<option value="">Select from watchlist...</option>'+State.watchlist.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');}
+        
+        function renderPinnedSetsOnDashboard(){
+            let container=document.getElementById('pinnedSetsSection');
+            if(State.dashboard.pinnedSets.length===0){if(container)container.style.display='none';return;}
+            if(!container){
+                const catGrid=document.getElementById('categoryGrid');
+                const section=document.createElement('section');
+                section.id='pinnedSetsSection';
+                section.innerHTML='<div class="section-header"><h2 class="section-title">📌 Pinned Sets</h2></div><div class="category-grid" id="pinnedSetsGrid"></div>';
+                catGrid.parentNode.insertBefore(section,catGrid);
+                container=section;
+            }
+            container.style.display='block';
+            const grid=document.getElementById('pinnedSetsGrid');
+            grid.innerHTML=State.dashboard.pinnedSets.map(code=>{const set=State.sets.find(s=>s.code===code);return`<div class="category-card" onclick="openSetView('${code}')"><div class="category-icon" style="background:var(--bg-tertiary);">${set?`<img src="${set.icon_svg_uri}" style="width:30px;height:30px;">`:code.toUpperCase()}</div><div class="category-info"><h3>${set?.name||code.toUpperCase()}</h3><p>${set?.card_count||'?'} cards</p></div></div>`;}).join('');
+        }
+        
+        function renderPinnedCardsOnDashboard(){
+            let container=document.getElementById('pinnedCardsSection');
+            if(State.dashboard.pinnedCards.length===0){if(container)container.style.display='none';return;}
+            if(!container){
+                const catGrid=document.getElementById('categoryGrid');
+                const section=document.createElement('section');
+                section.id='pinnedCardsSection';
+                section.innerHTML='<div class="section-header"><h2 class="section-title">⭐ Pinned Cards</h2></div><div class="card-grid" id="pinnedCardsGrid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));"></div>';
+                catGrid.parentNode.insertBefore(section,catGrid);
+                container=section;
+            }
+            container.style.display='block';
+            const grid=document.getElementById('pinnedCardsGrid');
+            grid.innerHTML=State.dashboard.pinnedCards.map(c=>`<div class="mtg-card" onclick="openCardDetail('${c.id}')"><div class="mtg-card-img-container"><img src="${c.image?.replace('small','normal')||c.image}" class="mtg-card-img" loading="lazy"></div><div class="mtg-card-info"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-price">${c.price||'N/A'}</div></div></div>`).join('');
+        }
 
         // Tab filters
         document.querySelectorAll('.section-tab[data-filter]').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.section-tab[data-filter]').forEach(x=>x.classList.remove('active'));t.classList.add('active');loadTrending(t.dataset.filter);}));
 
         // Init
-        document.addEventListener('DOMContentLoaded',async()=>{document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.addEventListener('click',()=>switchPage(t.dataset.page)));if(auth)auth.onAuthStateChanged(u=>{currentUser=u;updateAuthUI();State.load();});await State.load();updateStats();await loadTrending();setTimeout(()=>{document.getElementById('loadingOverlay').style.opacity='0';setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);},500);});
+        document.addEventListener('DOMContentLoaded',async()=>{document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.addEventListener('click',()=>switchPage(t.dataset.page)));if(auth)auth.onAuthStateChanged(u=>{currentUser=u;updateAuthUI();State.load().then(()=>{renderPinnedSetsOnDashboard();renderPinnedCardsOnDashboard();checkHeroVisibility();});});await State.load();updateStats();checkHeroVisibility();await loadTrending();
+            // Load sets in background for pinned sets
+            API.sets().then(d=>{State.sets=d.data.filter(s=>['expansion','core','masters','draft_innovation'].includes(s.set_type));renderPinnedSetsOnDashboard();}).catch(()=>{});
+            setTimeout(()=>{document.getElementById('loadingOverlay').style.opacity='0';setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);},500);});
     </script>
 </body>
 </html>
