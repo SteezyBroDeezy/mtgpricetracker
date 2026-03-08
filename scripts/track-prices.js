@@ -270,7 +270,71 @@ async function main() {
     // ====== DOMINARIA REMASTERED ======
     { name: 'DMR Top', query: 'set:dmr usd>0', limit: 50 },
     { name: 'DMR Mythics', query: 'set:dmr r:mythic usd>0', limit: 30 },
-    { name: 'DMR Legendary', query: 'set:dmr t:legendary usd>0', limit: 30 }
+    { name: 'DMR Legendary', query: 'set:dmr t:legendary usd>0', limit: 30 },
+
+    // ====== BULK SET TRACKING (All cards, sorted by price) ======
+    // 2025 Sets
+    { name: '2025 All Cards', query: 'year:2025 usd>0', limit: 100 },
+
+    // 2024 Sets - Full Coverage
+    { name: 'Murders at Karlov Manor Full', query: 'set:mkm usd>0.25', limit: 75 },
+    { name: 'Ravnica Remastered Full', query: 'set:rvr usd>0.25', limit: 75 },
+    { name: 'Karlov Manor Commander', query: 'set:mkc usd>0.25', limit: 50 },
+    { name: 'Outlaws Thunder Junction Full', query: 'set:otj usd>0.25', limit: 75 },
+    { name: 'OTJ Commander', query: 'set:otc usd>0.25', limit: 50 },
+    { name: 'Big Score', query: 'set:big usd>0.25', limit: 30 },
+    { name: 'Breaking News', query: 'set:otp usd>0.25', limit: 40 },
+    { name: 'Modern Horizons 3 Full', query: 'set:mh3 usd>0.25', limit: 100 },
+    { name: 'MH3 Commander', query: 'set:m3c usd>0.25', limit: 50 },
+    { name: 'Assassins Creed Full', query: 'set:acr usd>0.25', limit: 75 },
+    { name: 'Bloomburrow Full', query: 'set:blb usd>0.25', limit: 75 },
+    { name: 'Bloomburrow Commander', query: 'set:blc usd>0.25', limit: 50 },
+    { name: 'Duskmourn Full', query: 'set:dsk usd>0.25', limit: 75 },
+    { name: 'Duskmourn Commander', query: 'set:dsc usd>0.25', limit: 50 },
+    { name: 'Foundations Full', query: 'set:fdn usd>0.25', limit: 75 },
+    { name: 'Foundations Jumpstart', query: 'set:j25 usd>0.25', limit: 50 },
+
+    // 2023 Sets - Full Coverage
+    { name: 'Phyrexia ONE Full', query: 'set:one usd>0.25', limit: 75 },
+    { name: 'ONE Commander', query: 'set:onc usd>0.25', limit: 50 },
+    { name: 'March Machine Full', query: 'set:mom usd>0.25', limit: 75 },
+    { name: 'MOM Commander', query: 'set:moc usd>0.25', limit: 50 },
+    { name: 'MOM Aftermath', query: 'set:mat usd>0.25', limit: 30 },
+    { name: 'LOTR Full', query: 'set:ltr usd>0.25', limit: 100 },
+    { name: 'LOTR Commander', query: 'set:ltc usd>0.25', limit: 50 },
+    { name: 'Commander Masters Full', query: 'set:cmm usd>0.25', limit: 100 },
+    { name: 'Wilds Eldraine Full', query: 'set:woe usd>0.25', limit: 75 },
+    { name: 'WOE Commander', query: 'set:woc usd>0.25', limit: 50 },
+    { name: 'Lost Caverns Full', query: 'set:lci usd>0.25', limit: 75 },
+    { name: 'LCI Commander', query: 'set:lcc usd>0.25', limit: 50 },
+    { name: 'Doctor Who Full', query: 'set:who usd>0.25', limit: 75 },
+
+    // 2022 Sets - Key Sets
+    { name: 'Brothers War Full', query: 'set:bro usd>0.25', limit: 75 },
+    { name: 'BRO Commander', query: 'set:brc usd>0.25', limit: 50 },
+    { name: 'Dominaria United Full', query: 'set:dmu usd>0.25', limit: 75 },
+    { name: 'DMU Commander', query: 'set:dmc usd>0.25', limit: 50 },
+    { name: 'Streets New Capenna Full', query: 'set:snc usd>0.25', limit: 75 },
+    { name: 'SNC Commander', query: 'set:ncc usd>0.25', limit: 50 },
+    { name: 'Kamigawa Neon Full', query: 'set:neo usd>0.25', limit: 75 },
+    { name: 'NEO Commander', query: 'set:nec usd>0.25', limit: 50 },
+    { name: 'Double Masters 2022', query: 'set:2x2 usd>0.25', limit: 100 },
+    { name: 'Baldurs Gate Full', query: 'set:clb usd>0.25', limit: 100 },
+    { name: 'Unfinity', query: 'set:unf usd>0.25', limit: 50 },
+
+    // 2021 Key Sets
+    { name: 'MH2 Full', query: 'set:mh2 usd>0.25', limit: 100 },
+    { name: 'Innistrad Midnight Hunt', query: 'set:mid usd>0.25', limit: 75 },
+    { name: 'Innistrad Crimson Vow', query: 'set:vow usd>0.25', limit: 75 },
+    { name: 'AFR Forgotten Realms', query: 'set:afr usd>0.25', limit: 75 },
+    { name: 'Strixhaven Full', query: 'set:stx usd>0.25', limit: 75 },
+    { name: 'Kaldheim Full', query: 'set:khm usd>0.25', limit: 75 },
+    { name: 'Time Spiral Remastered', query: 'set:tsr usd>0.25', limit: 75 },
+
+    // Evergreen High-Value
+    { name: 'All Fetchlands', query: '(t:land o:"search your library" o:"pay 1 life") usd>5', limit: 50 },
+    { name: 'All Shocklands', query: 't:land o:"pay 2 life" usd>3', limit: 30 },
+    { name: 'All Triomes', query: 't:land o:"cycling" (type:plains or type:island or type:swamp or type:mountain or type:forest) usd>2', limit: 20 }
   ];
 
   let totalRecorded = 0;
