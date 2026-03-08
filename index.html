@@ -598,61 +598,114 @@
                 </div>
             </section>
 
-            <!-- Category Movers Grid - Show what's moving in each category -->
+            <!-- Category Movers Grid - Budget Focused -->
             <section class="category-movers-section" id="categoryMoversSection">
                 <div class="section-header">
-                    <h2 class="section-title">🔥 Hot Categories</h2>
-                    <p style="color:var(--text-secondary);font-size:0.85rem;">Real-time price movement across card types</p>
+                    <h2 class="section-title">🔥 Budget Picks by Price</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Hot cards at every price point</p>
                 </div>
                 <div class="category-movers-grid">
-                    <div class="category-mover-card" id="commanderMovers">
-                        <div class="category-mover-header"><span>⚔️</span> Commander Staples</div>
-                        <div class="category-mover-content" id="commanderMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="mythicMovers">
-                        <div class="category-mover-header"><span>🔮</span> Mythic Rares</div>
-                        <div class="category-mover-content" id="mythicMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="modernMovers">
-                        <div class="category-mover-header"><span>🏆</span> Modern Staples</div>
-                        <div class="category-mover-content" id="modernMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="pioneersMovers">
-                        <div class="category-mover-header"><span>🌟</span> Pioneer Cards</div>
-                        <div class="category-mover-content" id="pioneerMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="reservedMovers">
-                        <div class="category-mover-header"><span>💎</span> Reserved List</div>
-                        <div class="category-mover-content" id="reservedMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="newReleasesMovers">
-                        <div class="category-mover-header"><span>✨</span> New Releases</div>
-                        <div class="category-mover-content" id="newReleasesMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="landsMovers">
-                        <div class="category-mover-header"><span>🏔️</span> Valuable Lands</div>
-                        <div class="category-mover-content" id="landsMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="artifactsMovers">
-                        <div class="category-mover-header"><span>⚙️</span> Artifacts</div>
-                        <div class="category-mover-content" id="artifactsMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="planeswalkersMovers">
-                        <div class="category-mover-header"><span>🌀</span> Planeswalkers</div>
-                        <div class="category-mover-content" id="planeswalkersMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="creaturesMovers">
-                        <div class="category-mover-header"><span>🐉</span> Creatures</div>
-                        <div class="category-mover-content" id="creaturesMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="enchantmentsMovers">
-                        <div class="category-mover-header"><span>✨</span> Enchantments</div>
-                        <div class="category-mover-content" id="enchantmentsMoversContent">Loading...</div>
-                    </div>
-                    <div class="category-mover-card" id="sorceriesMovers">
-                        <div class="category-mover-header"><span>🔮</span> Sorceries & Instants</div>
-                        <div class="category-mover-content" id="sorceriesMoversContent">Loading...</div>
-                    </div>
+                    <!-- Price Tiers -->
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> Under $2</div><div class="category-mover-content" id="under2Content">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💰</span> $2 - $5</div><div class="category-mover-content" id="under5Content">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💎</span> $5 - $10</div><div class="category-mover-content" id="under10Content">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> $10 - $20</div><div class="category-mover-content" id="under20Content">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Colors Section -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🎨 Hot by Color (Under $20)</h2>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚪</span> White Cards</div><div class="category-mover-content" id="whiteContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔵</span> Blue Cards</div><div class="category-mover-content" id="blueContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚫</span> Black Cards</div><div class="category-mover-content" id="blackContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔴</span> Red Cards</div><div class="category-mover-content" id="redContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🟢</span> Green Cards</div><div class="category-mover-content" id="greenContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⬜</span> Colorless</div><div class="category-mover-content" id="colorlessContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌈</span> Multicolor</div><div class="category-mover-content" id="multiContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Creature Types Section -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🐲 Hot Creature Types (Under $20)</h2>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🐉</span> Dragons</div><div class="category-mover-content" id="dragonsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧝</span> Elves</div><div class="category-mover-content" id="elvesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👺</span> Goblins</div><div class="category-mover-content" id="goblinsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧟</span> Zombies</div><div class="category-mover-content" id="zombiesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👼</span> Angels</div><div class="category-mover-content" id="angelsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧛</span> Vampires</div><div class="category-mover-content" id="vampiresContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧙</span> Wizards</div><div class="category-mover-content" id="wizardsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🐺</span> Werewolves</div><div class="category-mover-content" id="werewolvesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🦎</span> Dinosaurs</div><div class="category-mover-content" id="dinosaursContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧜</span> Merfolk</div><div class="category-mover-content" id="merfolkContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚔️</span> Knights</div><div class="category-mover-content" id="knightsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>😈</span> Demons</div><div class="category-mover-content" id="demonsContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Card Types Section -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">📜 Hot by Card Type (Under $20)</h2>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👤</span> Creatures</div><div class="category-mover-content" id="creaturesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚡</span> Instants</div><div class="category-mover-content" id="instantsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔮</span> Sorceries</div><div class="category-mover-content" id="sorceriesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>✨</span> Enchantments</div><div class="category-mover-content" id="enchantmentsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚙️</span> Artifacts</div><div class="category-mover-content" id="artifactsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏔️</span> Lands</div><div class="category-mover-content" id="landsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌀</span> Planeswalkers</div><div class="category-mover-content" id="planeswalkersContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> Legendary</div><div class="category-mover-content" id="legendaryContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Commander Specific -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">⚔️ Commander Budget Picks</h2>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> Commanders < $10</div><div class="category-mover-content" id="budgetCommandersContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌱</span> Ramp < $5</div><div class="category-mover-content" id="budgetRampContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🎴</span> Draw < $5</div><div class="category-mover-content" id="budgetDrawContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💀</span> Removal < $5</div><div class="category-mover-content" id="budgetRemovalContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💥</span> Board Wipes < $10</div><div class="category-mover-content" id="budgetWipesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🛡️</span> Protection < $5</div><div class="category-mover-content" id="budgetProtectionContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Format Staples Budget -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🏆 Format Staples (Budget)</h2>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚔️</span> Commander < $20</div><div class="category-mover-content" id="commanderBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🥇</span> Modern < $20</div><div class="category-mover-content" id="modernBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌟</span> Pioneer < $15</div><div class="category-mover-content" id="pioneerBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>📦</span> Standard</div><div class="category-mover-content" id="standardContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🪙</span> Pauper</div><div class="category-mover-content" id="pauperContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Rarity Budget -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">⭐ Hot by Rarity</h2>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> Mythics < $20</div><div class="category-mover-content" id="mythicBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> Rares < $10</div><div class="category-mover-content" id="rareBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💎</span> Uncommons < $5</div><div class="category-mover-content" id="uncommonBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🪙</span> Commons < $2</div><div class="category-mover-content" id="commonBudgetContent">Loading...</div></div>
                 </div>
             </section>
 
@@ -1933,18 +1986,59 @@
 
         // ====== CATEGORY MOVERS ======
         const categoryMoverQueries = {
-            commander: { query: 'f:commander is:staple usd>1', id: 'commanderMoversContent' },
-            mythic: { query: 'r:mythic usd>2', id: 'mythicMoversContent' },
-            modern: { query: 'f:modern is:staple usd>5', id: 'modernMoversContent' },
-            pioneer: { query: 'f:pioneer usd>1', id: 'pioneerMoversContent' },
-            reserved: { query: 'is:reserved usd>10', id: 'reservedMoversContent' },
-            newReleases: { query: 'year>=2024 usd>1', id: 'newReleasesMoversContent' },
-            lands: { query: 't:land usd>5', id: 'landsMoversContent' },
-            artifacts: { query: 't:artifact usd>2', id: 'artifactsMoversContent' },
-            planeswalkers: { query: 't:planeswalker usd>2', id: 'planeswalkersMoversContent' },
-            creatures: { query: 't:creature usd>3', id: 'creaturesMoversContent' },
-            enchantments: { query: 't:enchantment usd>2', id: 'enchantmentsMoversContent' },
-            sorceries: { query: '(t:sorcery or t:instant) usd>2', id: 'sorceriesMoversContent' }
+            // Price Tiers
+            under2: { query: 'usd<2 usd>0.10', id: 'under2Content' },
+            under5: { query: 'usd<5 usd>=2', id: 'under5Content' },
+            under10: { query: 'usd<10 usd>=5', id: 'under10Content' },
+            under20: { query: 'usd<20 usd>=10', id: 'under20Content' },
+            // Colors (budget focus)
+            white: { query: 'c:w usd<20 usd>0.50', id: 'whiteContent' },
+            blue: { query: 'c:u usd<20 usd>0.50', id: 'blueContent' },
+            black: { query: 'c:b usd<20 usd>0.50', id: 'blackContent' },
+            red: { query: 'c:r usd<20 usd>0.50', id: 'redContent' },
+            green: { query: 'c:g usd<20 usd>0.50', id: 'greenContent' },
+            colorless: { query: 'c:c usd<20 usd>0.50', id: 'colorlessContent' },
+            multi: { query: 'c>=2 usd<20 usd>0.50', id: 'multiContent' },
+            // Creature Types
+            dragons: { query: 't:dragon usd<20 usd>0.50', id: 'dragonsContent' },
+            elves: { query: 't:elf usd<20 usd>0.50', id: 'elvesContent' },
+            goblins: { query: 't:goblin usd<20 usd>0.50', id: 'goblinsContent' },
+            zombies: { query: 't:zombie usd<20 usd>0.50', id: 'zombiesContent' },
+            angels: { query: 't:angel usd<20 usd>0.50', id: 'angelsContent' },
+            vampires: { query: 't:vampire usd<20 usd>0.50', id: 'vampiresContent' },
+            wizards: { query: 't:wizard usd<20 usd>0.50', id: 'wizardsContent' },
+            werewolves: { query: 't:werewolf usd<20 usd>0.50', id: 'werewolvesContent' },
+            dinosaurs: { query: 't:dinosaur usd<20 usd>0.50', id: 'dinosaursContent' },
+            merfolk: { query: 't:merfolk usd<20 usd>0.50', id: 'merfolkContent' },
+            knights: { query: 't:knight usd<20 usd>0.50', id: 'knightsContent' },
+            demons: { query: 't:demon usd<20 usd>0.50', id: 'demonsContent' },
+            // Card Types
+            creatures: { query: 't:creature usd<20 usd>0.50', id: 'creaturesContent' },
+            instants: { query: 't:instant usd<20 usd>0.50', id: 'instantsContent' },
+            sorceries: { query: 't:sorcery usd<20 usd>0.50', id: 'sorceriesContent' },
+            enchantments: { query: 't:enchantment usd<20 usd>0.50', id: 'enchantmentsContent' },
+            artifacts: { query: 't:artifact usd<20 usd>0.50', id: 'artifactsContent' },
+            lands: { query: 't:land usd<20 usd>0.50', id: 'landsContent' },
+            planeswalkers: { query: 't:planeswalker usd<20 usd>0.50', id: 'planeswalkersContent' },
+            legendary: { query: 't:legendary usd<20 usd>0.50', id: 'legendaryContent' },
+            // Commander Budget Picks
+            budgetCommanders: { query: 't:legendary t:creature f:commander usd<10 usd>0.50', id: 'budgetCommandersContent' },
+            budgetRamp: { query: '(o:"add" o:"mana") t:artifact usd<5 usd>0.25', id: 'budgetRampContent' },
+            budgetDraw: { query: 'o:"draw" o:"card" usd<5 usd>0.25', id: 'budgetDrawContent' },
+            budgetRemoval: { query: '(o:"destroy target" or o:"exile target") usd<5 usd>0.25', id: 'budgetRemovalContent' },
+            budgetWipes: { query: '(o:"destroy all" or o:"exile all") usd<10 usd>0.50', id: 'budgetWipesContent' },
+            budgetProtection: { query: '(o:"hexproof" or o:"indestructible") usd<5 usd>0.25', id: 'budgetProtectionContent' },
+            // Format Budget Staples
+            commanderBudget: { query: 'f:commander is:staple usd<20 usd>0.50', id: 'commanderBudgetContent' },
+            modernBudget: { query: 'f:modern is:staple usd<20 usd>0.50', id: 'modernBudgetContent' },
+            pioneerBudget: { query: 'f:pioneer usd<15 usd>0.50', id: 'pioneerBudgetContent' },
+            standard: { query: 'f:standard usd>0.25', id: 'standardContent' },
+            pauper: { query: 'f:pauper usd>0.10', id: 'pauperContent' },
+            // Rarity Budget
+            mythicBudget: { query: 'r:mythic usd<20 usd>1', id: 'mythicBudgetContent' },
+            rareBudget: { query: 'r:rare usd<10 usd>0.50', id: 'rareBudgetContent' },
+            uncommonBudget: { query: 'r:uncommon usd<5 usd>0.25', id: 'uncommonBudgetContent' },
+            commonBudget: { query: 'r:common usd<2 usd>0.10', id: 'commonBudgetContent' }
         };
 
         async function loadCategoryMovers() {
