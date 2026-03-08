@@ -67,6 +67,14 @@
         
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-secondary); } ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
 
+        /* Mobile performance optimizations */
+        @media (max-width: 768px) {
+            .bg-effects, .bg-effects::before { display: none !important; }
+            * { animation-duration: 0.1s !important; transition-duration: 0.1s !important; }
+            .nav-logo-icon { animation: none !important; }
+            .loading-spinner { animation-duration: 1s !important; }
+        }
+
         .sites-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--bg-tertiary); padding: 0.5rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
         .sites-links { display: flex; align-items: center; gap: 1.5rem; }
         .sites-label { color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; }
@@ -644,9 +652,17 @@
                     <div class="category-mover-card"><div class="category-mover-header"><span>🧚</span> Lorwyn Top</div><div class="category-mover-content" id="latestLorwynContent">Loading...</div></div>
                     <div class="category-mover-card"><div class="category-mover-header"><span>⚔️</span> Final Fantasy Top</div><div class="category-mover-content" id="latestFFContent">Loading...</div></div>
                     <div class="category-mover-card"><div class="category-mover-header"><span>🏎️</span> Aetherdrift Top</div><div class="category-mover-content" id="latestDriftContent">Loading...</div></div>
-                    <div class="category-mover-card"><div class="category-mover-header"><span>🌿</span> Avatar Top</div><div class="category-mover-content" id="latestAvatarContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌊</span> Avatar Top</div><div class="category-mover-content" id="latestAvatarContent">Loading...</div></div>
                 </div>
             </section>
+
+            <!-- Mobile Load More Button -->
+            <div id="mobileLoadMore" style="display:none; text-align:center; padding:1.5rem; margin-bottom:1.5rem;">
+                <p style="color:var(--text-secondary); margin-bottom:1rem; font-size:0.9rem;">📱 Showing essential data for faster mobile loading</p>
+                <button id="mobileLoadMoreBtn" class="btn btn-primary" onclick="loadAllMobileData()" style="padding:0.75rem 2rem;">
+                    Load All Categories
+                </button>
+            </div>
 
             <!-- Category Movers Grid - Budget Focused -->
             <section class="category-movers-section" id="categoryMoversSection">
@@ -1696,6 +1712,10 @@
             async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.trackedSets=d.trackedSets||[];this.trackedCategories=d.trackedCategories||[];this.portfolio=d.portfolio||[];this.lastRefresh=d.lastRefresh||null;this.lastPriceRecord=d.lastPriceRecord||{};this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.trackedSets=d.trackedSets||this.trackedSets;this.trackedCategories=d.trackedCategories||this.trackedCategories;this.portfolio=d.portfolio||this.portfolio;this.lastRefresh=d.lastRefresh||this.lastRefresh;this.lastPriceRecord=d.lastPriceRecord||this.lastPriceRecord;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;updateLastUpdatedDisplay();},
             async save(){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
         };
+
+        // Mobile detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        let mobileDataLoaded = false;
 
         // Utilities
         function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
@@ -2773,18 +2793,62 @@
         // Store expanded card data for each category
         const categoryCardData = {};
 
+        // Essential categories to load on mobile (just latest sets)
+        const mobilePriorityCategories = ['latestSpider', 'latestLorwyn', 'latestFF', 'latestDrift', 'latestAvatar'];
+
         async function loadCategoryMovers() {
-            const promises = [];
-            for (const [cat, config] of Object.entries(categoryMoverQueries)) {
-                promises.push(loadSingleCategoryMover(cat, config));
+            if (isMobile) {
+                // Mobile: Only load essential categories first
+                const promises = mobilePriorityCategories
+                    .filter(cat => categoryMoverQueries[cat])
+                    .map(cat => loadSingleCategoryMover(cat, categoryMoverQueries[cat]));
+                await Promise.all(promises);
+                addCategoryTrackButtons();
+                renderTrackedCategoriesWidget();
+                // Show "Load More" button for full data
+                showMobileLoadMoreButton();
+            } else {
+                // Desktop: Load all categories
+                const promises = [];
+                for (const [cat, config] of Object.entries(categoryMoverQueries)) {
+                    promises.push(loadSingleCategoryMover(cat, config));
+                }
+                Promise.all(promises.slice(0, 10)).then(() => {
+                    setTimeout(() => {
+                        addCategoryTrackButtons();
+                        renderTrackedCategoriesWidget();
+                    }, 500);
+                });
             }
-            // After first batch loads, add track buttons
-            Promise.all(promises.slice(0, 10)).then(() => {
-                setTimeout(() => {
-                    addCategoryTrackButtons();
-                    renderTrackedCategoriesWidget();
-                }, 500);
-            });
+        }
+
+        function showMobileLoadMoreButton() {
+            const container = document.getElementById('mobileLoadMore');
+            if (container) {
+                container.style.display = 'block';
+            }
+        }
+
+        async function loadAllMobileData() {
+            if (mobileDataLoaded) return;
+            const btn = document.getElementById('mobileLoadMoreBtn');
+            if (btn) {
+                btn.textContent = 'Loading...';
+                btn.disabled = true;
+            }
+            // Load remaining categories in batches to avoid freezing
+            const remaining = Object.entries(categoryMoverQueries)
+                .filter(([cat]) => !mobilePriorityCategories.includes(cat));
+            const batchSize = 5;
+            for (let i = 0; i < remaining.length; i += batchSize) {
+                const batch = remaining.slice(i, i + batchSize);
+                await Promise.all(batch.map(([cat, config]) => loadSingleCategoryMover(cat, config)));
+                // Small delay between batches
+                await new Promise(r => setTimeout(r, 200));
+            }
+            mobileDataLoaded = true;
+            const container = document.getElementById('mobileLoadMore');
+            if (container) container.style.display = 'none';
         }
 
         async function loadSingleCategoryMover(cat, config) {
@@ -3092,31 +3156,49 @@
                 await State.load();
                 if(currentUser){
                     State.userLists=await getUserLists();
-                    // Record watchlist prices and update portfolio
-                    recordWatchlistPrices();
-                    updatePortfolioPrices();
+                    // Record watchlist prices and update portfolio (skip on mobile for speed)
+                    if (!isMobile) {
+                        recordWatchlistPrices();
+                        updatePortfolioPrices();
+                    }
                 }
                 renderTrackedSets();
                 renderTrackedSetsSettings();
                 renderTrackedSetsWidget();
-                loadPriceMovers(1);
-                loadCategoryMovers();
+                if (!isMobile) {
+                    loadPriceMovers(1);
+                }
+                // loadCategoryMovers already called in main init
             });
             await State.load();
             updateStats();
             renderWatchlistPreview();
             updateCTAVisibility();
-            await loadTrending();
-            await loadUpcomingReleases();
-            await loadFormatStaples('commander');
-            renderTrackedSets();
-            renderTrackedSetsWidget();
-            loadPriceMovers(1);
-            loadCategoryMovers();
-            setTimeout(()=>{
-                document.getElementById('loadingOverlay').style.opacity='0';
-                setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);
-            },500);
+
+            if (isMobile) {
+                // Mobile: Minimal loading for fast startup
+                renderTrackedSets();
+                renderTrackedSetsWidget();
+                loadCategoryMovers(); // Only loads essential categories on mobile
+                // Hide loading overlay quickly
+                setTimeout(()=>{
+                    document.getElementById('loadingOverlay').style.opacity='0';
+                    setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);
+                },200);
+            } else {
+                // Desktop: Full loading
+                await loadTrending();
+                await loadUpcomingReleases();
+                await loadFormatStaples('commander');
+                renderTrackedSets();
+                renderTrackedSetsWidget();
+                loadPriceMovers(1);
+                loadCategoryMovers();
+                setTimeout(()=>{
+                    document.getElementById('loadingOverlay').style.opacity='0';
+                    setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);
+                },500);
+            }
         });
     </script>
 </body>
