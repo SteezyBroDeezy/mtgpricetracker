@@ -165,11 +165,11 @@ async function main() {
     { name: 'FF Legendary', query: 'set:fdn t:legendary usd>0', limit: 30 },
 
     // ====== AETHERDRIFT ======
-    { name: 'Aetherdrift Top', query: 'set:drft usd>0', limit: 50 },
-    { name: 'Drift Mythics', query: 'set:drft r:mythic usd>0', limit: 30 },
-    { name: 'Drift Vehicles', query: 'set:drft t:vehicle usd>0', limit: 30 },
-    { name: 'Drift Creatures', query: 'set:drft t:creature usd>0', limit: 40 },
-    { name: 'Drift Legendary', query: 'set:drft t:legendary usd>0', limit: 30 },
+    { name: 'Aetherdrift Top', query: 'set:dft usd>0', limit: 50 },
+    { name: 'Drift Mythics', query: 'set:dft r:mythic usd>0', limit: 30 },
+    { name: 'Drift Vehicles', query: 'set:dft t:vehicle usd>0', limit: 30 },
+    { name: 'Drift Creatures', query: 'set:dft t:creature usd>0', limit: 40 },
+    { name: 'Drift Legendary', query: 'set:dft t:legendary usd>0', limit: 30 },
 
     // ====== SPIDER-MAN ======
     { name: 'Spider-Man Top', query: '(set:spg or (spider-man)) usd>0', limit: 50 },
@@ -177,11 +177,11 @@ async function main() {
     { name: 'Spidey Creatures', query: '(set:spg or (spider-man)) t:creature usd>0', limit: 40 },
     { name: 'Spidey Legendary', query: '(set:spg or (spider-man)) t:legendary usd>0', limit: 30 },
 
-    // ====== AVATAR ======
-    { name: 'Avatar Top', query: '(set:avt or (avatar pandora)) usd>0', limit: 50 },
-    { name: 'Avatar Mythics', query: '(set:avt or (avatar pandora)) r:mythic usd>0', limit: 30 },
-    { name: 'Avatar Creatures', query: '(set:avt or (avatar pandora)) t:creature usd>0', limit: 40 },
-    { name: 'Avatar Legendary', query: '(set:avt or (avatar pandora)) t:legendary usd>0', limit: 30 },
+    // ====== AVATAR: THE LAST AIRBENDER ======
+    { name: 'ATLA Top', query: 'set:tla usd>0', limit: 50 },
+    { name: 'ATLA Mythics', query: 'set:tla r:mythic usd>0', limit: 30 },
+    { name: 'ATLA Creatures', query: 'set:tla t:creature usd>0', limit: 40 },
+    { name: 'ATLA Legendary', query: 'set:tla t:legendary usd>0', limit: 30 },
 
     // ====== DRAGONS OF TARKIR ======
     { name: 'Dragons of Tarkir Top', query: 'set:dtk usd>0', limit: 50 },
