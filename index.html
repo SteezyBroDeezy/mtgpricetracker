@@ -328,6 +328,54 @@
         .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.5rem; background: none; border: none; color: var(--text-secondary); font-size: 0.65rem; cursor: pointer; }
         .mobile-nav-btn.active { color: var(--accent-gold); }
         .mobile-nav-btn span:first-child { font-size: 1.2rem; }
+
+        /* Lists Grid */
+        .lists-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .list-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: var(--transition-smooth); }
+        .list-card:hover { transform: translateY(-3px); border-color: var(--accent-primary); box-shadow: var(--glow-primary); }
+        .list-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .list-card-name { font-weight: 600; font-size: 1.1rem; }
+        .list-card-count { font-size: 0.85rem; color: var(--text-secondary); }
+        .list-card-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+        .list-card-preview { display: flex; gap: 0.25rem; }
+        .list-card-preview img { width: 40px; height: 56px; object-fit: cover; border-radius: 4px; }
+
+        /* Upcoming Releases */
+        .releases-section { margin-bottom: 2rem; }
+        .releases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+        .release-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 1rem; transition: var(--transition-smooth); }
+        .release-card:hover { border-color: var(--accent-primary); }
+        .release-icon { width: 48px; height: 48px; }
+        .release-info { flex: 1; }
+        .release-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+        .release-date { font-size: 0.8rem; color: var(--text-secondary); }
+        .release-countdown { font-size: 0.75rem; color: var(--accent-gold); font-weight: 600; }
+        .release-type { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); }
+        .track-btn { padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--accent-primary); background: transparent; color: var(--accent-primary); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition-fast); }
+        .track-btn:hover { background: var(--accent-primary); color: white; }
+        .track-btn.tracked { background: var(--accent-green); border-color: var(--accent-green); color: white; }
+
+        /* Tracked Sets */
+        .tracked-sets-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-md); }
+        .tracked-set-chip { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-lg); font-size: 0.85rem; cursor: pointer; transition: var(--transition-fast); }
+        .tracked-set-chip:hover { background: var(--accent-primary); }
+        .tracked-set-chip img { width: 18px; height: 18px; }
+
+        /* External Links */
+        .external-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--bg-tertiary); }
+        .ext-link { display: flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; font-weight: 500; transition: var(--transition-fast); }
+        .ext-link:hover { background: var(--bg-card); color: var(--accent-primary); }
+
+        /* Last Updated */
+        .last-updated { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; }
+
+        /* Add to List Dropdown */
+        .add-to-list-dropdown { position: relative; display: inline-block; }
+        .add-to-list-menu { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--bg-tertiary); border-radius: var(--radius-md); min-width: 200px; max-height: 250px; overflow-y: auto; z-index: 100; display: none; }
+        .add-to-list-menu.active { display: block; }
+        .add-to-list-item { padding: 0.75rem 1rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--bg-tertiary); }
+        .add-to-list-item:hover { background: var(--bg-tertiary); }
+        .add-to-list-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -352,6 +400,7 @@
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
             <button class="nav-tab" data-page="watchlist">👁️ Watchlist</button>
+            <button class="nav-tab" data-page="lists">📋 Lists</button>
             <button class="nav-tab" data-page="alerts">🔔 Alerts</button>
         </div>
         <div class="nav-right">
@@ -364,8 +413,8 @@
         <button class="mobile-nav-btn active" data-page="dashboard"><span>📊</span><span>Home</span></button>
         <button class="mobile-nav-btn" data-page="browse"><span>📚</span><span>Sets</span></button>
         <button class="mobile-nav-btn" data-page="watchlist"><span>👁️</span><span>Watch</span></button>
+        <button class="mobile-nav-btn" data-page="lists"><span>📋</span><span>Lists</span></button>
         <button class="mobile-nav-btn" data-page="alerts"><span>🔔</span><span>Alerts</span></button>
-        <button class="mobile-nav-btn" data-page="settings"><span>⚙️</span><span>Settings</span></button>
     </div>
 
     <main class="main-content">
@@ -385,7 +434,22 @@
                 <div class="stat-card"><div class="stat-label">Biggest Gainer</div><div class="stat-value" id="statSpike">--</div></div>
                 <div class="stat-card"><div class="stat-label">Biggest Drop</div><div class="stat-value" id="statDrop">--</div></div>
             </div>
-            
+
+            <!-- Tracked Sets Quick Bar -->
+            <div class="tracked-sets-bar" id="trackedSetsBar" style="display:none;">
+                <span style="color:var(--text-muted);font-size:0.8rem;margin-right:0.5rem;">📌 Tracked:</span>
+                <div id="trackedSetsChips"></div>
+            </div>
+
+            <!-- Upcoming Releases -->
+            <section class="releases-section" id="releasesSection">
+                <div class="section-header">
+                    <h2 class="section-title">📅 Upcoming Releases</h2>
+                    <span class="last-updated" id="lastUpdated"></span>
+                </div>
+                <div class="releases-grid" id="releasesGrid"></div>
+            </section>
+
             <div class="section-header"><h2 class="section-title">📈 Market Categories</h2></div>
             <div class="category-grid" id="categoryGrid">
                 <div class="category-card" onclick="loadCategory('mythic')"><div class="category-icon" style="background:linear-gradient(135deg,#ff6b35,#f7931e);">🔥</div><div class="category-info"><h3>Hot Mythics</h3><p>Trending mythic rares</p></div></div>
@@ -454,6 +518,25 @@
             <div id="watchlistContent"></div>
         </div>
 
+        <!-- Lists (Cross-site from MTG Card Search) -->
+        <div class="page" id="listsPage">
+            <div class="section-header">
+                <h2 class="section-title">📋 My Lists</h2>
+                <button class="btn btn-gold" onclick="openNewListModal()">+ New List</button>
+            </div>
+            <div id="listsContent">
+                <div class="auth-notice"><span>🔒</span><span>Sign in to access your lists from <strong>MTG Card Search</strong></span></div>
+            </div>
+            <div id="listCardsView" style="display:none;">
+                <button class="back-btn" onclick="closeListView()">← Back to Lists</button>
+                <div class="section-header">
+                    <h2 class="section-title" id="listViewTitle">List Name</h2>
+                    <span id="listCardCount" style="color:var(--text-secondary);"></span>
+                </div>
+                <div class="card-grid" id="listCardsGrid"></div>
+            </div>
+        </div>
+
         <!-- Alerts -->
         <div class="page" id="alertsPage">
             <div class="section-header"><h2 class="section-title">🔔 Price Alert Rules</h2><button class="btn btn-gold" onclick="openAlertModal()">+ New Rule</button></div>
@@ -499,6 +582,23 @@
                 <div class="settings-section">
                     <h3 class="settings-section-title"><span>💰</span> Display</h3>
                     <div class="settings-row"><div class="settings-label">Currency</div><select class="form-input form-select" style="width:auto;" id="currencySelect" onchange="saveSetting('currency',this.value)"><option value="usd">USD ($)</option><option value="eur">EUR (€)</option></select></div>
+                </div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title"><span>🔄</span> Data</h3>
+                    <div class="settings-row">
+                        <div class="settings-label">Refresh Data<small>Clear cached sets and reload from Scryfall</small></div>
+                        <button class="btn btn-secondary" onclick="refreshAllData()">🔄 Refresh Now</button>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">Last Updated</div>
+                        <span id="settingsLastUpdated" style="color:var(--text-secondary);font-size:0.9rem;">Never</span>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title"><span>📌</span> Tracked Sets</h3>
+                    <div id="trackedSetsSettings">
+                        <p style="color:var(--text-secondary);font-size:0.9rem;">No sets tracked yet. Track sets from the Upcoming Releases section on the dashboard.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -718,6 +818,27 @@
         <div class="modal" style="max-width:700px;"><div class="modal-header"><h3 class="modal-title" id="cardModalTitle">Card</h3><button class="modal-close" onclick="closeModal('cardModal')">✕</button></div><div class="modal-body" id="cardModalBody"></div></div>
     </div>
 
+    <!-- New List Modal -->
+    <div class="modal-overlay" id="newListModal">
+        <div class="modal">
+            <div class="modal-header"><h3 class="modal-title">Create New List</h3><button class="modal-close" onclick="closeModal('newListModal')">✕</button></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">List Name</label>
+                    <input type="text" class="form-input" id="newListName" placeholder="My Deck Ideas" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description (optional)</label>
+                    <input type="text" class="form-input" id="newListDesc" placeholder="Cards I'm considering...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('newListModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createNewList()">Create List</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const firebaseConfig={apiKey:"AIzaSyDl40JiXr897hVYH63QOA3b8cCgX1e64pI",authDomain:"mtg-card-search-e0ed3.firebaseapp.com",projectId:"mtg-card-search-e0ed3",storageBucket:"mtg-card-search-e0ed3.firebasestorage.app",messagingSenderId:"1041838644245",appId:"1:1041838644245:web:3ed0313b6cd2b1e7e8021c"};
         let app,auth,db,currentUser=null;
@@ -733,16 +854,16 @@
             sets:()=>API.req('/sets')
         };
 
-        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,
-            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;},
-            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
+        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,
+            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.trackedSets=d.trackedSets||[];this.lastRefresh=d.lastRefresh||null;this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.trackedSets=d.trackedSets||this.trackedSets;this.lastRefresh=d.lastRefresh||this.lastRefresh;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;updateLastUpdatedDisplay();},
+            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,lastRefresh:this.lastRefresh,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
         };
 
         // Utilities
         function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
         function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
         function saveSetting(k,v){State.settings[k]=v;State.save();}
-        function switchPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse')loadSets();if(p==='watchlist')renderWatchlist();if(p==='alerts')renderAlerts();}
+        function switchPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse')loadSets();if(p==='watchlist')renderWatchlist();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
         function openModal(id){document.getElementById(id).classList.add('active');}
         function closeModal(id){document.getElementById(id).classList.remove('active');}
@@ -776,7 +897,18 @@
         function saveQuickAlert(){const id=document.getElementById('quickAlertCardId').value;const name=document.getElementById('quickAlertCardName').textContent;const type=document.getElementById('quickAlertType').value;const threshold=parseFloat(document.getElementById('quickAlertThreshold').value)||0;State.alerts.push({id:Date.now().toString(),name:'Alert: '+name,type,threshold,scope:'specific',cardId:id,cardName:name,enabled:true,created:new Date().toISOString()});State.save();closeModal('quickAlertModal');showToast('Alert created!','success');updateStats();}
 
         // Card detail
-        async function openCardDetail(id){searchResults.classList.remove('active');try{const c=await API.card(id);const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);"><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div><div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button></div><div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;openModal('cardModal');}catch(e){showToast('Failed to load','error');}}
+        async function openCardDetail(id){searchResults.classList.remove('active');try{const c=await API.card(id);const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
+            // Build add-to-list dropdown
+            let listDropdown='';if(currentUser&&State.userLists.length){listDropdown=`<div class="add-to-list-dropdown"><button class="btn btn-secondary" onclick="toggleListDropdown(event)">📋 Add to List</button><div class="add-to-list-menu" id="addToListMenu">${State.userLists.map(l=>`<div class="add-to-list-item" onclick="addToListFromModal('${l.id}','${c.id}')">${l.name}</div>`).join('')}</div></div>`;}else if(currentUser){listDropdown=`<button class="btn btn-secondary" onclick="openNewListModal()">📋 New List</button>`;}
+            // External links
+            const extLinks=`<div class="external-links"><a href="${getMTGStocksUrl(c.name)}" target="_blank" class="ext-link">📈 Price History</a><a href="${getTCGPlayerUrl(c.name)}" target="_blank" class="ext-link">🛒 TCGPlayer</a><a href="${getCardKingdomUrl(c.name)}" target="_blank" class="ext-link">👑 Card Kingdom</a><a href="${getEDHRECUrl(c.name)}" target="_blank" class="ext-link">📊 EDHREC</a></div>`;
+            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);"><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div><div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
+            // Store current card for add-to-list
+            State.currentDetailCard=c;openModal('cardModal');}catch(e){showToast('Failed to load','error');}}
+
+        function toggleListDropdown(e){e.stopPropagation();const menu=document.getElementById('addToListMenu');menu.classList.toggle('active');}
+        document.addEventListener('click',e=>{const menu=document.getElementById('addToListMenu');if(menu&&!e.target.closest('.add-to-list-dropdown'))menu.classList.remove('active');});
+        async function addToListFromModal(listId,cardId){const menu=document.getElementById('addToListMenu');if(menu)menu.classList.remove('active');if(State.currentDetailCard){await addToList(listId,State.currentDetailCard);}}
 
         // Watchlist
         function renderWatchlist(){const c=document.getElementById('watchlistContent');if(!State.watchlist.length){c.innerHTML='<div class="watchlist-empty"><div class="watchlist-empty-icon">👁️</div><h3>No cards yet</h3><p>Search and click 👁 to add cards</p></div>';return;}c.innerHTML='<div class="watchlist-grid">'+State.watchlist.map(card=>`<div class="watchlist-card"><img src="${card.image}" class="watchlist-card-img" onclick="openCardDetail('${card.id}')"><div class="watchlist-card-info"><div class="watchlist-card-name">${card.name}</div><div class="watchlist-card-set">${card.setName} • ${card.rarity}</div><div class="watchlist-card-price">${card.priceStr||'N/A'}</div><div class="watchlist-card-actions"><button class="watchlist-action-btn alert" onclick="openQuickAlert('${card.id}','${card.name.replace(/'/g,"\\'")}')">🔔 Alert</button><button class="watchlist-action-btn remove" onclick="quickWatch('${card.id}');renderWatchlist();">✕ Remove</button></div></div></div>`).join('')+'</div>';}
@@ -816,13 +948,249 @@
         function toggleAlert(id){const a=State.alerts.find(x=>x.id===id);if(a){a.enabled=!a.enabled;State.save();updateStats();}}
         function deleteAlert(id){State.alerts=State.alerts.filter(a=>a.id!==id);State.save();renderAlerts();updateStats();showToast('Deleted','info');}
 
+        // ====== CROSS-SITE LISTS (from MTG Card Search) ======
+        async function getUserLists() {
+            if (!currentUser || !db) return [];
+            try {
+                const snapshot = await db.collection('users').doc(currentUser.uid).collection('lists').get();
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch(e) { console.error('Failed to load lists:', e); return []; }
+        }
+
+        async function getListCards(listId) {
+            if (!currentUser || !db) return [];
+            try {
+                const snapshot = await db.collection('users').doc(currentUser.uid)
+                    .collection('lists').doc(listId).collection('cards').get();
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch(e) { console.error('Failed to load list cards:', e); return []; }
+        }
+
+        async function renderLists() {
+            const content = document.getElementById('listsContent');
+            const listCardsView = document.getElementById('listCardsView');
+            listCardsView.style.display = 'none';
+            content.style.display = 'block';
+
+            if (!currentUser) {
+                content.innerHTML = '<div class="auth-notice"><span>🔒</span><span>Sign in to access your lists from <strong>MTG Card Search</strong></span></div>';
+                return;
+            }
+            content.innerHTML = '<div class="loading-spinner"></div>';
+            const lists = await getUserLists();
+            State.userLists = lists;
+
+            if (!lists.length) {
+                content.innerHTML = '<div class="watchlist-empty"><div class="watchlist-empty-icon">📋</div><h3>No lists yet</h3><p>Create a list to organize your cards</p><br><button class="btn btn-primary" onclick="openNewListModal()">+ Create List</button></div>';
+                return;
+            }
+            content.innerHTML = '<div class="lists-grid">' + lists.map(list => {
+                const count = list.cardCount || 0;
+                return `<div class="list-card" onclick="openListView('${list.id}')">
+                    <div class="list-card-header">
+                        <div class="list-card-name">${list.name || 'Unnamed List'}</div>
+                        <div class="list-card-count">${count} card${count!==1?'s':''}</div>
+                    </div>
+                    <div class="list-card-desc">${list.description || ''}</div>
+                </div>`;
+            }).join('') + '</div>';
+        }
+
+        async function openListView(listId) {
+            State.currentList = listId;
+            const list = State.userLists.find(l => l.id === listId);
+            document.getElementById('listViewTitle').textContent = '📋 ' + (list?.name || 'List');
+            document.getElementById('listsContent').style.display = 'none';
+            document.getElementById('listCardsView').style.display = 'block';
+            const grid = document.getElementById('listCardsGrid');
+            grid.innerHTML = '<div class="loading-spinner"></div>';
+
+            const cards = await getListCards(listId);
+            document.getElementById('listCardCount').textContent = cards.length + ' card' + (cards.length !== 1 ? 's' : '');
+
+            if (!cards.length) {
+                grid.innerHTML = '<p style="color:var(--text-secondary);">No cards in this list yet.</p>';
+                return;
+            }
+            // Fetch full card data from Scryfall for display
+            const cardEls = [];
+            for (const card of cards.slice(0, 50)) {
+                try {
+                    const c = await API.card(card.scryfallId || card.id);
+                    cardEls.push(cardEl(c));
+                } catch(e) {}
+            }
+            grid.innerHTML = cardEls.join('');
+        }
+
+        function closeListView() {
+            document.getElementById('listCardsView').style.display = 'none';
+            document.getElementById('listsContent').style.display = 'block';
+        }
+
+        function openNewListModal() {
+            if (!currentUser) { showToast('Please sign in first', 'warning'); return; }
+            document.getElementById('newListName').value = '';
+            document.getElementById('newListDesc').value = '';
+            openModal('newListModal');
+        }
+
+        async function createNewList() {
+            const name = document.getElementById('newListName').value.trim();
+            if (!name) { showToast('Enter a list name', 'warning'); return; }
+            const desc = document.getElementById('newListDesc').value.trim();
+            try {
+                await db.collection('users').doc(currentUser.uid).collection('lists').add({
+                    name, description: desc, cardCount: 0, createdAt: new Date().toISOString()
+                });
+                closeModal('newListModal');
+                showToast('List created!', 'success');
+                renderLists();
+            } catch(e) { showToast('Failed to create list', 'error'); }
+        }
+
+        async function addToList(listId, card) {
+            if (!currentUser || !db) return;
+            try {
+                const listRef = db.collection('users').doc(currentUser.uid).collection('lists').doc(listId);
+                await listRef.collection('cards').add({
+                    scryfallId: card.id, name: card.name, set: card.set, setName: card.set_name,
+                    image: card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || '',
+                    addedAt: new Date().toISOString()
+                });
+                // Update card count
+                const cardsSnap = await listRef.collection('cards').get();
+                await listRef.update({ cardCount: cardsSnap.size });
+                showToast('Added to list!', 'success');
+            } catch(e) { showToast('Failed to add', 'error'); }
+        }
+
+        // ====== UPCOMING RELEASES & SET TRACKING ======
+        async function loadUpcomingReleases() {
+            const grid = document.getElementById('releasesGrid');
+            if (!State.sets.length) {
+                try { const d = await API.sets(); State.sets = d.data; } catch(e) { return; }
+            }
+            const today = new Date().toISOString().split('T')[0];
+            const upcoming = State.sets
+                .filter(s => s.released_at > today && ['expansion', 'core', 'masters', 'draft_innovation', 'commander'].includes(s.set_type))
+                .sort((a, b) => a.released_at.localeCompare(b.released_at))
+                .slice(0, 6);
+
+            State.upcomingReleases = upcoming;
+            if (!upcoming.length) {
+                grid.innerHTML = '<p style="color:var(--text-secondary);">No upcoming releases found.</p>';
+                return;
+            }
+            grid.innerHTML = upcoming.map(s => {
+                const releaseDate = new Date(s.released_at);
+                const daysUntil = Math.ceil((releaseDate - new Date()) / (1000 * 60 * 60 * 24));
+                const isTracked = State.trackedSets.includes(s.code);
+                return `<div class="release-card">
+                    <img src="${s.icon_svg_uri}" class="release-icon">
+                    <div class="release-info">
+                        <div class="release-name">${s.name}</div>
+                        <div class="release-type">${s.set_type.replace('_', ' ')}</div>
+                        <div class="release-date">${s.released_at}</div>
+                        <div class="release-countdown">${daysUntil} day${daysUntil!==1?'s':''} away</div>
+                    </div>
+                    <button class="track-btn ${isTracked?'tracked':''}" onclick="toggleTrackSet('${s.code}')">${isTracked?'✓ Tracked':'Track'}</button>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleTrackSet(code) {
+            const idx = State.trackedSets.indexOf(code);
+            if (idx > -1) { State.trackedSets.splice(idx, 1); showToast('Set untracked', 'info'); }
+            else { State.trackedSets.push(code); showToast('Now tracking set!', 'success'); }
+            State.save();
+            loadUpcomingReleases();
+            renderTrackedSets();
+            renderTrackedSetsSettings();
+        }
+
+        function renderTrackedSets() {
+            const bar = document.getElementById('trackedSetsBar');
+            const chips = document.getElementById('trackedSetsChips');
+            if (!State.trackedSets.length) { bar.style.display = 'none'; return; }
+            bar.style.display = 'flex';
+            chips.innerHTML = State.trackedSets.map(code => {
+                const set = State.sets.find(s => s.code === code);
+                return `<div class="tracked-set-chip" onclick="openSetView('${code}')">
+                    <img src="${set?.icon_svg_uri||''}">${set?.name||code.toUpperCase()}
+                </div>`;
+            }).join('');
+        }
+
+        function renderTrackedSetsSettings() {
+            const el = document.getElementById('trackedSetsSettings');
+            if (!State.trackedSets.length) {
+                el.innerHTML = '<p style="color:var(--text-secondary);font-size:0.9rem;">No sets tracked yet. Track sets from the Upcoming Releases section on the dashboard.</p>';
+                return;
+            }
+            el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;">' + State.trackedSets.map(code => {
+                const set = State.sets.find(s => s.code === code);
+                return `<div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);">
+                    <img src="${set?.icon_svg_uri||''}" style="width:20px;height:20px;">
+                    <span>${set?.name||code}</span>
+                    <button onclick="toggleTrackSet('${code}')" style="background:none;border:none;color:var(--accent-red);cursor:pointer;">✕</button>
+                </div>`;
+            }).join('') + '</div>';
+        }
+
+        // ====== DATA REFRESH ======
+        async function refreshAllData() {
+            showToast('Refreshing data...', 'info');
+            State.sets = [];
+            State.trendingData = null;
+            State.categoryData = null;
+            State.upcomingReleases = [];
+            try {
+                await loadSets();
+                await loadTrending();
+                await loadUpcomingReleases();
+                State.lastRefresh = new Date().toISOString();
+                State.save();
+                updateLastUpdatedDisplay();
+                showToast('Data refreshed!', 'success');
+            } catch(e) { showToast('Refresh failed', 'error'); }
+        }
+
+        function updateLastUpdatedDisplay() {
+            const dashEl = document.getElementById('lastUpdated');
+            const settingsEl = document.getElementById('settingsLastUpdated');
+            if (State.lastRefresh) {
+                const d = new Date(State.lastRefresh);
+                const str = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+                if (dashEl) dashEl.innerHTML = '🕐 Updated: ' + str;
+                if (settingsEl) settingsEl.textContent = str;
+            } else {
+                if (dashEl) dashEl.innerHTML = '';
+                if (settingsEl) settingsEl.textContent = 'Never';
+            }
+        }
+
+        // ====== PRICE HISTORY & EXTERNAL LINKS ======
+        function getMTGStocksUrl(cardName) {
+            return 'https://www.mtgstocks.com/cards/search?query=' + encodeURIComponent(cardName);
+        }
+        function getTCGPlayerUrl(cardName) {
+            return 'https://www.tcgplayer.com/search/magic/product?q=' + encodeURIComponent(cardName);
+        }
+        function getCardKingdomUrl(cardName) {
+            return 'https://www.cardkingdom.com/catalog/search?search=header&filter%5Bname%5D=' + encodeURIComponent(cardName);
+        }
+        function getEDHRECUrl(cardName) {
+            return 'https://edhrec.com/cards/' + cardName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+        }
+
         function updateStats(){document.getElementById('statTracked').textContent=State.watchlist.length;document.getElementById('statAlerts').textContent=State.alerts.filter(a=>a.enabled).length;}
 
         // Tab filters
         document.querySelectorAll('.section-tab[data-filter]').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.section-tab[data-filter]').forEach(x=>x.classList.remove('active'));t.classList.add('active');loadTrending(t.dataset.filter);}));
 
         // Init
-        document.addEventListener('DOMContentLoaded',async()=>{document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.addEventListener('click',()=>switchPage(t.dataset.page)));if(auth)auth.onAuthStateChanged(u=>{currentUser=u;updateAuthUI();State.load();});await State.load();updateStats();await loadTrending();setTimeout(()=>{document.getElementById('loadingOverlay').style.opacity='0';setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);},500);});
+        document.addEventListener('DOMContentLoaded',async()=>{document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.addEventListener('click',()=>switchPage(t.dataset.page)));if(auth)auth.onAuthStateChanged(async u=>{currentUser=u;updateAuthUI();await State.load();if(currentUser){State.userLists=await getUserLists();}renderTrackedSets();renderTrackedSetsSettings();});await State.load();updateStats();await loadTrending();await loadUpcomingReleases();renderTrackedSets();setTimeout(()=>{document.getElementById('loadingOverlay').style.opacity='0';setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);},500);});
     </script>
 </body>
 </html>
