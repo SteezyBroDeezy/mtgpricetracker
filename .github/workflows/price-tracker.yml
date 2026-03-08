@@ -2,8 +2,9 @@ name: Daily Price Tracker
 
 on:
   schedule:
-    # Runs daily at 6 AM UTC (midnight MST)
+    # Runs twice daily: 6 AM UTC (midnight MST) and 6 PM UTC (noon MST)
     - cron: '0 6 * * *'
+    - cron: '0 18 * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
