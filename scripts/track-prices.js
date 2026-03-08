@@ -185,7 +185,92 @@ async function main() {
     { name: 'Tarkir Dragons', query: 'set:dtk t:dragon usd>0', limit: 30 },
     { name: 'Dragonlords', query: 'set:dtk dragonlord usd>0', limit: 10 },
     { name: 'Tarkir Mythics', query: 'set:dtk r:mythic usd>0', limit: 30 },
-    { name: 'Tarkir Rares', query: 'set:dtk r:rare usd>0', limit: 40 }
+    { name: 'Tarkir Rares', query: 'set:dtk r:rare usd>0', limit: 40 },
+
+    // ====== FOUNDATIONS ======
+    { name: 'Foundations Top', query: 'set:fdn usd>0', limit: 50 },
+    { name: 'Foundations Mythics', query: 'set:fdn r:mythic usd>0', limit: 30 },
+    { name: 'Foundations Rares', query: 'set:fdn r:rare usd>0', limit: 40 },
+
+    // ====== DUSKMOURN ======
+    { name: 'Duskmourn Top', query: 'set:dsk usd>0', limit: 50 },
+    { name: 'Duskmourn Mythics', query: 'set:dsk r:mythic usd>0', limit: 30 },
+    { name: 'Duskmourn Horrors', query: 'set:dsk t:horror usd>0', limit: 30 },
+
+    // ====== BLOOMBURROW ======
+    { name: 'Bloomburrow Top', query: 'set:blb usd>0', limit: 50 },
+    { name: 'Bloomburrow Mythics', query: 'set:blb r:mythic usd>0', limit: 30 },
+    { name: 'Bloomburrow Mice', query: 'set:blb t:mouse usd>0', limit: 20 },
+
+    // ====== ASSASSINS CREED ======
+    { name: 'Assassins Creed Top', query: 'set:acr usd>0', limit: 50 },
+    { name: 'ACR Mythics', query: 'set:acr r:mythic usd>0', limit: 30 },
+    { name: 'ACR Legendary', query: 'set:acr t:legendary usd>0', limit: 30 },
+
+    // ====== MODERN HORIZONS 3 ======
+    { name: 'MH3 Top', query: 'set:mh3 usd>0', limit: 50 },
+    { name: 'MH3 Mythics', query: 'set:mh3 r:mythic usd>0', limit: 30 },
+    { name: 'MH3 Lands', query: 'set:mh3 t:land usd>0', limit: 30 },
+
+    // ====== OUTLAWS OF THUNDER JUNCTION ======
+    { name: 'OTJ Top', query: 'set:otj usd>0', limit: 50 },
+    { name: 'OTJ Mythics', query: 'set:otj r:mythic usd>0', limit: 30 },
+    { name: 'OTJ Legendary', query: 'set:otj t:legendary usd>0', limit: 30 },
+
+    // ====== FALLOUT ======
+    { name: 'Fallout Top', query: 'set:pip usd>0', limit: 50 },
+    { name: 'Fallout Mythics', query: 'set:pip r:mythic usd>0', limit: 30 },
+    { name: 'Fallout Legendary', query: 'set:pip t:legendary usd>0', limit: 30 },
+
+    // ====== MURDERS AT KARLOV MANOR ======
+    { name: 'MKM Top', query: 'set:mkm usd>0', limit: 50 },
+    { name: 'MKM Mythics', query: 'set:mkm r:mythic usd>0', limit: 30 },
+    { name: 'MKM Detectives', query: 'set:mkm t:detective usd>0', limit: 20 },
+
+    // ====== RAVNICA REMASTERED ======
+    { name: 'RVR Top', query: 'set:rvr usd>0', limit: 50 },
+    { name: 'RVR Mythics', query: 'set:rvr r:mythic usd>0', limit: 30 },
+    { name: 'RVR Shocklands', query: 'set:rvr t:land o:"pay 2 life" usd>0', limit: 20 },
+
+    // ====== LOST CAVERNS OF IXALAN ======
+    { name: 'LCI Top', query: 'set:lci usd>0', limit: 50 },
+    { name: 'LCI Mythics', query: 'set:lci r:mythic usd>0', limit: 30 },
+    { name: 'LCI Dinosaurs', query: 'set:lci t:dinosaur usd>0', limit: 30 },
+
+    // ====== DOCTOR WHO ======
+    { name: 'Doctor Who Top', query: 'set:who usd>0', limit: 50 },
+    { name: 'WHO Mythics', query: 'set:who r:mythic usd>0', limit: 30 },
+    { name: 'WHO Legendary', query: 'set:who t:legendary usd>0', limit: 30 },
+
+    // ====== WILDS OF ELDRAINE ======
+    { name: 'WOE Top', query: 'set:woe usd>0', limit: 50 },
+    { name: 'WOE Mythics', query: 'set:woe r:mythic usd>0', limit: 30 },
+    { name: 'WOE Faeries', query: 'set:woe t:faerie usd>0', limit: 30 },
+
+    // ====== COMMANDER MASTERS ======
+    { name: 'CMM Top', query: 'set:cmm usd>0', limit: 50 },
+    { name: 'CMM Mythics', query: 'set:cmm r:mythic usd>0', limit: 30 },
+    { name: 'CMM Commanders', query: 'set:cmm t:legendary t:creature usd>0', limit: 40 },
+
+    // ====== LORD OF THE RINGS ======
+    { name: 'LTR Top', query: 'set:ltr usd>0', limit: 50 },
+    { name: 'LTR Mythics', query: 'set:ltr r:mythic usd>0', limit: 30 },
+    { name: 'LTR Legendary', query: 'set:ltr t:legendary usd>0', limit: 40 },
+
+    // ====== MARCH OF THE MACHINE ======
+    { name: 'MOM Top', query: 'set:mom usd>0', limit: 50 },
+    { name: 'MOM Mythics', query: 'set:mom r:mythic usd>0', limit: 30 },
+    { name: 'MOM Battles', query: 'set:mom t:battle usd>0', limit: 20 },
+
+    // ====== PHYREXIA ALL WILL BE ONE ======
+    { name: 'ONE Top', query: 'set:one usd>0', limit: 50 },
+    { name: 'ONE Mythics', query: 'set:one r:mythic usd>0', limit: 30 },
+    { name: 'ONE Phyrexians', query: 'set:one t:phyrexian usd>0', limit: 30 },
+
+    // ====== DOMINARIA REMASTERED ======
+    { name: 'DMR Top', query: 'set:dmr usd>0', limit: 50 },
+    { name: 'DMR Mythics', query: 'set:dmr r:mythic usd>0', limit: 30 },
+    { name: 'DMR Legendary', query: 'set:dmr t:legendary usd>0', limit: 30 }
   ];
 
   let totalRecorded = 0;
