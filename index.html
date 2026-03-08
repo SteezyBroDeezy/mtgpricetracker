@@ -1711,7 +1711,7 @@
         document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.classList.remove('active');});
 
         // Quick actions
-        async function quickWatch(id){const idx=State.watchlist.findIndex(c=>c.id===id);if(idx>-1){State.watchlist.splice(idx,1);showToast('Removed','info');}else{try{const c=await API.card(id);const pr=getPrice(c);State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val});showToast('Added to watchlist!','success');}catch(e){showToast('Failed','error');return;}}State.save();updateStats();handleSearch(searchInput.value);}
+        async function quickWatch(id){const idx=State.watchlist.findIndex(c=>c.id===id);if(idx>-1){State.watchlist.splice(idx,1);showToast('Removed','info');}else{try{const c=await API.card(id);const pr=getPrice(c);State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});showToast('Added to watchlist!','success');}catch(e){showToast('Failed','error');return;}}State.save();updateStats();handleSearch(searchInput.value);}
         
         function openQuickAlert(id,name){document.getElementById('quickAlertCardId').value=id;document.getElementById('quickAlertCardName').textContent=name;document.getElementById('quickAlertType').value='price_above';document.getElementById('quickAlertThreshold').value='';openModal('quickAlertModal');}
         
