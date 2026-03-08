@@ -488,6 +488,19 @@
         .category-mover-content.expanded { max-height: 600px; overflow-y: auto; }
         .category-mover-content.expanded .category-show-more { background: var(--accent-primary); color: white; }
         .category-card-count { font-size: 0.7rem; color: var(--text-muted); margin-left: auto; }
+        .category-track-btn { margin-left: auto; padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-fast); border: 1px solid var(--text-muted); background: transparent; color: var(--text-muted); }
+        .category-track-btn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+        .category-track-btn.tracked { background: var(--accent-gold); color: var(--bg-primary); border-color: var(--accent-gold); }
+        .category-mover-header { position: relative; }
+        .tracked-categories-section { margin-top: 2rem; padding: 1.5rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--accent-gold); }
+        .tracked-category-item { padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); margin-bottom: 0.5rem; }
+        .tracked-category-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .tracked-category-name { font-weight: 600; color: var(--accent-gold); flex: 1; }
+        .tracked-category-cards { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+        .mini-card { font-size: 0.75rem; padding: 0.2rem 0.5rem; background: var(--bg-secondary); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-fast); }
+        .mini-card:hover { background: var(--accent-primary); color: white; }
+        .btn-sm { padding: 0.2rem 0.4rem; font-size: 0.7rem; border-radius: var(--radius-sm); cursor: pointer; background: var(--bg-secondary); border: 1px solid var(--text-muted); color: var(--text-secondary); transition: var(--transition-fast); }
+        .btn-sm:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
 
         /* CTA Section */
         .cta-section { margin: 2rem 0; }
@@ -774,6 +787,106 @@
                 </div>
             </section>
 
+            <!-- Final Fantasy Set -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">⚔️ Final Fantasy</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Universes Beyond - FF Crossover</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> FF Top Cards</div><div class="category-mover-content" id="ffTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> FF Under $10</div><div class="category-mover-content" id="ffBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> FF Mythics</div><div class="category-mover-content" id="ffMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> FF Rares</div><div class="category-mover-content" id="ffRareContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👤</span> FF Creatures</div><div class="category-mover-content" id="ffCreaturesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚡</span> FF Spells</div><div class="category-mover-content" id="ffSpellsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚙️</span> FF Artifacts</div><div class="category-mover-content" id="ffArtifactsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> FF Legendary</div><div class="category-mover-content" id="ffLegendaryContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏔️</span> FF Lands</div><div class="category-mover-content" id="ffLandsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌈</span> FF Multicolor</div><div class="category-mover-content" id="ffMultiContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Aetherdrift Set -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🏎️ Aetherdrift</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">High-speed racing across the multiverse!</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> Drift Top Cards</div><div class="category-mover-content" id="driftTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> Drift Under $10</div><div class="category-mover-content" id="driftBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> Drift Mythics</div><div class="category-mover-content" id="driftMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> Drift Rares</div><div class="category-mover-content" id="driftRareContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🚗</span> Drift Vehicles</div><div class="category-mover-content" id="driftVehiclesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👤</span> Drift Creatures</div><div class="category-mover-content" id="driftCreaturesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚡</span> Drift Spells</div><div class="category-mover-content" id="driftSpellsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> Drift Legendary</div><div class="category-mover-content" id="driftLegendaryContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏔️</span> Drift Lands</div><div class="category-mover-content" id="driftLandsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌈</span> Drift Multicolor</div><div class="category-mover-content" id="driftMultiContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Spider-Man Set -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🕷️ Spider-Man</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Marvel Universes Beyond</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> Spidey Top Cards</div><div class="category-mover-content" id="spiderTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> Spidey Under $10</div><div class="category-mover-content" id="spiderBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> Spidey Mythics</div><div class="category-mover-content" id="spiderMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> Spidey Rares</div><div class="category-mover-content" id="spiderRareContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👤</span> Spidey Creatures</div><div class="category-mover-content" id="spiderCreaturesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚡</span> Spidey Spells</div><div class="category-mover-content" id="spiderSpellsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔴</span> Spidey Red</div><div class="category-mover-content" id="spiderRedContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔵</span> Spidey Blue</div><div class="category-mover-content" id="spiderBlueContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> Spidey Legendary</div><div class="category-mover-content" id="spiderLegendaryContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌈</span> Spidey Multicolor</div><div class="category-mover-content" id="spiderMultiContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Avatar Set -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🌿 Avatar: Pandora</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Universes Beyond - Avatar Crossover</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> Avatar Top Cards</div><div class="category-mover-content" id="avatarTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> Avatar Under $10</div><div class="category-mover-content" id="avatarBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> Avatar Mythics</div><div class="category-mover-content" id="avatarMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> Avatar Rares</div><div class="category-mover-content" id="avatarRareContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👤</span> Avatar Creatures</div><div class="category-mover-content" id="avatarCreaturesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🟢</span> Avatar Green</div><div class="category-mover-content" id="avatarGreenContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔵</span> Avatar Blue</div><div class="category-mover-content" id="avatarBlueContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> Avatar Legendary</div><div class="category-mover-content" id="avatarLegendaryContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏔️</span> Avatar Lands</div><div class="category-mover-content" id="avatarLandsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌈</span> Avatar Multicolor</div><div class="category-mover-content" id="avatarMultiContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Dragons of Tarkir -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🐲 Dragons of Tarkir</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Dragonlords reign supreme</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> Tarkir Top Cards</div><div class="category-mover-content" id="dtTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> Tarkir Under $10</div><div class="category-mover-content" id="dtBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> Tarkir Mythics</div><div class="category-mover-content" id="dtMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> Tarkir Rares</div><div class="category-mover-content" id="dtRareContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🐉</span> Tarkir Dragons</div><div class="category-mover-content" id="dtDragonsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> Dragonlords</div><div class="category-mover-content" id="dtDragonlordsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚡</span> Tarkir Spells</div><div class="category-mover-content" id="dtSpellsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👤</span> Tarkir Creatures</div><div class="category-mover-content" id="dtCreaturesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏔️</span> Tarkir Lands</div><div class="category-mover-content" id="dtLandsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌈</span> Tarkir Multicolor</div><div class="category-mover-content" id="dtMultiContent">Loading...</div></div>
+                </div>
+            </section>
+
             <!-- CTA for non-logged in users -->
             <section class="cta-section" id="ctaSection">
                 <div class="cta-card">
@@ -790,6 +903,15 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Tracked Categories Widget -->
+            <div class="tracked-categories-section" id="trackedCategoriesWidget" style="display:none;">
+                <div class="section-header" style="margin-bottom:0.75rem;">
+                    <h2 class="section-title">📊 Your Tracked Categories</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Price tracking & alerts for these categories</p>
+                </div>
+                <div id="trackedCategoriesContent"></div>
+            </div>
 
             <!-- Tracked Sets Widget -->
             <div class="tracked-sets-widget" id="trackedSetsWidget" style="display:none;">
@@ -1300,10 +1422,10 @@
             sets:()=>API.req('/sets')
         };
 
-        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,
+        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,
             portfolio:[],priceMovers:null,marketAnalytics:null,lastPriceRecord:{},staplesData:null,currentStaplesFormat:'commander',currentStaplesTier:0.5,priceHistory:{},
-            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.trackedSets=d.trackedSets||[];this.portfolio=d.portfolio||[];this.lastRefresh=d.lastRefresh||null;this.lastPriceRecord=d.lastPriceRecord||{};this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.trackedSets=d.trackedSets||this.trackedSets;this.portfolio=d.portfolio||this.portfolio;this.lastRefresh=d.lastRefresh||this.lastRefresh;this.lastPriceRecord=d.lastPriceRecord||this.lastPriceRecord;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;updateLastUpdatedDisplay();},
-            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
+            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.trackedSets=d.trackedSets||[];this.trackedCategories=d.trackedCategories||[];this.portfolio=d.portfolio||[];this.lastRefresh=d.lastRefresh||null;this.lastPriceRecord=d.lastPriceRecord||{};this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.trackedSets=d.trackedSets||this.trackedSets;this.trackedCategories=d.trackedCategories||this.trackedCategories;this.portfolio=d.portfolio||this.portfolio;this.lastRefresh=d.lastRefresh||this.lastRefresh;this.lastPriceRecord=d.lastPriceRecord||this.lastPriceRecord;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;updateLastUpdatedDisplay();},
+            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
         };
 
         // Utilities
@@ -1402,9 +1524,43 @@
         async function loadFunction(fn){State.currentCategory=fn;document.getElementById('trendingSection').style.display='none';document.getElementById('categoryGrid').style.display='none';document.getElementById('functionGrid').style.display='none';document.getElementById('categorySection').style.display='block';const titles={ramp:'🌱 Ramp',removal:'💀 Removal',draw:'🎴 Card Draw',protection:'🛡️ Protection',wipes:'💥 Board Wipes',tutor:'🔍 Tutors'};document.getElementById('categoryTitle').textContent=titles[fn]||fn;const grid=document.getElementById('categoryCards');grid.innerHTML='<div class="loading-spinner"></div>';try{const d=await API.search(funcQueries[fn],{order:'usd',dir:'desc'});State.categoryData=d;if(d.data)grid.innerHTML=d.data.slice(0,24).map(c=>cardEl(c)).join('');document.getElementById('catLoadMore').style.display=d.has_more?'inline-flex':'none';}catch(e){grid.innerHTML='<p>No cards found</p>';}}
 
         // Sets
-        async function loadSets(){const list=document.getElementById('setsList');if(!State.sets.length){list.innerHTML='<div class="loading-spinner"></div>';try{const d=await API.sets();State.sets=d.data.filter(s=>['expansion','core','masters','draft_innovation'].includes(s.set_type));}catch(e){list.innerHTML='<p>Failed</p>';return;}}renderSets(State.sets);}
-        function renderSets(sets){document.getElementById('setsList').innerHTML=sets.slice(0,60).map(s=>`<div class="set-item" onclick="openSetView('${s.code}')"><img src="${s.icon_svg_uri}" class="set-icon-large"><div class="set-item-info"><h4>${s.name}</h4><p>${s.released_at||'TBA'} • ${s.card_count} cards</p></div></div>`).join('');}
-        document.getElementById('setSearch')?.addEventListener('input',e=>{const q=e.target.value.toLowerCase();renderSets(State.sets.filter(s=>s.name.toLowerCase().includes(q)||s.code.includes(q)));});
+        State.setsDisplayCount = 20;
+        async function loadSets(){
+            const list=document.getElementById('setsList');
+            if(!State.sets.length){
+                list.innerHTML='<div class="loading-spinner"></div>';
+                try{
+                    const d=await API.sets();
+                    // Filter to sets with 100+ cards (main sets, not tiny products)
+                    State.sets=d.data.filter(s=>['expansion','core','masters','draft_innovation','commander'].includes(s.set_type) && s.card_count >= 100);
+                }catch(e){list.innerHTML='<p>Failed</p>';return;}
+            }
+            State.setsDisplayCount = 20;
+            renderSets(State.sets);
+        }
+        function renderSets(sets, resetCount = false){
+            if(resetCount) State.setsDisplayCount = 20;
+            const displaySets = sets.slice(0, State.setsDisplayCount);
+            const hasMore = sets.length > State.setsDisplayCount;
+            let html = displaySets.map(s=>`<div class="set-item" onclick="openSetView('${s.code}')"><img src="${s.icon_svg_uri}" class="set-icon-large"><div class="set-item-info"><h4>${s.name}</h4><p>${s.released_at||'TBA'} • ${s.card_count} cards</p></div></div>`).join('');
+            if(hasMore) {
+                html += `<div class="set-item show-more-sets" onclick="loadMoreSets()" style="justify-content:center;background:var(--bg-tertiary);cursor:pointer;">
+                    <div style="text-align:center;padding:1rem;">
+                        <span style="font-size:1.5rem;">📚</span><br>
+                        <span style="color:var(--accent-secondary);font-weight:600;">Show More Sets</span><br>
+                        <span style="color:var(--text-muted);font-size:0.8rem;">${sets.length - State.setsDisplayCount} more available</span>
+                    </div>
+                </div>`;
+            }
+            document.getElementById('setsList').innerHTML = html;
+        }
+        function loadMoreSets(){
+            State.setsDisplayCount += 20;
+            const searchVal = document.getElementById('setSearch')?.value?.toLowerCase() || '';
+            const filtered = searchVal ? State.sets.filter(s=>s.name.toLowerCase().includes(searchVal)||s.code.includes(searchVal)) : State.sets;
+            renderSets(filtered);
+        }
+        document.getElementById('setSearch')?.addEventListener('input',e=>{const q=e.target.value.toLowerCase();renderSets(State.sets.filter(s=>s.name.toLowerCase().includes(q)||s.code.includes(q)), true);});
         async function openSetView(code){State.currentSet=code;document.getElementById('setsList').style.display='none';document.querySelector('#browsePage .section-header').style.display='none';document.getElementById('setCardsView').style.display='block';const set=State.sets.find(s=>s.code===code);document.getElementById('setViewTitle').textContent='📚 '+(set?.name||code.toUpperCase());loadSetCards();}
         function closeSetView(){document.getElementById('setCardsView').style.display='none';document.getElementById('setsList').style.display='grid';document.querySelector('#browsePage .section-header').style.display='flex';}
         async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}}catch(e){grid.innerHTML='<p>No cards</p>';}}
@@ -2136,16 +2292,79 @@
             cmdLands: { query: '(set:cmm or set:c24 or set:otp) t:land usd>0', id: 'cmdLandsContent' },
             cmdRamp: { query: '(set:cmm or set:c24 or set:otp) o:"add" o:"mana" usd>0', id: 'cmdRampContent' },
             cmdDraw: { query: '(set:cmm or set:c24 or set:otp) o:"draw" o:"card" usd>0', id: 'cmdDrawContent' },
-            cmdRemoval: { query: '(set:cmm or set:c24 or set:otp) (o:"destroy target" or o:"exile target") usd>0', id: 'cmdRemovalContent' }
+            cmdRemoval: { query: '(set:cmm or set:c24 or set:otp) (o:"destroy target" or o:"exile target") usd>0', id: 'cmdRemovalContent' },
+            // Final Fantasy
+            ffTop: { query: 'set:fdn usd>0', id: 'ffTopContent' },
+            ffBudget: { query: 'set:fdn usd<10 usd>0.25', id: 'ffBudgetContent' },
+            ffMythic: { query: 'set:fdn r:mythic usd>0', id: 'ffMythicContent' },
+            ffRare: { query: 'set:fdn r:rare usd>0', id: 'ffRareContent' },
+            ffCreatures: { query: 'set:fdn t:creature usd>0', id: 'ffCreaturesContent' },
+            ffSpells: { query: 'set:fdn (t:instant or t:sorcery) usd>0', id: 'ffSpellsContent' },
+            ffArtifacts: { query: 'set:fdn t:artifact usd>0', id: 'ffArtifactsContent' },
+            ffLegendary: { query: 'set:fdn t:legendary usd>0', id: 'ffLegendaryContent' },
+            ffLands: { query: 'set:fdn t:land usd>0', id: 'ffLandsContent' },
+            ffMulti: { query: 'set:fdn c>=2 usd>0', id: 'ffMultiContent' },
+            // Aetherdrift
+            driftTop: { query: 'set:drft usd>0', id: 'driftTopContent' },
+            driftBudget: { query: 'set:drft usd<10 usd>0.25', id: 'driftBudgetContent' },
+            driftMythic: { query: 'set:drft r:mythic usd>0', id: 'driftMythicContent' },
+            driftRare: { query: 'set:drft r:rare usd>0', id: 'driftRareContent' },
+            driftVehicles: { query: 'set:drft t:vehicle usd>0', id: 'driftVehiclesContent' },
+            driftCreatures: { query: 'set:drft t:creature usd>0', id: 'driftCreaturesContent' },
+            driftSpells: { query: 'set:drft (t:instant or t:sorcery) usd>0', id: 'driftSpellsContent' },
+            driftLegendary: { query: 'set:drft t:legendary usd>0', id: 'driftLegendaryContent' },
+            driftLands: { query: 'set:drft t:land usd>0', id: 'driftLandsContent' },
+            driftMulti: { query: 'set:drft c>=2 usd>0', id: 'driftMultiContent' },
+            // Spider-Man
+            spiderTop: { query: '(set:spg or (spider-man)) usd>0', id: 'spiderTopContent' },
+            spiderBudget: { query: '(set:spg or (spider-man)) usd<10 usd>0.25', id: 'spiderBudgetContent' },
+            spiderMythic: { query: '(set:spg or (spider-man)) r:mythic usd>0', id: 'spiderMythicContent' },
+            spiderRare: { query: '(set:spg or (spider-man)) r:rare usd>0', id: 'spiderRareContent' },
+            spiderCreatures: { query: '(set:spg or (spider-man)) t:creature usd>0', id: 'spiderCreaturesContent' },
+            spiderSpells: { query: '(set:spg or (spider-man)) (t:instant or t:sorcery) usd>0', id: 'spiderSpellsContent' },
+            spiderRed: { query: '(set:spg or (spider-man)) c:r usd>0', id: 'spiderRedContent' },
+            spiderBlue: { query: '(set:spg or (spider-man)) c:u usd>0', id: 'spiderBlueContent' },
+            spiderLegendary: { query: '(set:spg or (spider-man)) t:legendary usd>0', id: 'spiderLegendaryContent' },
+            spiderMulti: { query: '(set:spg or (spider-man)) c>=2 usd>0', id: 'spiderMultiContent' },
+            // Avatar
+            avatarTop: { query: '(set:avt or (avatar pandora)) usd>0', id: 'avatarTopContent' },
+            avatarBudget: { query: '(set:avt or (avatar pandora)) usd<10 usd>0.25', id: 'avatarBudgetContent' },
+            avatarMythic: { query: '(set:avt or (avatar pandora)) r:mythic usd>0', id: 'avatarMythicContent' },
+            avatarRare: { query: '(set:avt or (avatar pandora)) r:rare usd>0', id: 'avatarRareContent' },
+            avatarCreatures: { query: '(set:avt or (avatar pandora)) t:creature usd>0', id: 'avatarCreaturesContent' },
+            avatarGreen: { query: '(set:avt or (avatar pandora)) c:g usd>0', id: 'avatarGreenContent' },
+            avatarBlue: { query: '(set:avt or (avatar pandora)) c:u usd>0', id: 'avatarBlueContent' },
+            avatarLegendary: { query: '(set:avt or (avatar pandora)) t:legendary usd>0', id: 'avatarLegendaryContent' },
+            avatarLands: { query: '(set:avt or (avatar pandora)) t:land usd>0', id: 'avatarLandsContent' },
+            avatarMulti: { query: '(set:avt or (avatar pandora)) c>=2 usd>0', id: 'avatarMultiContent' },
+            // Dragons of Tarkir
+            dtTop: { query: 'set:dtk usd>0', id: 'dtTopContent' },
+            dtBudget: { query: 'set:dtk usd<10 usd>0.25', id: 'dtBudgetContent' },
+            dtMythic: { query: 'set:dtk r:mythic usd>0', id: 'dtMythicContent' },
+            dtRare: { query: 'set:dtk r:rare usd>0', id: 'dtRareContent' },
+            dtDragons: { query: 'set:dtk t:dragon usd>0', id: 'dtDragonsContent' },
+            dtDragonlords: { query: 'set:dtk dragonlord usd>0', id: 'dtDragonlordsContent' },
+            dtSpells: { query: 'set:dtk (t:instant or t:sorcery) usd>0', id: 'dtSpellsContent' },
+            dtCreatures: { query: 'set:dtk t:creature usd>0', id: 'dtCreaturesContent' },
+            dtLands: { query: 'set:dtk t:land usd>0', id: 'dtLandsContent' },
+            dtMulti: { query: 'set:dtk c>=2 usd>0', id: 'dtMultiContent' }
         };
 
         // Store expanded card data for each category
         const categoryCardData = {};
 
         async function loadCategoryMovers() {
+            const promises = [];
             for (const [cat, config] of Object.entries(categoryMoverQueries)) {
-                loadSingleCategoryMover(cat, config);
+                promises.push(loadSingleCategoryMover(cat, config));
             }
+            // After first batch loads, add track buttons
+            Promise.all(promises.slice(0, 10)).then(() => {
+                setTimeout(() => {
+                    addCategoryTrackButtons();
+                    renderTrackedCategoriesWidget();
+                }, 500);
+            });
         }
 
         async function loadSingleCategoryMover(cat, config) {
@@ -2209,6 +2428,113 @@
             const container = document.getElementById(data.config.id);
             if (!container) return;
             renderCategoryCards(cat, container, !data.expanded);
+        }
+
+        // ====== CATEGORY TRACKING ======
+        function toggleTrackCategory(cat, event) {
+            event?.stopPropagation();
+            if (!currentUser) {
+                showToast('Sign in to track categories', 'warning');
+                openAuthModal('login');
+                return;
+            }
+            const idx = State.trackedCategories.indexOf(cat);
+            if (idx === -1) {
+                State.trackedCategories.push(cat);
+                showToast('Category tracked! View in Alerts tab.', 'success');
+            } else {
+                State.trackedCategories.splice(idx, 1);
+                showToast('Category untracked', 'info');
+            }
+            State.save();
+            updateCategoryTrackButtons();
+            renderTrackedCategoriesWidget();
+        }
+
+        function isCategoryTracked(cat) {
+            return State.trackedCategories.includes(cat);
+        }
+
+        function updateCategoryTrackButtons() {
+            document.querySelectorAll('.category-track-btn').forEach(btn => {
+                const cat = btn.dataset.category;
+                btn.classList.toggle('tracked', isCategoryTracked(cat));
+                btn.textContent = isCategoryTracked(cat) ? '★ Tracked' : '☆ Track';
+            });
+        }
+
+        function getCategoryName(cat) {
+            const names = {
+                under2: 'Under $2', under5: '$2-$5', under10: '$5-$10', under20: '$10-$20',
+                white: 'White Cards', blue: 'Blue Cards', black: 'Black Cards', red: 'Red Cards', green: 'Green Cards',
+                colorless: 'Colorless', multi: 'Multicolor',
+                dragons: 'Dragons', elves: 'Elves', goblins: 'Goblins', zombies: 'Zombies', angels: 'Angels',
+                vampires: 'Vampires', wizards: 'Wizards', demons: 'Demons',
+                ffTop: 'Final Fantasy Top', ffBudget: 'FF Under $10', ffMythic: 'FF Mythics',
+                driftTop: 'Aetherdrift Top', driftBudget: 'Drift Under $10', driftVehicles: 'Drift Vehicles',
+                spiderTop: 'Spider-Man Top', spiderBudget: 'Spidey Under $10',
+                avatarTop: 'Avatar Top', avatarBudget: 'Avatar Under $10',
+                dtTop: 'Dragons of Tarkir Top', dtDragons: 'Tarkir Dragons', dtDragonlords: 'Dragonlords',
+                lorwynTop: 'Lorwyn Top', lorwynElves: 'Lorwyn Elves', lorwynFaeries: 'Lorwyn Faeries',
+                tmntTop: 'TMNT Top', cmdTop: 'Commander Sets Top', cmdCommanders: 'New Commanders'
+            };
+            return names[cat] || cat.replace(/([A-Z])/g, ' $1').trim();
+        }
+
+        function renderTrackedCategoriesWidget() {
+            const container = document.getElementById('trackedCategoriesWidget');
+            if (!container) return;
+            if (!State.trackedCategories.length) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            const content = document.getElementById('trackedCategoriesContent');
+            if (!content) return;
+            content.innerHTML = State.trackedCategories.map(cat => {
+                const data = categoryCardData[cat];
+                const topCards = data?.cards?.slice(0, 3) || [];
+                return `<div class="tracked-category-item">
+                    <div class="tracked-category-header">
+                        <span class="tracked-category-name">${getCategoryName(cat)}</span>
+                        <button class="btn-sm" onclick="openCategoryAlertModal('${cat}')">🔔 Alert</button>
+                        <button class="btn-sm" onclick="toggleTrackCategory('${cat}')">✕</button>
+                    </div>
+                    <div class="tracked-category-cards">
+                        ${topCards.map(c => `<span class="mini-card" onclick="openCardDetail('${c.id}')">${c.name} - ${getPrice(c).val}</span>`).join('')}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openCategoryAlertModal(cat) {
+            const config = categoryMoverQueries[cat];
+            if (!config) return;
+            // Pre-fill alert modal with category info
+            document.getElementById('alertCardName').value = getCategoryName(cat);
+            document.getElementById('alertTargetPrice').value = '5.00';
+            // Store category for alert
+            document.getElementById('alertModal').dataset.categoryAlert = cat;
+            openModal('alertModal');
+        }
+
+        // Add track buttons to category headers after load
+        function addCategoryTrackButtons() {
+            document.querySelectorAll('.category-mover-header').forEach(header => {
+                const contentEl = header.nextElementSibling;
+                if (!contentEl || !contentEl.id) return;
+                // Find which category this is
+                const cat = Object.entries(categoryMoverQueries).find(([k, v]) => v.id === contentEl.id)?.[0];
+                if (!cat) return;
+                // Don't add if already has button
+                if (header.querySelector('.category-track-btn')) return;
+                const btn = document.createElement('button');
+                btn.className = 'category-track-btn' + (isCategoryTracked(cat) ? ' tracked' : '');
+                btn.dataset.category = cat;
+                btn.textContent = isCategoryTracked(cat) ? '★ Tracked' : '☆ Track';
+                btn.onclick = (e) => toggleTrackCategory(cat, e);
+                header.appendChild(btn);
+            });
         }
 
         // ====== CARD PRINTINGS ======

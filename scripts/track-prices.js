@@ -152,7 +152,40 @@ async function main() {
     { name: 'Commons Under $2', query: 'r:common usd<2 usd>0.10', limit: 40 },
 
     // ====== PAUPER ======
-    { name: 'Pauper Staples', query: 'f:pauper usd>0.10', limit: 50 }
+    { name: 'Pauper Staples', query: 'f:pauper usd>0.10', limit: 50 },
+
+    // ====== FINAL FANTASY ======
+    { name: 'Final Fantasy Top', query: 'set:fdn usd>0', limit: 50 },
+    { name: 'FF Mythics', query: 'set:fdn r:mythic usd>0', limit: 30 },
+    { name: 'FF Rares', query: 'set:fdn r:rare usd>0', limit: 40 },
+    { name: 'FF Creatures', query: 'set:fdn t:creature usd>0', limit: 40 },
+    { name: 'FF Legendary', query: 'set:fdn t:legendary usd>0', limit: 30 },
+
+    // ====== AETHERDRIFT ======
+    { name: 'Aetherdrift Top', query: 'set:drft usd>0', limit: 50 },
+    { name: 'Drift Mythics', query: 'set:drft r:mythic usd>0', limit: 30 },
+    { name: 'Drift Vehicles', query: 'set:drft t:vehicle usd>0', limit: 30 },
+    { name: 'Drift Creatures', query: 'set:drft t:creature usd>0', limit: 40 },
+    { name: 'Drift Legendary', query: 'set:drft t:legendary usd>0', limit: 30 },
+
+    // ====== SPIDER-MAN ======
+    { name: 'Spider-Man Top', query: '(set:spg or (spider-man)) usd>0', limit: 50 },
+    { name: 'Spidey Mythics', query: '(set:spg or (spider-man)) r:mythic usd>0', limit: 30 },
+    { name: 'Spidey Creatures', query: '(set:spg or (spider-man)) t:creature usd>0', limit: 40 },
+    { name: 'Spidey Legendary', query: '(set:spg or (spider-man)) t:legendary usd>0', limit: 30 },
+
+    // ====== AVATAR ======
+    { name: 'Avatar Top', query: '(set:avt or (avatar pandora)) usd>0', limit: 50 },
+    { name: 'Avatar Mythics', query: '(set:avt or (avatar pandora)) r:mythic usd>0', limit: 30 },
+    { name: 'Avatar Creatures', query: '(set:avt or (avatar pandora)) t:creature usd>0', limit: 40 },
+    { name: 'Avatar Legendary', query: '(set:avt or (avatar pandora)) t:legendary usd>0', limit: 30 },
+
+    // ====== DRAGONS OF TARKIR ======
+    { name: 'Dragons of Tarkir Top', query: 'set:dtk usd>0', limit: 50 },
+    { name: 'Tarkir Dragons', query: 'set:dtk t:dragon usd>0', limit: 30 },
+    { name: 'Dragonlords', query: 'set:dtk dragonlord usd>0', limit: 10 },
+    { name: 'Tarkir Mythics', query: 'set:dtk r:mythic usd>0', limit: 30 },
+    { name: 'Tarkir Rares', query: 'set:dtk r:rare usd>0', limit: 40 }
   ];
 
   let totalRecorded = 0;
