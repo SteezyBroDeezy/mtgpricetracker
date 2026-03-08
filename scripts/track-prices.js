@@ -129,13 +129,16 @@ async function main() {
     { name: 'TMNT Legendary', query: 'set:sld (ninja or turtle) t:legendary usd>0', limit: 30 },
 
     // ====== LORWYN (Original + Remastered) ======
-    { name: 'Lorwyn Top', query: '(set:lrw or set:lrr) usd>0', limit: 50 },
-    { name: 'Lorwyn Elves', query: '(set:lrw or set:lrr) t:elf usd>0', limit: 30 },
-    { name: 'Lorwyn Faeries', query: '(set:lrw or set:lrr) t:faerie usd>0', limit: 30 },
-    { name: 'Lorwyn Goblins', query: '(set:lrw or set:lrr) t:goblin usd>0', limit: 30 },
-    { name: 'Lorwyn Merfolk', query: '(set:lrw or set:lrr) t:merfolk usd>0', limit: 30 },
-    { name: 'Lorwyn Treefolk', query: '(set:lrw or set:lrr) t:treefolk usd>0', limit: 30 },
-    { name: 'Lorwyn Lands', query: '(set:lrw or set:lrr) t:land usd>0', limit: 30 },
+    // Lorwyn Eclipsed (set:ecl) - Regular Boosters
+    { name: 'Lorwyn Eclipsed Top', query: 'set:ecl is:booster usd>0', limit: 50 },
+    { name: 'Lorwyn Eclipsed Mythics', query: 'set:ecl is:booster r:mythic usd>0', limit: 30 },
+    { name: 'Lorwyn Elves', query: 'set:ecl t:elf usd>0', limit: 30 },
+    { name: 'Lorwyn Faeries', query: 'set:ecl t:faerie usd>0', limit: 30 },
+    { name: 'Lorwyn Goblins', query: 'set:ecl t:goblin usd>0', limit: 30 },
+    { name: 'Lorwyn Merfolk', query: 'set:ecl t:merfolk usd>0', limit: 30 },
+    { name: 'Lorwyn Treefolk', query: 'set:ecl t:treefolk usd>0', limit: 30 },
+    // Lorwyn Eclipsed Collector Boosters
+    { name: 'Lorwyn Collector', query: 'set:ecl (is:extendedart or is:showcase or is:borderless) usd>0', limit: 50 },
 
     // ====== COMMANDER SETS 2024-2025 ======
     { name: 'CMD Sets Top', query: 'set:cmm or set:c24 or set:otp usd>0', limit: 50 },
@@ -334,7 +337,15 @@ async function main() {
     // Evergreen High-Value
     { name: 'All Fetchlands', query: '(t:land o:"search your library" o:"pay 1 life") usd>5', limit: 50 },
     { name: 'All Shocklands', query: 't:land o:"pay 2 life" usd>3', limit: 30 },
-    { name: 'All Triomes', query: 't:land o:"cycling" (type:plains or type:island or type:swamp or type:mountain or type:forest) usd>2', limit: 20 }
+    { name: 'All Triomes', query: 't:land o:"cycling" (type:plains or type:island or type:swamp or type:mountain or type:forest) usd>2', limit: 20 },
+
+    // ====== COLLECTOR BOOSTER / SPECIAL PRINTINGS ======
+    { name: 'Borderless 2024-2025', query: 'is:borderless year>=2024 usd>5', limit: 50 },
+    { name: 'Showcase 2024-2025', query: 'is:showcase year>=2024 usd>3', limit: 50 },
+    { name: 'Extended Art 2024-2025', query: 'is:extendedart year>=2024 usd>3', limit: 50 },
+    { name: 'MH3 Collector', query: 'set:mh3 (is:extendedart or is:showcase or is:borderless) usd>0', limit: 50 },
+    { name: 'LOTR Collector', query: 'set:ltr (is:extendedart or is:showcase or is:borderless) usd>0', limit: 50 },
+    { name: 'Serialized Cards', query: 'is:serialized usd>0', limit: 30 }
   ];
 
   let totalRecorded = 0;
