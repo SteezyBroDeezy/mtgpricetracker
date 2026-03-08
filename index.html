@@ -376,6 +376,82 @@
         .add-to-list-item { padding: 0.75rem 1rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--bg-tertiary); }
         .add-to-list-item:hover { background: var(--bg-tertiary); }
         .add-to-list-item:last-child { border-bottom: none; }
+
+        /* Price Movers Section */
+        .movers-section { margin-bottom: 2rem; }
+        .movers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 768px) { .movers-grid { grid-template-columns: 1fr; } }
+        .movers-column { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; }
+        .movers-column-title { font-family: var(--font-display); font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .movers-column-title.gainers { color: var(--accent-green); }
+        .movers-column-title.losers { color: var(--accent-red); }
+        .mover-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-fast); }
+        .mover-item:hover { background: var(--bg-tertiary); }
+        .mover-img { width: 40px; height: 56px; object-fit: cover; border-radius: 4px; }
+        .mover-info { flex: 1; min-width: 0; }
+        .mover-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mover-set { font-size: 0.7rem; color: var(--text-secondary); }
+        .mover-price { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-gold); }
+        .mover-change { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; }
+        .mover-change.positive { color: var(--accent-green); }
+        .mover-change.negative { color: var(--accent-red); }
+        .time-selector { display: flex; gap: 0.25rem; }
+        .time-btn { padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; cursor: pointer; background: var(--bg-tertiary); border: none; color: var(--text-secondary); transition: var(--transition-fast); }
+        .time-btn:hover { color: var(--text-primary); }
+        .time-btn.active { background: var(--accent-primary); color: white; }
+
+        /* Portfolio */
+        .portfolio-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .portfolio-stat { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.25rem; text-align: center; }
+        .portfolio-stat-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .portfolio-stat-value { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; }
+        .portfolio-stat-value.positive { color: var(--accent-green); }
+        .portfolio-stat-value.negative { color: var(--accent-red); }
+        .portfolio-stat-value.gold { color: var(--accent-gold); }
+        .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .portfolio-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; display: flex; gap: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+        .portfolio-card-img { width: 70px; height: 98px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; }
+        .portfolio-card-info { flex: 1; display: flex; flex-direction: column; }
+        .portfolio-card-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+        .portfolio-card-set { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .portfolio-card-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 0.25rem; }
+        .portfolio-card-row span:first-child { color: var(--text-secondary); }
+        .portfolio-card-actions { display: flex; gap: 0.5rem; margin-top: auto; }
+        .portfolio-mini-chart { width: 100%; height: 40px; margin: 0.5rem 0; }
+
+        /* Format Staples */
+        .format-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .format-tab { padding: 0.5rem 1rem; border-radius: var(--radius-md); font-weight: 600; font-size: 0.85rem; cursor: pointer; background: var(--bg-tertiary); border: none; color: var(--text-secondary); transition: var(--transition-fast); }
+        .format-tab:hover { color: var(--text-primary); }
+        .format-tab.active { background: var(--accent-primary); color: white; }
+        .price-tier-selector { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+        .tier-btn { padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; cursor: pointer; background: var(--bg-tertiary); border: none; color: var(--text-secondary); transition: var(--transition-fast); }
+        .tier-btn:hover { color: var(--text-primary); }
+        .tier-btn.active { background: var(--accent-gold); color: #000; }
+
+        /* Tracked Sets Widget */
+        .tracked-sets-widget { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; }
+        .tracked-set-summary { display: flex; gap: 1rem; align-items: center; padding: 0.75rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); margin-bottom: 0.5rem; cursor: pointer; transition: var(--transition-fast); }
+        .tracked-set-summary:hover { background: var(--bg-secondary); }
+        .tracked-set-summary:last-child { margin-bottom: 0; }
+        .tracked-set-icon { width: 32px; height: 32px; }
+        .tracked-set-info { flex: 1; }
+        .tracked-set-name { font-weight: 600; font-size: 0.9rem; }
+        .tracked-set-stats { font-size: 0.75rem; color: var(--text-secondary); }
+        .tracked-set-value { font-family: var(--font-mono); color: var(--accent-gold); font-weight: 600; }
+
+        /* Price Chart */
+        .price-chart-container { background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.75rem; margin: 1rem 0; }
+        .price-chart-title { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .price-chart { width: 100%; height: 100px; }
+        .price-chart-empty { text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.85rem; }
+
+        /* Market Overview */
+        .market-overview { background: var(--bg-card); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; }
+        .market-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; }
+        .market-stat { text-align: center; }
+        .market-stat-bar { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
+        .market-stat-fill { height: 100%; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -400,6 +476,7 @@
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
             <button class="nav-tab" data-page="watchlist">👁️ Watchlist</button>
+            <button class="nav-tab" data-page="portfolio">💼 Portfolio</button>
             <button class="nav-tab" data-page="lists">📋 Lists</button>
             <button class="nav-tab" data-page="alerts">🔔 Alerts</button>
         </div>
@@ -413,7 +490,7 @@
         <button class="mobile-nav-btn active" data-page="dashboard"><span>📊</span><span>Home</span></button>
         <button class="mobile-nav-btn" data-page="browse"><span>📚</span><span>Sets</span></button>
         <button class="mobile-nav-btn" data-page="watchlist"><span>👁️</span><span>Watch</span></button>
-        <button class="mobile-nav-btn" data-page="lists"><span>📋</span><span>Lists</span></button>
+        <button class="mobile-nav-btn" data-page="portfolio"><span>💼</span><span>Portfolio</span></button>
         <button class="mobile-nav-btn" data-page="alerts"><span>🔔</span><span>Alerts</span></button>
     </div>
 
@@ -431,8 +508,38 @@
             <div class="stats-grid">
                 <div class="stat-card"><div class="stat-label">Watchlist</div><div class="stat-value" id="statTracked">0</div></div>
                 <div class="stat-card"><div class="stat-label">Active Alerts</div><div class="stat-value" id="statAlerts">0</div></div>
-                <div class="stat-card"><div class="stat-label">Biggest Gainer</div><div class="stat-value" id="statSpike">--</div></div>
-                <div class="stat-card"><div class="stat-label">Biggest Drop</div><div class="stat-value" id="statDrop">--</div></div>
+                <div class="stat-card"><div class="stat-label">Portfolio Value</div><div class="stat-value gold" id="statPortfolio">$0</div></div>
+                <div class="stat-card"><div class="stat-label">Tracked Sets</div><div class="stat-value" id="statTrackedSets">0</div></div>
+            </div>
+
+            <!-- Price Movers Section -->
+            <section class="movers-section" id="moversSection">
+                <div class="section-header">
+                    <h2 class="section-title">📈 Today's Movers</h2>
+                    <div class="time-selector">
+                        <button class="time-btn active" data-days="1" onclick="loadPriceMovers(1)">24h</button>
+                        <button class="time-btn" data-days="7" onclick="loadPriceMovers(7)">7d</button>
+                        <button class="time-btn" data-days="30" onclick="loadPriceMovers(30)">30d</button>
+                    </div>
+                </div>
+                <div class="movers-grid" id="moversGrid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Top Gainers</div>
+                        <div id="gainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Top Losers</div>
+                        <div id="losersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tracked Sets Widget -->
+            <div class="tracked-sets-widget" id="trackedSetsWidget" style="display:none;">
+                <div class="section-header" style="margin-bottom:0.75rem;">
+                    <h2 class="section-title">📌 Your Tracked Sets</h2>
+                </div>
+                <div id="trackedSetsSummaries"></div>
             </div>
 
             <!-- Tracked Sets Quick Bar -->
@@ -494,6 +601,30 @@
                 <div class="card-grid" id="categoryCards"></div>
                 <div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-secondary" id="catLoadMore" onclick="loadMoreCategory()" style="display:none;">Load More</button></div>
             </section>
+
+            <!-- Format Staples Section -->
+            <section id="staplesSection">
+                <div class="section-header">
+                    <h2 class="section-title">🏆 Format Staples</h2>
+                    <div class="price-tier-selector">
+                        <button class="tier-btn active" data-tier="0.5" onclick="setStaplesTier(0.5)">$0.50+</button>
+                        <button class="tier-btn" data-tier="1" onclick="setStaplesTier(1)">$1+</button>
+                        <button class="tier-btn" data-tier="5" onclick="setStaplesTier(5)">$5+</button>
+                        <button class="tier-btn" data-tier="10" onclick="setStaplesTier(10)">$10+</button>
+                        <button class="tier-btn" data-tier="25" onclick="setStaplesTier(25)">$25+</button>
+                    </div>
+                </div>
+                <div class="format-tabs" id="formatTabs">
+                    <button class="format-tab active" data-format="commander" onclick="loadFormatStaples('commander')">Commander</button>
+                    <button class="format-tab" data-format="modern" onclick="loadFormatStaples('modern')">Modern</button>
+                    <button class="format-tab" data-format="standard" onclick="loadFormatStaples('standard')">Standard</button>
+                    <button class="format-tab" data-format="pioneer" onclick="loadFormatStaples('pioneer')">Pioneer</button>
+                    <button class="format-tab" data-format="legacy" onclick="loadFormatStaples('legacy')">Legacy</button>
+                    <button class="format-tab" data-format="pauper" onclick="loadFormatStaples('pauper')">Pauper</button>
+                </div>
+                <div class="card-grid" id="staplesGrid"></div>
+                <div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-secondary" id="staplesLoadMore" onclick="loadMoreStaples()" style="display:none;">Load More</button></div>
+            </section>
         </div>
 
         <!-- Browse Sets -->
@@ -516,6 +647,59 @@
         <div class="page" id="watchlistPage">
             <div class="section-header"><h2 class="section-title">👁️ Your Watchlist</h2></div>
             <div id="watchlistContent"></div>
+        </div>
+
+        <!-- Portfolio -->
+        <div class="page" id="portfolioPage">
+            <div class="section-header">
+                <h2 class="section-title">💼 My Portfolio</h2>
+                <div style="display:flex;gap:0.5rem;">
+                    <button class="btn btn-gold" onclick="openAddToPortfolioModal()">+ Add Card</button>
+                    <button class="btn btn-secondary" onclick="exportPortfolioCSV()">📥 Export CSV</button>
+                </div>
+            </div>
+            <div id="portfolioContent">
+                <div class="auth-notice"><span>🔒</span><span>Sign in to track your portfolio and sync across devices</span></div>
+            </div>
+        </div>
+
+        <!-- Add to Portfolio Modal -->
+        <div class="modal-overlay" id="portfolioModal">
+            <div class="modal">
+                <div class="modal-header"><h3 class="modal-title">Add to Portfolio</h3><button class="modal-close" onclick="closeModal('portfolioModal')">X</button></div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Search Card</label>
+                        <input type="text" class="form-input" id="portfolioCardSearch" placeholder="Search for a card...">
+                        <div class="search-results" id="portfolioSearchResults" style="position:relative;"></div>
+                    </div>
+                    <div id="portfolioCardSelected" style="display:none;">
+                        <div style="display:flex;gap:1rem;padding:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);margin-bottom:1rem;">
+                            <img id="portfolioCardImg" style="width:60px;height:84px;border-radius:4px;">
+                            <div>
+                                <div id="portfolioCardName" style="font-weight:600;"></div>
+                                <div id="portfolioCardSet" style="font-size:0.85rem;color:var(--text-secondary);"></div>
+                                <div id="portfolioCardPrice" style="font-family:var(--font-mono);color:var(--accent-gold);"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="portfolioCardId">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-input" id="portfolioQty" value="1" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Purchase Price (per card)</label>
+                                <input type="number" class="form-input" id="portfolioPurchasePrice" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('portfolioModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="addToPortfolio()">Add to Portfolio</button>
+                </div>
+            </div>
         </div>
 
         <!-- Lists (Cross-site from MTG Card Search) -->
@@ -855,15 +1039,16 @@
         };
 
         const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,
-            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.trackedSets=d.trackedSets||[];this.lastRefresh=d.lastRefresh||null;this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.trackedSets=d.trackedSets||this.trackedSets;this.lastRefresh=d.lastRefresh||this.lastRefresh;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;updateLastUpdatedDisplay();},
-            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,lastRefresh:this.lastRefresh,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
+            portfolio:[],priceMovers:null,marketAnalytics:null,lastPriceRecord:{},staplesData:null,currentStaplesFormat:'commander',currentStaplesTier:0.5,priceHistory:{},
+            async load(){const l=localStorage.getItem('mtg_oracle_v4');if(l){const d=JSON.parse(l);this.watchlist=d.watchlist||[];this.alerts=d.alerts||[];this.trackedSets=d.trackedSets||[];this.portfolio=d.portfolio||[];this.lastRefresh=d.lastRefresh||null;this.lastPriceRecord=d.lastPriceRecord||{};this.settings={...this.settings,...d.settings};}if(currentUser&&db){try{const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();if(doc.exists){const d=doc.data();this.watchlist=d.watchlist||this.watchlist;this.alerts=d.alerts||this.alerts;this.trackedSets=d.trackedSets||this.trackedSets;this.portfolio=d.portfolio||this.portfolio;this.lastRefresh=d.lastRefresh||this.lastRefresh;this.lastPriceRecord=d.lastPriceRecord||this.lastPriceRecord;this.settings={...this.settings,...d.settings};}}catch(e){}}setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;updateLastUpdatedDisplay();},
+            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){}}}
         };
 
         // Utilities
         function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
         function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
         function saveSetting(k,v){State.settings[k]=v;State.save();}
-        function switchPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse')loadSets();if(p==='watchlist')renderWatchlist();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();}
+        function switchPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse')loadSets();if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
         function openModal(id){document.getElementById(id).classList.add('active');}
         function closeModal(id){document.getElementById(id).classList.remove('active');}
@@ -896,15 +1081,28 @@
         
         function saveQuickAlert(){const id=document.getElementById('quickAlertCardId').value;const name=document.getElementById('quickAlertCardName').textContent;const type=document.getElementById('quickAlertType').value;const threshold=parseFloat(document.getElementById('quickAlertThreshold').value)||0;State.alerts.push({id:Date.now().toString(),name:'Alert: '+name,type,threshold,scope:'specific',cardId:id,cardName:name,enabled:true,created:new Date().toISOString()});State.save();closeModal('quickAlertModal');showToast('Alert created!','success');updateStats();}
 
-        // Card detail
-        async function openCardDetail(id){searchResults.classList.remove('active');try{const c=await API.card(id);const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
+        // Card detail with price chart
+        async function openCardDetail(id){searchResults.classList.remove('active');try{const c=await API.card(id);
+            // Record price snapshot
+            await recordPriceSnapshot(c);
+            const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const inPortfolio=State.portfolio.some(p=>p.cardId===c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
             // Build add-to-list dropdown
             let listDropdown='';if(currentUser&&State.userLists.length){listDropdown=`<div class="add-to-list-dropdown"><button class="btn btn-secondary" onclick="toggleListDropdown(event)">📋 Add to List</button><div class="add-to-list-menu" id="addToListMenu">${State.userLists.map(l=>`<div class="add-to-list-item" onclick="addToListFromModal('${l.id}','${c.id}')">${l.name}</div>`).join('')}</div></div>`;}else if(currentUser){listDropdown=`<button class="btn btn-secondary" onclick="openNewListModal()">📋 New List</button>`;}
+            // Portfolio button
+            const portfolioBtn = currentUser ? `<button class="btn ${inPortfolio?'btn-secondary':'btn-gold'}" onclick="closeModal('cardModal');${inPortfolio?`removeFromPortfolio('${c.id}')`:`State.pendingPortfolioCard=${JSON.stringify(c).replace(/'/g,"\\'")};selectPortfolioCard('${c.id}')`};">${inPortfolio?'✓ In Portfolio':'💼 Portfolio'}</button>` : '';
+            // Price chart container
+            const chartHtml = `<div class="price-chart-container"><div class="price-chart-title">30-Day Price History</div><canvas id="priceChartCanvas" class="price-chart" width="300" height="100"></canvas></div>`;
             // External links
-            const extLinks=`<div class="external-links"><a href="${getMTGStocksUrl(c.name)}" target="_blank" class="ext-link">📈 Price History</a><a href="${getTCGPlayerUrl(c.name)}" target="_blank" class="ext-link">🛒 TCGPlayer</a><a href="${getCardKingdomUrl(c.name)}" target="_blank" class="ext-link">👑 Card Kingdom</a><a href="${getEDHRECUrl(c.name)}" target="_blank" class="ext-link">📊 EDHREC</a></div>`;
-            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);"><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div><div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
+            const extLinks=`<div class="external-links"><a href="${getMTGStocksUrl(c.name)}" target="_blank" class="ext-link">📈 MTGStocks</a><a href="${getTCGPlayerUrl(c.name)}" target="_blank" class="ext-link">🛒 TCGPlayer</a><a href="${getCardKingdomUrl(c.name)}" target="_blank" class="ext-link">👑 Card Kingdom</a><a href="${getEDHRECUrl(c.name)}" target="_blank" class="ext-link">📊 EDHREC</a></div>`;
+            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);"><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
             // Store current card for add-to-list
-            State.currentDetailCard=c;openModal('cardModal');}catch(e){showToast('Failed to load','error');}}
+            State.currentDetailCard=c;openModal('cardModal');
+            // Load and draw price chart
+            const history = await getPriceHistory(c.id, 30);
+            State.priceHistory[c.id] = history;
+            const canvas = document.getElementById('priceChartCanvas');
+            if (canvas) drawPriceChart(canvas, history);
+        }catch(e){showToast('Failed to load','error');}}
 
         function toggleListDropdown(e){e.stopPropagation();const menu=document.getElementById('addToListMenu');menu.classList.toggle('active');}
         document.addEventListener('click',e=>{const menu=document.getElementById('addToListMenu');if(menu&&!e.target.closest('.add-to-list-dropdown'))menu.classList.remove('active');});
@@ -936,8 +1134,14 @@
         async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');grid.innerHTML='<div class="loading-spinner"></div>';let q='usd>0.5';if(f==='standard')q='f:standard';else if(f==='modern')q='f:modern usd>1';else if(f==='commander')q='f:commander is:popular';try{const d=await API.search(q,{order:'usd',dir:'desc'});State.trendingData=d;if(d.data){const badges=['spike','hot','drop',''];grid.innerHTML=d.data.slice(0,16).map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');document.getElementById('loadMoreBtn').style.display=d.has_more?'inline-flex':'none';}}catch(e){grid.innerHTML='<p>Failed</p>';}}
         async function loadMoreTrending(){const grid=document.getElementById('trendingGrid');const btn=document.getElementById('loadMoreBtn');btn.textContent='Loading...';btn.disabled=true;if(State.trendingData?.next_page){try{const resp=await fetch(State.trendingData.next_page);const d=await resp.json();State.trendingData=d;const badges=['spike','hot','drop',''];grid.innerHTML+=d.data.map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}}btn.textContent='Load More';btn.disabled=false;}
 
-        // Card element
-        function cardEl(c,badge=''){const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const pr=getPrice(c);const chg=(Math.random()*30-10).toFixed(1);const cls=chg>=0?'positive':'negative';const inWL=isInWatchlist(c.id);let bc=badge;if(['mythic','rare','uncommon','common'].includes(badge))bc=badge;return`<div class="mtg-card"><div class="mtg-card-img-container" onclick="openCardDetail('${c.id}')"><img src="${img}" class="mtg-card-img" loading="lazy">${badge?`<span class="mtg-card-badge badge-${bc}">${badge}</span>`:''}<div class="mtg-card-quick"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Alert">🔔</button></div></div><div class="mtg-card-info" onclick="openCardDetail('${c.id}')"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-set">${c.set_name}${pr.type?` <span style="color:var(--accent-blue);font-size:0.65rem;">${pr.type}</span>`:''}</div><div class="mtg-card-prices"><span class="mtg-card-price">${pr.val}</span><span class="mtg-card-change ${cls}">${chg>=0?'+':''}${chg}%</span></div></div></div>`;}
+        // Card element with real price change support
+        function cardEl(c,badge='',priceChange=null){const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const pr=getPrice(c);
+            // Use real price change if available, otherwise check cached history
+            let chg=priceChange;let showChange=true;
+            if(chg===null){const hist=State.priceHistory[c.id];if(hist&&hist.length>=2){const oldest=hist[0].usd;const current=pr.num;if(oldest&&current)chg=((current-oldest)/oldest*100).toFixed(1);else showChange=false;}else showChange=false;}
+            const cls=chg>=0?'positive':'negative';const inWL=isInWatchlist(c.id);let bc=badge;if(['mythic','rare','uncommon','common'].includes(badge))bc=badge;
+            const changeHtml=showChange&&chg!==null?`<span class="mtg-card-change ${cls}">${chg>=0?'+':''}${chg}%</span>`:'';
+            return`<div class="mtg-card"><div class="mtg-card-img-container" onclick="openCardDetail('${c.id}')"><img src="${img}" class="mtg-card-img" loading="lazy">${badge?`<span class="mtg-card-badge badge-${bc}">${badge}</span>`:''}<div class="mtg-card-quick"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Alert">🔔</button></div></div><div class="mtg-card-info" onclick="openCardDetail('${c.id}')"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-set">${c.set_name}${pr.type?` <span style="color:var(--accent-blue);font-size:0.65rem;">${pr.type}</span>`:''}</div><div class="mtg-card-prices"><span class="mtg-card-price">${pr.val}</span>${changeHtml}</div></div></div>`;}
 
         // Alerts
         function openAlertModal(cardId=null,cardName=null){document.getElementById('alertForm').reset();document.getElementById('alertModalTitle').textContent=cardId?'Alert: '+cardName:'Create Alert Rule';if(cardId){document.getElementById('alertScope').value='specific';document.getElementById('alertCardId').value=cardId;document.getElementById('alertCardName').value=cardName;}updateAlertUI();updateScopeUI();openModal('alertModal');}
@@ -1184,13 +1388,494 @@
             return 'https://edhrec.com/cards/' + cardName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
         }
 
-        function updateStats(){document.getElementById('statTracked').textContent=State.watchlist.length;document.getElementById('statAlerts').textContent=State.alerts.filter(a=>a.enabled).length;}
+        // ====== PRICE HISTORY SYSTEM (Firebase) ======
+        async function recordPriceSnapshot(card) {
+            if (!db) return;
+            const today = new Date().toISOString().split('T')[0];
+            // Check if already recorded today
+            if (State.lastPriceRecord[card.id] === today) return;
+            const prices = {
+                usd: parseFloat(card.prices?.usd) || null,
+                usd_foil: parseFloat(card.prices?.usd_foil) || null,
+                eur: parseFloat(card.prices?.eur) || null,
+                name: card.name,
+                set: card.set
+            };
+            if (!prices.usd && !prices.usd_foil) return; // No price data
+            try {
+                await db.collection('priceHistory').doc(card.id).collection('snapshots').doc(today).set(prices);
+                await db.collection('priceHistory').doc(card.id).set({ name: card.name, set: card.set, lastUpdated: today }, { merge: true });
+                State.lastPriceRecord[card.id] = today;
+                State.save();
+            } catch(e) { console.log('Price record failed:', e); }
+        }
+
+        async function getPriceHistory(cardId, days = 30) {
+            if (!db) return [];
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - days);
+            const cutoffStr = cutoff.toISOString().split('T')[0];
+            try {
+                const snapshot = await db.collection('priceHistory').doc(cardId).collection('snapshots')
+                    .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
+                    .orderBy(firebase.firestore.FieldPath.documentId())
+                    .get();
+                return snapshot.docs.map(d => ({ date: d.id, ...d.data() }));
+            } catch(e) { return []; }
+        }
+
+        function calculatePriceChange(history, currentPrice) {
+            if (!history || !history.length) return null;
+            const oldest = history[0].usd;
+            if (!oldest || !currentPrice) return null;
+            return ((currentPrice - oldest) / oldest * 100).toFixed(1);
+        }
+
+        // Record prices for watchlist cards on load
+        async function recordWatchlistPrices() {
+            if (!db || !State.watchlist.length) return;
+            for (const card of State.watchlist.slice(0, 20)) { // Limit to avoid rate limiting
+                try {
+                    const fullCard = await API.card(card.id);
+                    await recordPriceSnapshot(fullCard);
+                } catch(e) {}
+            }
+        }
+
+        // ====== PRICE MOVERS ======
+        async function loadPriceMovers(days = 1) {
+            // Update time selector UI
+            document.querySelectorAll('.time-btn[data-days]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.days) === days));
+            const gainersEl = document.getElementById('gainersContent');
+            const losersEl = document.getElementById('losersContent');
+            if (!db) {
+                gainersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Sign in to track price changes over time.</p>';
+                losersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Sign in to track price changes over time.</p>';
+                return;
+            }
+            gainersEl.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
+            losersEl.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
+            try {
+                const historyDocs = await db.collection('priceHistory').limit(100).get();
+                const movers = [];
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - days);
+                const cutoffStr = cutoff.toISOString().split('T')[0];
+                for (const doc of historyDocs.docs) {
+                    const snapshots = await doc.ref.collection('snapshots')
+                        .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
+                        .orderBy(firebase.firestore.FieldPath.documentId())
+                        .get();
+                    if (snapshots.docs.length >= 2) {
+                        const oldest = snapshots.docs[0].data();
+                        const newest = snapshots.docs[snapshots.docs.length - 1].data();
+                        if (oldest.usd && newest.usd) {
+                            const change = ((newest.usd - oldest.usd) / oldest.usd) * 100;
+                            movers.push({ cardId: doc.id, change: change.toFixed(1), price: newest.usd, name: newest.name || doc.id, set: newest.set });
+                        }
+                    }
+                }
+                const gainers = movers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 5);
+                const losers = movers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 5);
+                State.priceMovers = { gainers, losers };
+                renderMovers(gainers, gainersEl, 'positive');
+                renderMovers(losers, losersEl, 'negative');
+                // Update dashboard stats
+                if (gainers.length) document.getElementById('statSpike')?.closest('.stat-card')?.querySelector('.stat-value')?.textContent || '';
+            } catch(e) {
+                gainersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p>';
+                losersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p>';
+            }
+        }
+
+        function renderMovers(movers, container, cls) {
+            if (!movers.length) {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">No data yet. Track more cards!</p>';
+                return;
+            }
+            container.innerHTML = movers.map(m => `
+                <div class="mover-item" onclick="openCardDetail('${m.cardId}')">
+                    <div class="mover-info">
+                        <div class="mover-name">${m.name}</div>
+                        <div class="mover-set">${m.set?.toUpperCase() || ''}</div>
+                    </div>
+                    <div class="mover-price">$${parseFloat(m.price).toFixed(2)}</div>
+                    <div class="mover-change ${cls}">${parseFloat(m.change) >= 0 ? '+' : ''}${m.change}%</div>
+                </div>
+            `).join('');
+        }
+
+        // ====== TRACKED SETS SUMMARY ======
+        async function getTrackedSetsSummary() {
+            if (!State.trackedSets.length) return [];
+            const summaries = [];
+            for (const setCode of State.trackedSets.slice(0, 5)) {
+                try {
+                    const cards = await API.search(`set:${setCode}`, { order: 'usd', dir: 'desc' });
+                    const totalValue = cards.data?.reduce((sum, c) => sum + (parseFloat(c.prices?.usd) || 0), 0) || 0;
+                    const topCard = cards.data?.[0];
+                    const set = State.sets.find(s => s.code === setCode);
+                    summaries.push({
+                        code: setCode,
+                        name: set?.name || setCode.toUpperCase(),
+                        icon: set?.icon_svg_uri || '',
+                        totalValue: totalValue.toFixed(2),
+                        cardCount: cards.total_cards || 0,
+                        topCard: topCard?.name || 'N/A',
+                        topPrice: topCard?.prices?.usd || '0'
+                    });
+                } catch(e) {}
+            }
+            return summaries;
+        }
+
+        async function renderTrackedSetsWidget() {
+            const widget = document.getElementById('trackedSetsWidget');
+            const container = document.getElementById('trackedSetsSummaries');
+            if (!State.trackedSets.length) { widget.style.display = 'none'; return; }
+            widget.style.display = 'block';
+            container.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
+            const summaries = await getTrackedSetsSummary();
+            if (!summaries.length) { widget.style.display = 'none'; return; }
+            container.innerHTML = summaries.map(s => `
+                <div class="tracked-set-summary" onclick="openSetView('${s.code}')">
+                    <img src="${s.icon}" class="tracked-set-icon">
+                    <div class="tracked-set-info">
+                        <div class="tracked-set-name">${s.name}</div>
+                        <div class="tracked-set-stats">${s.cardCount} cards | Top: ${s.topCard} ($${s.topPrice})</div>
+                    </div>
+                    <div class="tracked-set-value">$${s.totalValue}</div>
+                </div>
+            `).join('');
+            document.getElementById('statTrackedSets').textContent = State.trackedSets.length;
+        }
+
+        // ====== PORTFOLIO TRACKER ======
+        function renderPortfolio() {
+            const content = document.getElementById('portfolioContent');
+            if (!currentUser) {
+                content.innerHTML = '<div class="auth-notice"><span>🔒</span><span>Sign in to track your portfolio and sync across devices</span></div>';
+                return;
+            }
+            if (!State.portfolio.length) {
+                content.innerHTML = `<div class="watchlist-empty"><div class="watchlist-empty-icon">💼</div><h3>No cards in portfolio</h3><p>Add cards to track your collection value</p><br><button class="btn btn-primary" onclick="openAddToPortfolioModal()">+ Add Card</button></div>`;
+                return;
+            }
+            // Calculate totals
+            let totalValue = 0, totalCost = 0, totalCards = 0;
+            State.portfolio.forEach(p => {
+                totalCards += p.quantity;
+                totalCost += (p.addedPrice || 0) * p.quantity;
+                totalValue += (p.currentPrice || p.addedPrice || 0) * p.quantity;
+            });
+            const gainLoss = totalValue - totalCost;
+            const gainPct = totalCost > 0 ? ((gainLoss / totalCost) * 100).toFixed(1) : 0;
+            content.innerHTML = `
+                <div class="portfolio-summary">
+                    <div class="portfolio-stat"><div class="portfolio-stat-label">Total Value</div><div class="portfolio-stat-value gold">$${totalValue.toFixed(2)}</div></div>
+                    <div class="portfolio-stat"><div class="portfolio-stat-label">Total Cost</div><div class="portfolio-stat-value">$${totalCost.toFixed(2)}</div></div>
+                    <div class="portfolio-stat"><div class="portfolio-stat-label">Gain/Loss</div><div class="portfolio-stat-value ${gainLoss >= 0 ? 'positive' : 'negative'}">${gainLoss >= 0 ? '+' : ''}$${gainLoss.toFixed(2)} (${gainPct}%)</div></div>
+                    <div class="portfolio-stat"><div class="portfolio-stat-label">Total Cards</div><div class="portfolio-stat-value">${totalCards}</div></div>
+                </div>
+                <div class="portfolio-grid">${State.portfolio.map(renderPortfolioCard).join('')}</div>
+            `;
+            document.getElementById('statPortfolio').textContent = '$' + totalValue.toFixed(0);
+        }
+
+        function renderPortfolioCard(p) {
+            const currentVal = (p.currentPrice || p.addedPrice || 0) * p.quantity;
+            const costVal = (p.addedPrice || 0) * p.quantity;
+            const gain = currentVal - costVal;
+            const gainCls = gain >= 0 ? 'positive' : 'negative';
+            return `
+                <div class="portfolio-card">
+                    <img src="${p.image}" class="portfolio-card-img" onclick="openCardDetail('${p.cardId}')">
+                    <div class="portfolio-card-info">
+                        <div class="portfolio-card-name">${p.name}</div>
+                        <div class="portfolio-card-set">${p.setName || p.set?.toUpperCase()}</div>
+                        <div class="portfolio-card-row"><span>Qty:</span><span>${p.quantity}</span></div>
+                        <div class="portfolio-card-row"><span>Cost:</span><span>$${(p.addedPrice || 0).toFixed(2)} ea</span></div>
+                        <div class="portfolio-card-row"><span>Current:</span><span style="color:var(--accent-gold);">$${(p.currentPrice || p.addedPrice || 0).toFixed(2)} ea</span></div>
+                        <div class="portfolio-card-row"><span>Gain/Loss:</span><span class="${gainCls}">${gain >= 0 ? '+' : ''}$${gain.toFixed(2)}</span></div>
+                        <div class="portfolio-card-actions">
+                            <button class="watchlist-action-btn remove" onclick="removeFromPortfolio('${p.cardId}')">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openAddToPortfolioModal() {
+            if (!currentUser) { showToast('Please sign in first', 'warning'); return; }
+            document.getElementById('portfolioCardSearch').value = '';
+            document.getElementById('portfolioCardSelected').style.display = 'none';
+            document.getElementById('portfolioSearchResults').innerHTML = '';
+            openModal('portfolioModal');
+        }
+
+        // Portfolio search handler
+        const portfolioSearchInput = document.getElementById('portfolioCardSearch');
+        const portfolioSearchResults = document.getElementById('portfolioSearchResults');
+        const handlePortfolioSearch = debounce(async q => {
+            if (q.length < 2) { portfolioSearchResults.innerHTML = ''; return; }
+            try {
+                const d = await API.search(q, { unique: 'cards' });
+                if (d.data?.length) {
+                    portfolioSearchResults.innerHTML = d.data.slice(0, 5).map(c => {
+                        const pr = getPrice(c);
+                        return `<div class="search-result-item" onclick="selectPortfolioCard('${c.id}')">
+                            <img src="${c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || ''}" class="search-result-img">
+                            <div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name}</p></div>
+                            <div class="search-result-price">${pr.val}</div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch(e) {}
+        }, 300);
+        if (portfolioSearchInput) portfolioSearchInput.addEventListener('input', e => handlePortfolioSearch(e.target.value));
+
+        async function selectPortfolioCard(id) {
+            portfolioSearchResults.innerHTML = '';
+            portfolioSearchInput.value = '';
+            try {
+                const c = await API.card(id);
+                const pr = getPrice(c);
+                document.getElementById('portfolioCardId').value = c.id;
+                document.getElementById('portfolioCardImg').src = c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '';
+                document.getElementById('portfolioCardName').textContent = c.name;
+                document.getElementById('portfolioCardSet').textContent = c.set_name;
+                document.getElementById('portfolioCardPrice').textContent = pr.val;
+                document.getElementById('portfolioPurchasePrice').value = pr.num || '';
+                document.getElementById('portfolioCardSelected').style.display = 'block';
+                // Store full card data
+                State.pendingPortfolioCard = c;
+            } catch(e) { showToast('Failed to load card', 'error'); }
+        }
+
+        async function addToPortfolio() {
+            const c = State.pendingPortfolioCard;
+            if (!c) { showToast('Select a card first', 'warning'); return; }
+            const qty = parseInt(document.getElementById('portfolioQty').value) || 1;
+            const purchasePrice = parseFloat(document.getElementById('portfolioPurchasePrice').value) || 0;
+            const pr = getPrice(c);
+            // Check if card already exists
+            const existing = State.portfolio.find(p => p.cardId === c.id);
+            if (existing) {
+                existing.quantity += qty;
+            } else {
+                State.portfolio.push({
+                    cardId: c.id,
+                    name: c.name,
+                    set: c.set,
+                    setName: c.set_name,
+                    image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                    quantity: qty,
+                    addedPrice: purchasePrice,
+                    currentPrice: pr.num,
+                    addedDate: new Date().toISOString().split('T')[0]
+                });
+            }
+            State.save();
+            closeModal('portfolioModal');
+            showToast('Added to portfolio!', 'success');
+            renderPortfolio();
+            updateStats();
+        }
+
+        function removeFromPortfolio(cardId) {
+            State.portfolio = State.portfolio.filter(p => p.cardId !== cardId);
+            State.save();
+            renderPortfolio();
+            updateStats();
+            showToast('Removed from portfolio', 'info');
+        }
+
+        function exportPortfolioCSV() {
+            if (!State.portfolio.length) { showToast('Portfolio is empty', 'warning'); return; }
+            const headers = ['Name', 'Set', 'Quantity', 'Purchase Price', 'Current Price', 'Total Value', 'Gain/Loss'];
+            const rows = State.portfolio.map(p => {
+                const currentVal = (p.currentPrice || p.addedPrice || 0) * p.quantity;
+                const costVal = (p.addedPrice || 0) * p.quantity;
+                return [p.name, p.set, p.quantity, p.addedPrice || 0, p.currentPrice || 0, currentVal.toFixed(2), (currentVal - costVal).toFixed(2)];
+            });
+            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mtg_portfolio_' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Portfolio exported!', 'success');
+        }
+
+        // Update portfolio prices periodically
+        async function updatePortfolioPrices() {
+            if (!State.portfolio.length) return;
+            for (const p of State.portfolio) {
+                try {
+                    const c = await API.card(p.cardId);
+                    const pr = getPrice(c);
+                    p.currentPrice = pr.num;
+                    await recordPriceSnapshot(c);
+                } catch(e) {}
+            }
+            State.save();
+        }
+
+        // ====== FORMAT STAPLES ======
+        const formatStaplesQueries = {
+            commander: 'f:commander is:staple',
+            modern: 'f:modern is:staple',
+            standard: 'f:standard',
+            pioneer: 'f:pioneer is:staple',
+            legacy: 'f:legacy is:staple',
+            pauper: 'f:pauper is:staple'
+        };
+
+        async function loadFormatStaples(format) {
+            State.currentStaplesFormat = format;
+            document.querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t.dataset.format === format));
+            const grid = document.getElementById('staplesGrid');
+            grid.innerHTML = '<div class="loading-spinner"></div>';
+            const query = formatStaplesQueries[format] + ` usd>${State.currentStaplesTier}`;
+            try {
+                const d = await API.search(query, { order: 'usd', dir: 'desc' });
+                State.staplesData = d;
+                if (d.data) grid.innerHTML = d.data.slice(0, 16).map(c => cardEl(c)).join('');
+                document.getElementById('staplesLoadMore').style.display = d.has_more ? 'inline-flex' : 'none';
+            } catch(e) { grid.innerHTML = '<p style="color:var(--text-secondary);">No staples found for this format.</p>'; }
+        }
+
+        function setStaplesTier(tier) {
+            State.currentStaplesTier = tier;
+            document.querySelectorAll('.tier-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.tier) === tier));
+            loadFormatStaples(State.currentStaplesFormat);
+        }
+
+        async function loadMoreStaples() {
+            const btn = document.getElementById('staplesLoadMore');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            if (State.staplesData?.next_page) {
+                try {
+                    const resp = await fetch(State.staplesData.next_page);
+                    const d = await resp.json();
+                    State.staplesData = d;
+                    document.getElementById('staplesGrid').innerHTML += d.data.map(c => cardEl(c)).join('');
+                    btn.style.display = d.has_more ? 'inline-flex' : 'none';
+                } catch(e) {}
+            }
+            btn.textContent = 'Load More';
+            btn.disabled = false;
+        }
+
+        // ====== CANVAS PRICE CHART ======
+        function drawPriceChart(canvas, history) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+            if (!history || history.length < 2) {
+                ctx.fillStyle = '#666';
+                ctx.font = '12px Rajdhani';
+                ctx.textAlign = 'center';
+                ctx.fillText('Not enough data yet', width/2, height/2);
+                return;
+            }
+            const prices = history.map(h => h.usd).filter(p => p);
+            if (prices.length < 2) {
+                ctx.fillStyle = '#666';
+                ctx.font = '12px Rajdhani';
+                ctx.textAlign = 'center';
+                ctx.fillText('Not enough data yet', width/2, height/2);
+                return;
+            }
+            const min = Math.min(...prices) * 0.9;
+            const max = Math.max(...prices) * 1.1;
+            const range = max - min || 1;
+            // Draw background grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = (i / 4) * height;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            // Draw price line
+            ctx.beginPath();
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 2;
+            prices.forEach((price, i) => {
+                const x = (i / (prices.length - 1)) * width;
+                const y = height - ((price - min) / range) * height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            // Draw gradient fill
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.3)');
+            gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            // Draw price labels
+            ctx.fillStyle = '#a0a0a0';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'left';
+            ctx.fillText('$' + max.toFixed(2), 2, 12);
+            ctx.fillText('$' + min.toFixed(2), 2, height - 2);
+        }
+
+        function updateStats(){
+            document.getElementById('statTracked').textContent=State.watchlist.length;
+            document.getElementById('statAlerts').textContent=State.alerts.filter(a=>a.enabled).length;
+            // Calculate portfolio value
+            let portfolioValue = 0;
+            State.portfolio.forEach(p => portfolioValue += (p.currentPrice || p.addedPrice || 0) * p.quantity);
+            document.getElementById('statPortfolio').textContent = '$' + portfolioValue.toFixed(0);
+            document.getElementById('statTrackedSets').textContent = State.trackedSets.length;
+        }
 
         // Tab filters
         document.querySelectorAll('.section-tab[data-filter]').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.section-tab[data-filter]').forEach(x=>x.classList.remove('active'));t.classList.add('active');loadTrending(t.dataset.filter);}));
 
         // Init
-        document.addEventListener('DOMContentLoaded',async()=>{document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.addEventListener('click',()=>switchPage(t.dataset.page)));if(auth)auth.onAuthStateChanged(async u=>{currentUser=u;updateAuthUI();await State.load();if(currentUser){State.userLists=await getUserLists();}renderTrackedSets();renderTrackedSetsSettings();});await State.load();updateStats();await loadTrending();await loadUpcomingReleases();renderTrackedSets();setTimeout(()=>{document.getElementById('loadingOverlay').style.opacity='0';setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);},500);});
+        document.addEventListener('DOMContentLoaded',async()=>{
+            document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.addEventListener('click',()=>switchPage(t.dataset.page)));
+            if(auth)auth.onAuthStateChanged(async u=>{
+                currentUser=u;
+                updateAuthUI();
+                await State.load();
+                if(currentUser){
+                    State.userLists=await getUserLists();
+                    // Record watchlist prices and update portfolio
+                    recordWatchlistPrices();
+                    updatePortfolioPrices();
+                }
+                renderTrackedSets();
+                renderTrackedSetsSettings();
+                renderTrackedSetsWidget();
+                loadPriceMovers(1);
+            });
+            await State.load();
+            updateStats();
+            await loadTrending();
+            await loadUpcomingReleases();
+            await loadFormatStaples('commander');
+            renderTrackedSets();
+            renderTrackedSetsWidget();
+            loadPriceMovers(1);
+            setTimeout(()=>{
+                document.getElementById('loadingOverlay').style.opacity='0';
+                setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);
+            },500);
+        });
     </script>
 </body>
 </html>
