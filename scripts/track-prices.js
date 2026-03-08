@@ -78,35 +78,81 @@ async function main() {
   console.log(`Date: ${new Date().toISOString()}`);
 
   const queries = [
-    // Commander Staples (most popular format)
+    // ====== CORE STAPLES ======
     { name: 'Commander Staples', query: 'f:commander is:staple usd>1', limit: 100 },
-
-    // Modern Staples
     { name: 'Modern Staples', query: 'f:modern is:staple usd>5', limit: 75 },
-
-    // Pioneer Staples
     { name: 'Pioneer Staples', query: 'f:pioneer is:staple usd>2', limit: 50 },
-
-    // Legacy/Vintage High Value
     { name: 'Legacy Staples', query: 'f:legacy is:staple usd>10', limit: 50 },
-
-    // Reserved List
     { name: 'Reserved List', query: 'is:reserved usd>5', limit: 75 },
-
-    // Standard (rotates, so track current)
     { name: 'Standard Cards', query: 'f:standard usd>1', limit: 50 },
-
-    // High Value Cards Overall
     { name: 'High Value Cards', query: 'usd>50', limit: 100 },
-
-    // Recent Sets Mythics
     { name: 'Recent Mythics', query: 'r:mythic year>=2024 usd>2', limit: 75 },
-
-    // Popular Commanders
     { name: 'Legendary Creatures', query: 't:legendary t:creature f:commander usd>3', limit: 75 },
+    { name: 'Mana Rocks', query: '(t:artifact o:"add" o:"mana") usd>1', limit: 50 },
 
-    // Mana Rocks & Ramp
-    { name: 'Mana Rocks', query: '(t:artifact o:"add" o:"mana") usd>1', limit: 50 }
+    // ====== PRICE TIERS (Budget Focus) ======
+    { name: 'Budget Under $2', query: 'usd<2 usd>0.10', limit: 50 },
+    { name: 'Budget $2-$5', query: 'usd<5 usd>=2', limit: 50 },
+    { name: 'Budget $5-$10', query: 'usd<10 usd>=5', limit: 50 },
+    { name: 'Budget $10-$20', query: 'usd<20 usd>=10', limit: 50 },
+
+    // ====== BY COLOR (Budget) ======
+    { name: 'White Budget', query: 'c:w usd<20 usd>0.50', limit: 40 },
+    { name: 'Blue Budget', query: 'c:u usd<20 usd>0.50', limit: 40 },
+    { name: 'Black Budget', query: 'c:b usd<20 usd>0.50', limit: 40 },
+    { name: 'Red Budget', query: 'c:r usd<20 usd>0.50', limit: 40 },
+    { name: 'Green Budget', query: 'c:g usd<20 usd>0.50', limit: 40 },
+    { name: 'Colorless Budget', query: 'c:c usd<20 usd>0.50', limit: 40 },
+    { name: 'Multicolor Budget', query: 'c>=2 usd<20 usd>0.50', limit: 40 },
+
+    // ====== CREATURE TYPES ======
+    { name: 'Dragons', query: 't:dragon usd<20 usd>0.50', limit: 30 },
+    { name: 'Elves', query: 't:elf usd<20 usd>0.50', limit: 30 },
+    { name: 'Goblins', query: 't:goblin usd<20 usd>0.50', limit: 30 },
+    { name: 'Zombies', query: 't:zombie usd<20 usd>0.50', limit: 30 },
+    { name: 'Angels', query: 't:angel usd<20 usd>0.50', limit: 30 },
+    { name: 'Vampires', query: 't:vampire usd<20 usd>0.50', limit: 30 },
+    { name: 'Wizards', query: 't:wizard usd<20 usd>0.50', limit: 30 },
+    { name: 'Demons', query: 't:demon usd<20 usd>0.50', limit: 30 },
+
+    // ====== CARD TYPES ======
+    { name: 'Instants Budget', query: 't:instant usd<20 usd>0.50', limit: 40 },
+    { name: 'Sorceries Budget', query: 't:sorcery usd<20 usd>0.50', limit: 40 },
+    { name: 'Enchantments Budget', query: 't:enchantment usd<20 usd>0.50', limit: 40 },
+    { name: 'Artifacts Budget', query: 't:artifact usd<20 usd>0.50', limit: 40 },
+    { name: 'Lands Budget', query: 't:land usd<20 usd>0.50', limit: 40 },
+    { name: 'Planeswalkers Budget', query: 't:planeswalker usd<20 usd>0.50', limit: 30 },
+
+    // ====== TMNT / SECRET LAIR ======
+    { name: 'TMNT Top', query: 'set:sld (ninja or turtle or tmnt) usd>0', limit: 50 },
+    { name: 'TMNT Creatures', query: 'set:sld (ninja or turtle) t:creature usd>0', limit: 30 },
+    { name: 'TMNT Legendary', query: 'set:sld (ninja or turtle) t:legendary usd>0', limit: 30 },
+
+    // ====== LORWYN (Original + Remastered) ======
+    { name: 'Lorwyn Top', query: '(set:lrw or set:lrr) usd>0', limit: 50 },
+    { name: 'Lorwyn Elves', query: '(set:lrw or set:lrr) t:elf usd>0', limit: 30 },
+    { name: 'Lorwyn Faeries', query: '(set:lrw or set:lrr) t:faerie usd>0', limit: 30 },
+    { name: 'Lorwyn Goblins', query: '(set:lrw or set:lrr) t:goblin usd>0', limit: 30 },
+    { name: 'Lorwyn Merfolk', query: '(set:lrw or set:lrr) t:merfolk usd>0', limit: 30 },
+    { name: 'Lorwyn Treefolk', query: '(set:lrw or set:lrr) t:treefolk usd>0', limit: 30 },
+    { name: 'Lorwyn Lands', query: '(set:lrw or set:lrr) t:land usd>0', limit: 30 },
+
+    // ====== COMMANDER SETS 2024-2025 ======
+    { name: 'CMD Sets Top', query: 'set:cmm or set:c24 or set:otp usd>0', limit: 50 },
+    { name: 'CMD Commanders', query: '(set:cmm or set:c24 or set:otp) t:legendary t:creature usd>0', limit: 50 },
+    { name: 'CMD Mythics', query: '(set:cmm or set:c24 or set:otp) r:mythic usd>0', limit: 40 },
+    { name: 'CMD Artifacts', query: '(set:cmm or set:c24 or set:otp) t:artifact usd>0', limit: 40 },
+    { name: 'CMD Enchantments', query: '(set:cmm or set:c24 or set:otp) t:enchantment usd>0', limit: 40 },
+    { name: 'CMD Lands', query: '(set:cmm or set:c24 or set:otp) t:land usd>0', limit: 40 },
+
+    // ====== RARITY BUDGET ======
+    { name: 'Mythics Under $20', query: 'r:mythic usd<20 usd>1', limit: 50 },
+    { name: 'Rares Under $10', query: 'r:rare usd<10 usd>0.50', limit: 50 },
+    { name: 'Uncommons Under $5', query: 'r:uncommon usd<5 usd>0.25', limit: 40 },
+    { name: 'Commons Under $2', query: 'r:common usd<2 usd>0.10', limit: 40 },
+
+    // ====== PAUPER ======
+    { name: 'Pauper Staples', query: 'f:pauper usd>0.10', limit: 50 }
   ];
 
   let totalRecorded = 0;

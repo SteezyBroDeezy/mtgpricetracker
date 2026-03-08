@@ -483,6 +483,11 @@
         .category-mover-change { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; min-width: 55px; text-align: right; }
         .category-mover-change.positive { color: var(--accent-green); }
         .category-mover-change.negative { color: var(--accent-red); }
+        .category-show-more { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 0.75rem; padding: 0.5rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem; color: var(--accent-secondary); transition: var(--transition-fast); border: 1px solid transparent; }
+        .category-show-more:hover { background: var(--accent-primary); color: white; border-color: var(--accent-primary); }
+        .category-mover-content.expanded { max-height: 600px; overflow-y: auto; }
+        .category-mover-content.expanded .category-show-more { background: var(--accent-primary); color: white; }
+        .category-card-count { font-size: 0.7rem; color: var(--text-muted); margin-left: auto; }
 
         /* CTA Section */
         .cta-section { margin: 2rem 0; }
@@ -706,6 +711,66 @@
                     <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> Rares < $10</div><div class="category-mover-content" id="rareBudgetContent">Loading...</div></div>
                     <div class="category-mover-card"><div class="category-mover-header"><span>💎</span> Uncommons < $5</div><div class="category-mover-content" id="uncommonBudgetContent">Loading...</div></div>
                     <div class="category-mover-card"><div class="category-mover-header"><span>🪙</span> Commons < $2</div><div class="category-mover-content" id="commonBudgetContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- TMNT / Teenage Set -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🐢 Teenage Mutant Ninja Turtles</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Secret Lair x TMNT - Cowabunga!</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> TMNT Top Cards</div><div class="category-mover-content" id="tmntTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> TMNT Under $10</div><div class="category-mover-content" id="tmntBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> TMNT Mythics</div><div class="category-mover-content" id="tmntMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> TMNT Rares</div><div class="category-mover-content" id="tmntRareContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👤</span> TMNT Creatures</div><div class="category-mover-content" id="tmntCreaturesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚡</span> TMNT Instants/Sorceries</div><div class="category-mover-content" id="tmntSpellsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🟢</span> TMNT Green</div><div class="category-mover-content" id="tmntGreenContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔵</span> TMNT Blue</div><div class="category-mover-content" id="tmntBlueContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔴</span> TMNT Red</div><div class="category-mover-content" id="tmntRedContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> TMNT Legendary</div><div class="category-mover-content" id="tmntLegendaryContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Lorwyn Set -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">🧚 Lorwyn Remastered</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Tribal paradise returns!</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> Lorwyn Top Cards</div><div class="category-mover-content" id="lorwynTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> Lorwyn Under $10</div><div class="category-mover-content" id="lorwynBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> Lorwyn Mythics</div><div class="category-mover-content" id="lorwynMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⭐</span> Lorwyn Rares</div><div class="category-mover-content" id="lorwynRareContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧝</span> Lorwyn Elves</div><div class="category-mover-content" id="lorwynElvesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧚</span> Lorwyn Faeries</div><div class="category-mover-content" id="lorwynFaeriesContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👺</span> Lorwyn Goblins</div><div class="category-mover-content" id="lorwynGoblinsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🧜</span> Lorwyn Merfolk</div><div class="category-mover-content" id="lorwynMerfolkContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌳</span> Lorwyn Treefolk</div><div class="category-mover-content" id="lorwynTreefolkContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏔️</span> Lorwyn Lands</div><div class="category-mover-content" id="lorwynLandsContent">Loading...</div></div>
+                </div>
+            </section>
+
+            <!-- Commander Masters & Recent Commander -->
+            <section class="category-movers-section">
+                <div class="section-header">
+                    <h2 class="section-title">⚔️ Commander Sets (2024-2025)</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Latest Commander releases</p>
+                </div>
+                <div class="category-movers-grid">
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏆</span> CMD Top Cards</div><div class="category-mover-content" id="cmdTopContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💵</span> CMD Under $10</div><div class="category-mover-content" id="cmdBudgetContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>👑</span> New Commanders</div><div class="category-mover-content" id="cmdCommandersContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🔥</span> CMD Mythics</div><div class="category-mover-content" id="cmdMythicContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>⚙️</span> CMD Artifacts</div><div class="category-mover-content" id="cmdArtifactsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>✨</span> CMD Enchantments</div><div class="category-mover-content" id="cmdEnchantmentsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🏔️</span> CMD Lands</div><div class="category-mover-content" id="cmdLandsContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🌱</span> CMD Ramp</div><div class="category-mover-content" id="cmdRampContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>🎴</span> CMD Draw</div><div class="category-mover-content" id="cmdDrawContent">Loading...</div></div>
+                    <div class="category-mover-card"><div class="category-mover-header"><span>💀</span> CMD Removal</div><div class="category-mover-content" id="cmdRemovalContent">Loading...</div></div>
                 </div>
             </section>
 
@@ -2038,8 +2103,44 @@
             mythicBudget: { query: 'r:mythic usd<20 usd>1', id: 'mythicBudgetContent' },
             rareBudget: { query: 'r:rare usd<10 usd>0.50', id: 'rareBudgetContent' },
             uncommonBudget: { query: 'r:uncommon usd<5 usd>0.25', id: 'uncommonBudgetContent' },
-            commonBudget: { query: 'r:common usd<2 usd>0.10', id: 'commonBudgetContent' }
+            commonBudget: { query: 'r:common usd<2 usd>0.10', id: 'commonBudgetContent' },
+            // TMNT / Teenage Set (Secret Lair)
+            tmntTop: { query: 'set:sld (ninja or turtle or tmnt) usd>0', id: 'tmntTopContent' },
+            tmntBudget: { query: 'set:sld (ninja or turtle) usd<10 usd>0', id: 'tmntBudgetContent' },
+            tmntMythic: { query: 'set:sld (ninja or turtle) r:mythic usd>0', id: 'tmntMythicContent' },
+            tmntRare: { query: 'set:sld (ninja or turtle) r:rare usd>0', id: 'tmntRareContent' },
+            tmntCreatures: { query: 'set:sld (ninja or turtle) t:creature usd>0', id: 'tmntCreaturesContent' },
+            tmntSpells: { query: 'set:sld (ninja or turtle) (t:instant or t:sorcery) usd>0', id: 'tmntSpellsContent' },
+            tmntGreen: { query: 'set:sld (ninja or turtle) c:g usd>0', id: 'tmntGreenContent' },
+            tmntBlue: { query: 'set:sld (ninja or turtle) c:u usd>0', id: 'tmntBlueContent' },
+            tmntRed: { query: 'set:sld (ninja or turtle) c:r usd>0', id: 'tmntRedContent' },
+            tmntLegendary: { query: 'set:sld (ninja or turtle) t:legendary usd>0', id: 'tmntLegendaryContent' },
+            // Lorwyn Remastered (LRW block)
+            lorwynTop: { query: '(set:lrw or set:lrr) usd>0', id: 'lorwynTopContent' },
+            lorwynBudget: { query: '(set:lrw or set:lrr) usd<10 usd>0.25', id: 'lorwynBudgetContent' },
+            lorwynMythic: { query: '(set:lrw or set:lrr) r:mythic usd>0', id: 'lorwynMythicContent' },
+            lorwynRare: { query: '(set:lrw or set:lrr) r:rare usd>0', id: 'lorwynRareContent' },
+            lorwynElves: { query: '(set:lrw or set:lrr) t:elf usd>0', id: 'lorwynElvesContent' },
+            lorwynFaeries: { query: '(set:lrw or set:lrr) t:faerie usd>0', id: 'lorwynFaeriesContent' },
+            lorwynGoblins: { query: '(set:lrw or set:lrr) t:goblin usd>0', id: 'lorwynGoblinsContent' },
+            lorwynMerfolk: { query: '(set:lrw or set:lrr) t:merfolk usd>0', id: 'lorwynMerfolkContent' },
+            lorwynTreefolk: { query: '(set:lrw or set:lrr) t:treefolk usd>0', id: 'lorwynTreefolkContent' },
+            lorwynLands: { query: '(set:lrw or set:lrr) t:land usd>0', id: 'lorwynLandsContent' },
+            // Commander Sets 2024-2025
+            cmdTop: { query: 'set:cmm or set:c24 or set:otp usd>0', id: 'cmdTopContent' },
+            cmdBudget: { query: '(set:cmm or set:c24 or set:otp) usd<10 usd>0.25', id: 'cmdBudgetContent' },
+            cmdCommanders: { query: '(set:cmm or set:c24 or set:otp) t:legendary t:creature usd>0', id: 'cmdCommandersContent' },
+            cmdMythic: { query: '(set:cmm or set:c24 or set:otp) r:mythic usd>0', id: 'cmdMythicContent' },
+            cmdArtifacts: { query: '(set:cmm or set:c24 or set:otp) t:artifact usd>0', id: 'cmdArtifactsContent' },
+            cmdEnchantments: { query: '(set:cmm or set:c24 or set:otp) t:enchantment usd>0', id: 'cmdEnchantmentsContent' },
+            cmdLands: { query: '(set:cmm or set:c24 or set:otp) t:land usd>0', id: 'cmdLandsContent' },
+            cmdRamp: { query: '(set:cmm or set:c24 or set:otp) o:"add" o:"mana" usd>0', id: 'cmdRampContent' },
+            cmdDraw: { query: '(set:cmm or set:c24 or set:otp) o:"draw" o:"card" usd>0', id: 'cmdDrawContent' },
+            cmdRemoval: { query: '(set:cmm or set:c24 or set:otp) (o:"destroy target" or o:"exile target") usd>0', id: 'cmdRemovalContent' }
         };
+
+        // Store expanded card data for each category
+        const categoryCardData = {};
 
         async function loadCategoryMovers() {
             for (const [cat, config] of Object.entries(categoryMoverQueries)) {
@@ -2053,30 +2154,61 @@
             try {
                 const d = await API.search(config.query, { order: 'usd', dir: 'desc' });
                 if (d.data?.length) {
-                    const cards = d.data.slice(0, 5);
-                    container.innerHTML = cards.map(c => {
-                        const pr = getPrice(c);
-                        const hist = State.priceHistory[c.id];
-                        let changeHtml = '';
-                        if (hist && hist.length >= 2) {
-                            const chg = calculatePriceChange(hist, pr.num);
-                            if (chg !== null) {
-                                const cls = parseFloat(chg) >= 0 ? 'positive' : 'negative';
-                                changeHtml = `<span class="category-mover-change ${cls}">${parseFloat(chg) >= 0 ? '+' : ''}${chg}%</span>`;
-                            }
-                        }
-                        return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')">
-                            <span class="category-mover-name">${c.name}</span>
-                            <span class="category-mover-price">${pr.val}</span>
-                            ${changeHtml}
-                        </div>`;
-                    }).join('');
+                    // Store full data for expansion (up to 50 cards)
+                    categoryCardData[cat] = { cards: d.data.slice(0, 50), expanded: false, config };
+                    renderCategoryCards(cat, container, false);
                 } else {
                     container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;">No data</p>';
                 }
             } catch(e) {
                 container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;">Loading...</p>';
             }
+        }
+
+        function renderCategoryCards(cat, container, expanded) {
+            const data = categoryCardData[cat];
+            if (!data) return;
+            const cards = expanded ? data.cards : data.cards.slice(0, 5);
+            const totalCards = data.cards.length;
+
+            let html = cards.map(c => {
+                const pr = getPrice(c);
+                const hist = State.priceHistory[c.id];
+                let changeHtml = '';
+                if (hist && hist.length >= 2) {
+                    const chg = calculatePriceChange(hist, pr.num);
+                    if (chg !== null) {
+                        const cls = parseFloat(chg) >= 0 ? 'positive' : 'negative';
+                        changeHtml = `<span class="category-mover-change ${cls}">${parseFloat(chg) >= 0 ? '+' : ''}${chg}%</span>`;
+                    }
+                }
+                return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')">
+                    <span class="category-mover-name">${c.name}</span>
+                    <span class="category-mover-price">${pr.val}</span>
+                    ${changeHtml}
+                </div>`;
+            }).join('');
+
+            // Add Show More/Less button if there are more than 5 cards
+            if (totalCards > 5) {
+                const btnText = expanded ? 'Show Less' : `Show More (${totalCards} total)`;
+                const icon = expanded ? '▲' : '▼';
+                html += `<div class="category-show-more" onclick="toggleCategoryExpand('${cat}')">
+                    <span>${icon}</span> ${btnText}
+                </div>`;
+            }
+
+            container.innerHTML = html;
+            container.classList.toggle('expanded', expanded);
+            data.expanded = expanded;
+        }
+
+        function toggleCategoryExpand(cat) {
+            const data = categoryCardData[cat];
+            if (!data) return;
+            const container = document.getElementById(data.config.id);
+            if (!container) return;
+            renderCategoryCards(cat, container, !data.expanded);
         }
 
         // ====== CARD PRINTINGS ======
