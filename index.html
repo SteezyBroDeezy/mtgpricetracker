@@ -394,8 +394,16 @@
 
         /* Price Movers Section */
         .movers-section { margin-bottom: 2rem; }
-        .movers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        @media (max-width: 768px) { .movers-grid { grid-template-columns: 1fr; } }
+        .movers-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 600px; }
+        .watchlist-preview { background: var(--bg-card); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--accent-gold); }
+        .watchlist-preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .watchlist-preview-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--accent-gold); }
+        .watchlist-preview-cards { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; }
+        .watchlist-mini-card { flex-shrink: 0; width: 80px; text-align: center; cursor: pointer; transition: var(--transition-fast); }
+        .watchlist-mini-card:hover { transform: scale(1.05); }
+        .watchlist-mini-card img { width: 70px; height: 98px; border-radius: var(--radius-sm); object-fit: cover; }
+        .watchlist-mini-card .name { font-size: 0.7rem; margin-top: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .watchlist-mini-card .price { font-size: 0.75rem; color: var(--accent-gold); font-family: var(--font-mono); }
         .movers-column { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; }
         .movers-column-title { font-family: var(--font-display); font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
         .movers-column-title.gainers { color: var(--accent-green); }
@@ -590,6 +598,15 @@
                 <div class="stat-card"><div class="stat-label">Tracked Sets</div><div class="stat-value" id="statTrackedSets">0</div></div>
             </div>
 
+            <!-- Watchlist Preview -->
+            <div class="watchlist-preview" id="watchlistPreview" style="display:none;">
+                <div class="watchlist-preview-header">
+                    <span class="watchlist-preview-title">👁️ Your Watchlist</span>
+                    <button class="btn btn-sm" onclick="switchPage('watchlist')">View All</button>
+                </div>
+                <div class="watchlist-preview-cards" id="watchlistPreviewCards"></div>
+            </div>
+
             <!-- Price Movers Section -->
             <section class="movers-section" id="moversSection">
                 <div class="section-header">
@@ -605,6 +622,16 @@
                     </div>
                 </div>
                 <div class="movers-grid" id="moversGrid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Top Gainers</div>
+                        <div id="gainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Top Losers</div>
+                        <div id="losersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p></div>
+                    </div>
+                </div>
+            </section>
 
             <!-- Latest Sets Quick Access -->
             <section class="category-movers-section" style="margin-bottom:1.5rem;">
@@ -618,16 +645,6 @@
                     <div class="category-mover-card"><div class="category-mover-header"><span>⚔️</span> Final Fantasy Top</div><div class="category-mover-content" id="latestFFContent">Loading...</div></div>
                     <div class="category-mover-card"><div class="category-mover-header"><span>🏎️</span> Aetherdrift Top</div><div class="category-mover-content" id="latestDriftContent">Loading...</div></div>
                     <div class="category-mover-card"><div class="category-mover-header"><span>🌿</span> Avatar Top</div><div class="category-mover-content" id="latestAvatarContent">Loading...</div></div>
-                </div>
-            </section>
-                    <div class="movers-column">
-                        <div class="movers-column-title gainers">📈 Top Gainers</div>
-                        <div id="gainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p></div>
-                    </div>
-                    <div class="movers-column">
-                        <div class="movers-column-title losers">📉 Top Losers</div>
-                        <div id="losersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p></div>
-                    </div>
                 </div>
             </section>
 
@@ -1763,6 +1780,25 @@
 
         // Watchlist
         function renderWatchlist(){const c=document.getElementById('watchlistContent');if(!State.watchlist.length){c.innerHTML='<div class="watchlist-empty"><div class="watchlist-empty-icon">👁️</div><h3>No cards yet</h3><p>Search and click 👁 to add cards</p></div>';return;}c.innerHTML='<div class="watchlist-grid">'+State.watchlist.map(card=>`<div class="watchlist-card"><img src="${card.image}" class="watchlist-card-img" onclick="openCardDetail('${card.id}')"><div class="watchlist-card-info"><div class="watchlist-card-name">${card.name}</div><div class="watchlist-card-set">${card.setName} • ${card.rarity}</div><div class="watchlist-card-price">${card.priceStr||'N/A'}</div><div class="watchlist-card-actions"><button class="watchlist-action-btn alert" onclick="openQuickAlert('${card.id}','${card.name.replace(/'/g,"\\'")}')">🔔 Alert</button><button class="watchlist-action-btn remove" onclick="quickWatch('${card.id}');renderWatchlist();">✕ Remove</button></div></div></div>`).join('')+'</div>';}
+
+        // Watchlist Preview on Dashboard
+        function renderWatchlistPreview() {
+            const container = document.getElementById('watchlistPreview');
+            const cardsContainer = document.getElementById('watchlistPreviewCards');
+            if (!State.watchlist.length) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            const cards = State.watchlist.slice(0, 10);
+            cardsContainer.innerHTML = cards.map(card => `
+                <div class="watchlist-mini-card" onclick="openCardDetail('${card.id}')">
+                    <img src="${card.image}" alt="${card.name}">
+                    <div class="name">${card.name}</div>
+                    <div class="price">${card.priceStr || 'N/A'}</div>
+                </div>
+            `).join('');
+        }
 
         // Categories
         const catQueries={mythic:'r:mythic',rare:'r:rare',uncommon:'r:uncommon',drops:'',reprints:'is:reprint -t:land',reserved:'is:reserved'};
@@ -3039,6 +3075,8 @@
             State.portfolio.forEach(p => portfolioValue += (p.currentPrice || p.addedPrice || 0) * p.quantity);
             document.getElementById('statPortfolio').textContent = '$' + portfolioValue.toFixed(0);
             document.getElementById('statTrackedSets').textContent = State.trackedSets.length;
+            // Update watchlist preview on dashboard
+            renderWatchlistPreview();
         }
 
         // Tab filters
@@ -3066,6 +3104,7 @@
             });
             await State.load();
             updateStats();
+            renderWatchlistPreview();
             updateCTAVisibility();
             await loadTrending();
             await loadUpcomingReleases();
