@@ -73,6 +73,38 @@
             * { animation-duration: 0.1s !important; transition-duration: 0.1s !important; }
             .nav-logo-icon { animation: none !important; }
             .loading-spinner { animation-duration: 1s !important; }
+
+            /* Mobile search - full width on own row */
+            .dashboard-header { flex-direction: column; align-items: stretch; }
+            .dashboard-title { font-size: 1.4rem; text-align: center; margin-bottom: 0.5rem; }
+            .search-container { max-width: 100%; width: 100%; position: relative; }
+            .search-input { font-size: 16px; padding: 1rem 1rem 1rem 3rem; }
+            .search-results {
+                max-height: 50vh;
+                position: fixed;
+                left: 1rem;
+                right: 1rem;
+                top: auto;
+                width: calc(100% - 2rem);
+                z-index: 9999;
+            }
+            .search-result-item {
+                padding: 0.75rem;
+                min-height: 60px;
+                touch-action: manipulation;
+            }
+            .search-result-img { width: 40px; height: 56px; flex-shrink: 0; }
+            .search-result-info { flex: 1; min-width: 0; }
+            .search-result-info h4 { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .search-result-info p { font-size: 0.75rem; }
+            .search-result-price { font-size: 0.85rem; flex-shrink: 0; }
+            .search-result-actions { flex-shrink: 0; }
+            .quick-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+
+            /* Mobile stats grid */
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+            .stat-card { padding: 1rem; }
+            .stat-value { font-size: 1.4rem; }
         }
 
         .sites-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--bg-tertiary); padding: 0.5rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
@@ -1310,6 +1342,14 @@
         <!-- Watchlist -->
         <div class="page" id="watchlistPage">
             <div class="section-header"><h2 class="section-title">👁️ Your Watchlist</h2></div>
+            <!-- Watchlist Search -->
+            <div class="watchlist-search-container" style="margin-bottom:1.5rem;">
+                <div class="search-container" style="max-width:100%;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="watchlistSearch" placeholder="Search cards to add to watchlist...">
+                    <div class="search-results" id="watchlistSearchResults"></div>
+                </div>
+            </div>
             <div id="watchlistContent"></div>
         </div>
 
@@ -1746,6 +1786,20 @@
         const handleSearch=debounce(async q=>{if(q.length<2){searchResults.classList.remove('active');return;}try{const d=await API.search(q,{unique:'cards'});if(d.data?.length){searchResults.innerHTML=d.data.slice(0,8).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img" onclick="openCardDetail('${c.id}')"><div class="search-result-info" onclick="openCardDetail('${c.id}')"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div class="search-result-actions"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="${inWL?'Remove from':'Add to'} Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Create Alert">🔔</button></div></div>`;}).join('');searchResults.classList.add('active');}else{searchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';searchResults.classList.add('active');}}catch(e){}},300);
         searchInput.addEventListener('input',e=>handleSearch(e.target.value));
         document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.classList.remove('active');});
+
+        // Watchlist page search
+        const watchlistSearchInput=document.getElementById('watchlistSearch'),watchlistSearchResults=document.getElementById('watchlistSearchResults');
+        const handleWatchlistSearch=debounce(async q=>{if(q.length<2){watchlistSearchResults.classList.remove('active');return;}try{const d=await API.search(q,{unique:'cards'});if(d.data?.length){watchlistSearchResults.innerHTML=d.data.slice(0,8).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item" onclick="quickWatchFromWatchlistSearch('${c.id}')"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img"><div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div style="font-size:1.5rem;">${inWL?'✓':'➕'}</div></div>`;}).join('');watchlistSearchResults.classList.add('active');}else{watchlistSearchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';watchlistSearchResults.classList.add('active');}}catch(e){}},300);
+        watchlistSearchInput.addEventListener('input',e=>handleWatchlistSearch(e.target.value));
+        document.addEventListener('click',e=>{if(!watchlistSearchInput.contains(e.target)&&!watchlistSearchResults.contains(e.target))watchlistSearchResults.classList.remove('active');});
+
+        async function quickWatchFromWatchlistSearch(id){
+            if(!isInWatchlist(id)){
+                try{const c=await API.card(id);const pr=getPrice(c);State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});showToast('Added to watchlist!','success');}catch(e){showToast('Failed','error');return;}
+            }else{showToast('Already in watchlist','info');}
+            State.save();updateStats();renderWatchlist();
+            watchlistSearchInput.value='';watchlistSearchResults.classList.remove('active');
+        }
 
         // Quick actions
         async function quickWatch(id){const idx=State.watchlist.findIndex(c=>c.id===id);if(idx>-1){State.watchlist.splice(idx,1);showToast('Removed','info');}else{try{const c=await API.card(id);const pr=getPrice(c);State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});showToast('Added to watchlist!','success');}catch(e){showToast('Failed','error');return;}}State.save();updateStats();handleSearch(searchInput.value);}
