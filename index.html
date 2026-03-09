@@ -105,6 +105,13 @@
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
             .stat-card { padding: 1rem; }
             .stat-value { font-size: 1.4rem; }
+
+            /* Mobile modal */
+            .modal-overlay { padding: 0.5rem; }
+            .modal { max-height: 90vh; overflow-y: auto; width: 100%; max-width: 100%; }
+            .modal-body { padding: 1rem; }
+            .modal-body > div { grid-template-columns: 1fr !important; }
+            .modal-body img { max-width: 200px; margin: 0 auto; display: block; }
         }
 
         .sites-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--bg-tertiary); padding: 0.5rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
@@ -1810,11 +1817,19 @@
 
         // Card detail with price chart and printings
         async function openCardDetail(id){
+            // Close search dropdowns
             searchResults.classList.remove('active');
             watchlistSearchResults.classList.remove('active');
-            try{const c=await API.card(id);
-            // Record price snapshot
-            await recordPriceSnapshot(c);
+
+            // Show modal immediately with loading state
+            document.getElementById('cardModalTitle').textContent='Loading...';
+            document.getElementById('cardModalBody').innerHTML='<div style="text-align:center;padding:3rem;"><div class="loading-spinner"></div><p style="margin-top:1rem;color:var(--text-secondary);">Loading card...</p></div>';
+            openModal('cardModal');
+
+            try{
+            const c=await API.card(id);
+            // Record price snapshot (don't await - do in background)
+            recordPriceSnapshot(c).catch(()=>{});
             const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const inPortfolio=State.portfolio.some(p=>p.cardId===c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
             // Build add-to-list dropdown
             let listDropdown='';if(currentUser&&State.userLists.length){listDropdown=`<div class="add-to-list-dropdown"><button class="btn btn-secondary" onclick="toggleListDropdown(event)">📋 Add to List</button><div class="add-to-list-menu" id="addToListMenu">${State.userLists.map(l=>`<div class="add-to-list-item" onclick="addToListFromModal('${l.id}','${c.id}')">${l.name}</div>`).join('')}</div></div>`;}else if(currentUser){listDropdown=`<button class="btn btn-secondary" onclick="openNewListModal()">📋 New List</button>`;}
@@ -1849,7 +1864,10 @@
             if (printingsContainer && printings.length > 1) {
                 printingsContainer.innerHTML = renderPrintings(printings, c.id);
             }
-        }catch(e){showToast('Failed to load','error');}}
+        }catch(e){
+            document.getElementById('cardModalTitle').textContent='Error';
+            document.getElementById('cardModalBody').innerHTML='<div style="text-align:center;padding:2rem;"><p style="color:var(--accent-red);font-size:1.2rem;">⚠️ Failed to load card</p><p style="margin-top:1rem;color:var(--text-secondary);">Please try again</p><button class="btn btn-primary" onclick="closeModal(\'cardModal\')" style="margin-top:1rem;">Close</button></div>';
+        }}
 
         function toggleListDropdown(e){e.stopPropagation();const menu=document.getElementById('addToListMenu');menu.classList.toggle('active');}
         document.addEventListener('click',e=>{const menu=document.getElementById('addToListMenu');if(menu&&!e.target.closest('.add-to-list-dropdown'))menu.classList.remove('active');});
