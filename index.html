@@ -112,6 +112,13 @@
             .modal-body { padding: 1rem; }
             .modal-body > div { grid-template-columns: 1fr !important; }
             .modal-body img { max-width: 200px; margin: 0 auto; display: block; }
+
+            /* Mobile printings - larger touch targets */
+            .printings-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-height: 300px; }
+            .printing-item { min-height: 100px; }
+            .printing-info { padding: 0.5rem; }
+            .printing-set { font-size: 0.75rem; }
+            .printing-price { font-size: 0.8rem; }
         }
 
         .sites-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--bg-tertiary); padding: 0.5rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
@@ -571,14 +578,15 @@
         /* Printings Grid in Modal */
         .printings-section { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--bg-tertiary); }
         .printings-title { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; }
-        .printings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem; max-height: 200px; overflow-y: auto; }
-        .printing-item { cursor: pointer; border-radius: var(--radius-sm); overflow: hidden; border: 2px solid transparent; transition: var(--transition-fast); }
-        .printing-item:hover { border-color: var(--accent-primary); transform: scale(1.05); }
-        .printing-item.active { border-color: var(--accent-gold); }
-        .printing-item img { width: 100%; aspect-ratio: 488/680; object-fit: cover; }
-        .printing-info { padding: 0.25rem; background: var(--bg-tertiary); text-align: center; }
-        .printing-set { font-size: 0.65rem; color: var(--text-secondary); }
-        .printing-price { font-size: 0.7rem; font-family: var(--font-mono); color: var(--accent-gold); }
+        .printings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.75rem; max-height: 250px; overflow-y: auto; padding: 0.25rem; }
+        .printing-item { cursor: pointer; border-radius: var(--radius-sm); overflow: hidden; border: 2px solid var(--bg-tertiary); transition: var(--transition-fast); background: var(--bg-secondary); touch-action: manipulation; -webkit-tap-highlight-color: rgba(157, 78, 221, 0.3); }
+        .printing-item:hover, .printing-item:active { border-color: var(--accent-primary); transform: scale(1.02); }
+        .printing-item.active { border-color: var(--accent-gold); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+        .printing-item img { width: 100%; aspect-ratio: 488/680; object-fit: cover; pointer-events: none; }
+        .printing-item * { pointer-events: none; }
+        .printing-info { padding: 0.35rem; background: var(--bg-tertiary); text-align: center; }
+        .printing-set { font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; }
+        .printing-price { font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent-gold); }
 
         /* Price Chart Time Toggle */
         .chart-time-toggle { display: flex; gap: 0.25rem; margin-bottom: 0.5rem; }
