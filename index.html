@@ -476,6 +476,8 @@
         .time-btn { padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; cursor: pointer; background: var(--bg-tertiary); border: none; color: var(--text-secondary); transition: var(--transition-fast); }
         .time-btn:hover { color: var(--text-primary); }
         .time-btn.active { background: var(--accent-primary); color: white; }
+        .show-more-btn { width: 100%; padding: 0.6rem; margin-top: 0.5rem; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600; cursor: pointer; background: var(--bg-tertiary); border: 1px solid var(--accent-primary); color: var(--accent-primary); transition: var(--transition-fast); }
+        .show-more-btn:hover { background: var(--accent-primary); color: white; }
 
         /* Portfolio */
         .portfolio-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
@@ -2304,11 +2306,12 @@
                     }
                 }
                 console.log('Cards with 2+ snapshots:', cardsWithData, 'Movers found:', movers.length);
-                const gainers = movers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 5);
-                const losers = movers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 5);
+                // Store up to 30 movers for expansion
+                const gainers = movers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 30);
+                const losers = movers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 30);
                 State.priceMovers = { gainers, losers };
-                renderMovers(gainers, gainersEl, 'positive');
-                renderMovers(losers, losersEl, 'negative');
+                renderMovers(gainers, gainersEl, 'positive', 'gainers');
+                renderMovers(losers, losersEl, 'negative', 'losers');
                 // Show debug info if no movers
                 if (!gainers.length && !losers.length && historyDocs.size > 0) {
                     gainersEl.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">📊 ${historyDocs.size} cards tracked. ${cardsWithData} have 2+ days data. Prices stable or more time needed.</p>`;
@@ -2321,12 +2324,19 @@
             }
         }
 
-        function renderMovers(movers, container, cls) {
+        // Track expanded state for movers
+        State.moversExpanded = { gainers: false, losers: false };
+
+        function renderMovers(movers, container, cls, type) {
             if (!movers.length) {
                 container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">No data yet. Track more cards!</p>';
                 return;
             }
-            container.innerHTML = movers.map(m => `
+            const isExpanded = State.moversExpanded[type];
+            const displayMovers = isExpanded ? movers : movers.slice(0, 5);
+            const hasMore = movers.length > 5;
+
+            container.innerHTML = displayMovers.map(m => `
                 <div class="mover-item" onclick="openCardDetail('${m.cardId}')">
                     <div class="mover-info">
                         <div class="mover-name">${m.name}</div>
@@ -2335,7 +2345,19 @@
                     <div class="mover-price">$${parseFloat(m.price).toFixed(2)}</div>
                     <div class="mover-change ${cls}">${parseFloat(m.change) >= 0 ? '+' : ''}${m.change}%</div>
                 </div>
-            `).join('');
+            `).join('') + (hasMore ? `
+                <button class="show-more-btn" onclick="toggleMoversExpand('${type}')">
+                    ${isExpanded ? '▲ Show Less' : '▼ Show More (' + movers.length + ' total)'}
+                </button>
+            ` : '');
+        }
+
+        function toggleMoversExpand(type) {
+            State.moversExpanded[type] = !State.moversExpanded[type];
+            const container = type === 'gainers' ? document.getElementById('gainersContent') : document.getElementById('losersContent');
+            const movers = type === 'gainers' ? State.priceMovers.gainers : State.priceMovers.losers;
+            const cls = type === 'gainers' ? 'positive' : 'negative';
+            renderMovers(movers, container, cls, type);
         }
 
         // ====== TRACKED SETS SUMMARY ======
