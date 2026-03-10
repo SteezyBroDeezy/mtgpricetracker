@@ -190,6 +190,55 @@ async function main() {
     { name: 'Tarkir Mythics', query: 'set:dtk r:mythic usd>0', limit: 30 },
     { name: 'Tarkir Rares', query: 'set:dtk r:rare usd>0', limit: 40 },
 
+    // ====== POPULAR OLDER SETS ======
+    { name: 'Khans of Tarkir', query: 'set:ktk usd>0', limit: 50 },
+    { name: 'Innistrad', query: 'set:isd usd>0', limit: 50 },
+    { name: 'Return to Ravnica', query: 'set:rtr usd>0', limit: 50 },
+    { name: 'Theros', query: 'set:ths usd>0', limit: 50 },
+    { name: 'Dominaria', query: 'set:dom usd>0', limit: 50 },
+    { name: 'War of Spark', query: 'set:war usd>0', limit: 50 },
+    { name: 'Throne of Eldraine', query: 'set:eld usd>0', limit: 50 },
+    { name: 'Zendikar Rising', query: 'set:znr usd>0', limit: 50 },
+    { name: 'Strixhaven', query: 'set:stx usd>0', limit: 50 },
+    { name: 'Kamigawa Neon Dynasty', query: 'set:neo usd>0', limit: 50 },
+    { name: 'New Capenna', query: 'set:snc usd>0', limit: 50 },
+    { name: 'Brothers War', query: 'set:bro usd>0', limit: 50 },
+    { name: 'Wilds of Eldraine', query: 'set:woe usd>0', limit: 50 },
+    { name: 'Lost Caverns Ixalan', query: 'set:lci usd>0', limit: 50 },
+    { name: 'Murders Karlov Manor', query: 'set:mkm usd>0', limit: 50 },
+    { name: 'Outlaws Thunder', query: 'set:otj usd>0', limit: 50 },
+    { name: 'Bloomburrow', query: 'set:blb usd>0', limit: 50 },
+    { name: 'Duskmourn', query: 'set:dsk usd>0', limit: 50 },
+
+    // ====== MASTERS & REPRINT SETS ======
+    { name: 'Modern Horizons 3', query: 'set:mh3 usd>0', limit: 75 },
+    { name: 'Modern Horizons 2', query: 'set:mh2 usd>0', limit: 75 },
+    { name: 'Modern Horizons 1', query: 'set:mh1 usd>0', limit: 75 },
+    { name: 'Double Masters 2022', query: 'set:2x2 usd>0', limit: 75 },
+    { name: 'Commander Masters', query: 'set:cmm usd>0', limit: 75 },
+    { name: 'LOTR Tales', query: 'set:ltr usd>0', limit: 75 },
+    { name: 'Dominaria Remastered', query: 'set:dmr usd>0', limit: 50 },
+
+    // ====== FETCHLANDS & SHOCKLANDS ======
+    { name: 'Fetchlands', query: '(o:"search your library" o:"pay 1 life" t:land) usd>0', limit: 30 },
+    { name: 'Shocklands', query: '(o:"pay 2 life" t:land o:"unless") usd>0', limit: 30 },
+    { name: 'Triomes', query: 't:land o:cycling o:"enters tapped" c>=3', limit: 20 },
+    { name: 'Fast Lands', query: '(o:"unless you control two" t:land -t:basic)', limit: 20 },
+
+    // ====== EDH STAPLES BY FUNCTION ======
+    { name: 'Tutors', query: 'o:"search your library" f:commander usd>2', limit: 50 },
+    { name: 'Board Wipes', query: 'o:"destroy all" f:commander usd>0.50', limit: 50 },
+    { name: 'Ramp Spells', query: 'o:"search your library" o:land o:onto f:commander usd>0.50', limit: 40 },
+    { name: 'Card Draw', query: 'o:"draw" o:"cards" f:commander usd>1', limit: 50 },
+    { name: 'Counterspells', query: 'o:"counter target" t:instant usd>0.50', limit: 50 },
+    { name: 'Removal', query: '(o:"destroy target" or o:"exile target") usd>0.50', limit: 50 },
+
+    // ====== PREMIUM VARIANTS ======
+    { name: 'Borderless 2024', query: 'is:borderless year>=2024 usd>5', limit: 50 },
+    { name: 'Showcase 2024', query: 'is:showcase year>=2024 usd>3', limit: 50 },
+    { name: 'Extended Art 2024', query: 'is:extendedart year>=2024 usd>3', limit: 50 },
+    { name: 'Retro Frame', query: 'frame:1997 year>=2021 usd>1', limit: 50 },
+
     // ====== FOUNDATIONS ======
     { name: 'Foundations Top', query: 'set:fdn usd>0', limit: 50 },
     { name: 'Foundations Mythics', query: 'set:fdn r:mythic usd>0', limit: 30 },
