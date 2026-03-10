@@ -3288,6 +3288,100 @@
             ctx.textAlign = 'left';
             ctx.fillText('$' + max.toFixed(2), 2, 12);
             ctx.fillText('$' + min.toFixed(2), 2, height - 2);
+
+            // Add interactive hover
+            const historyWithPrices = history.filter(h => h.usd);
+            canvas.onmousemove = canvas.ontouchmove = function(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const idx = Math.round((x / width) * (historyWithPrices.length - 1));
+                if (idx >= 0 && idx < historyWithPrices.length) {
+                    const point = historyWithPrices[idx];
+                    // Redraw chart
+                    drawPriceChartWithHighlight(canvas, history, idx, min, max, range);
+                }
+            };
+            canvas.onmouseleave = function() {
+                drawPriceChart(canvas, history);
+            };
+        }
+
+        function drawPriceChartWithHighlight(canvas, history, highlightIdx, min, max, range) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+            const prices = history.map(h => h.usd).filter(p => p);
+            const historyWithPrices = history.filter(h => h.usd);
+
+            // Draw background grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = (i / 4) * height;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            // Draw price line
+            ctx.beginPath();
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 2;
+            prices.forEach((price, i) => {
+                const x = (i / (prices.length - 1)) * width;
+                const y = height - ((price - min) / range) * height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            // Draw gradient fill
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, 'rgba(255, 215, 0, 0.3)');
+            gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // Draw highlight point and tooltip
+            if (highlightIdx >= 0 && highlightIdx < historyWithPrices.length) {
+                const point = historyWithPrices[highlightIdx];
+                const x = (highlightIdx / (prices.length - 1)) * width;
+                const y = height - ((point.usd - min) / range) * height;
+
+                // Draw vertical line
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Draw point
+                ctx.beginPath();
+                ctx.fillStyle = '#ffd700';
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw tooltip
+                const tooltipText = '$' + point.usd.toFixed(2) + ' • ' + point.date;
+                ctx.font = 'bold 11px JetBrains Mono';
+                const textWidth = ctx.measureText(tooltipText).width;
+                const tooltipX = Math.min(Math.max(x - textWidth/2, 5), width - textWidth - 5);
+                const tooltipY = y > 30 ? y - 15 : y + 25;
+
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.fillRect(tooltipX - 4, tooltipY - 12, textWidth + 8, 16);
+                ctx.fillStyle = '#ffd700';
+                ctx.fillText(tooltipText, tooltipX, tooltipY);
+            }
         }
 
         function updateStats(){
