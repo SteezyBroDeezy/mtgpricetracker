@@ -2242,12 +2242,14 @@
             cutoff.setDate(cutoff.getDate() - days);
             const cutoffStr = cutoff.toISOString().split('T')[0];
             try {
-                const snapshot = await db.collection('priceHistory').doc(cardId).collection('snapshots')
-                    .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
-                    .orderBy(firebase.firestore.FieldPath.documentId())
-                    .get();
-                return snapshot.docs.map(d => ({ date: d.id, ...d.data() }));
-            } catch(e) { return []; }
+                // Simple query without orderBy to avoid needing composite index
+                const snapshot = await db.collection('priceHistory').doc(cardId).collection('snapshots').get();
+                // Filter and sort client-side
+                return snapshot.docs
+                    .map(d => ({ date: d.id, ...d.data() }))
+                    .filter(d => d.date >= cutoffStr)
+                    .sort((a, b) => a.date.localeCompare(b.date));
+            } catch(e) { console.log('getPriceHistory error:', e); return []; }
         }
 
         function calculatePriceChange(history, currentPrice) {
@@ -2285,19 +2287,16 @@
                 const historyDocs = await db.collection('priceHistory').limit(200).get();
                 console.log('Price history docs found:', historyDocs.size);
                 const movers = [];
-                const cutoff = new Date();
-                cutoff.setDate(cutoff.getDate() - Math.max(days, 7)); // Always look back at least 7 days
-                const cutoffStr = cutoff.toISOString().split('T')[0];
                 let cardsWithData = 0;
                 for (const doc of historyDocs.docs) {
-                    const snapshots = await doc.ref.collection('snapshots')
-                        .orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
-                        .limit(30)
-                        .get();
+                    // Simple query without orderBy to avoid needing composite index
+                    const snapshots = await doc.ref.collection('snapshots').limit(30).get();
                     if (snapshots.docs.length >= 2) {
                         cardsWithData++;
-                        const newest = snapshots.docs[0].data();
-                        const oldest = snapshots.docs[snapshots.docs.length - 1].data();
+                        // Sort by document ID (date) client-side
+                        const sortedDocs = snapshots.docs.sort((a, b) => a.id.localeCompare(b.id));
+                        const oldest = sortedDocs[0].data();
+                        const newest = sortedDocs[sortedDocs.length - 1].data();
                         if (oldest.usd && newest.usd && oldest.usd !== newest.usd) {
                             const change = ((newest.usd - oldest.usd) / oldest.usd) * 100;
                             movers.push({ cardId: doc.id, change: change.toFixed(1), price: newest.usd, name: newest.name || doc.data()?.name || doc.id, set: newest.set || doc.data()?.set });
