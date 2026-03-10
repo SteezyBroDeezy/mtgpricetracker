@@ -664,6 +664,15 @@
                 <div class="watchlist-preview-cards" id="watchlistPreviewCards"></div>
             </div>
 
+            <!-- Upcoming Releases - At Top -->
+            <section class="releases-section" id="releasesSection">
+                <div class="section-header">
+                    <h2 class="section-title">📅 Upcoming Releases</h2>
+                    <span class="last-updated" id="lastUpdated"></span>
+                </div>
+                <div class="releases-grid" id="releasesGrid"></div>
+            </section>
+
             <!-- Price Movers Section -->
             <section class="movers-section" id="moversSection">
                 <div class="section-header">
@@ -718,8 +727,138 @@
                 </div>
             </section>
 
+            <!-- Mythic Movers Section -->
+            <section class="movers-section" id="mythicMoversSection" style="margin-top:1.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🔥 Mythic Movers</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Biggest swings on mythic rares</p>
+                </div>
+                <div class="movers-grid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Mythic Gainers</div>
+                        <div id="mythicGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading mythic movers...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Mythic Losers</div>
+                        <div id="mythicLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading mythic movers...</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Commander Movers Section -->
+            <section class="movers-section" id="commanderMoversSection" style="margin-top:1.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">⚔️ Commander Movers</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">EDH staples price changes</p>
+                </div>
+                <div class="movers-grid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 EDH Gainers</div>
+                        <div id="commanderGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading commander movers...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 EDH Losers</div>
+                        <div id="commanderLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading commander movers...</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lands Movers Section -->
+            <section class="movers-section" id="landsMoversSection" style="margin-top:1.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🏔️ Lands Movers</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Mana base price shifts</p>
+                </div>
+                <div class="movers-grid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Lands Gainers</div>
+                        <div id="landsGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading lands movers...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Lands Losers</div>
+                        <div id="landsLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading lands movers...</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Modern Movers Section -->
+            <section class="movers-section" id="modernMoversSection" style="margin-top:1.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🌀 Modern Movers</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Modern format staples</p>
+                </div>
+                <div class="movers-grid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Modern Gainers</div>
+                        <div id="modernGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading modern movers...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Modern Losers</div>
+                        <div id="modernLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading modern movers...</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reserved List Movers Section -->
+            <section class="movers-section" id="reservedMoversSection" style="margin-top:1.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">💰 Reserved List Movers</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">RL card price movements</p>
+                </div>
+                <div class="movers-grid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 RL Gainers</div>
+                        <div id="reservedGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading RL movers...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 RL Losers</div>
+                        <div id="reservedLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading RL movers...</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Creature Movers Section -->
+            <section class="movers-section" id="creatureMoversSection" style="margin-top:1.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🐲 Creature Movers</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Popular creature type shifts</p>
+                </div>
+                <div class="movers-grid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Creature Gainers</div>
+                        <div id="creatureGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading creature movers...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Creature Losers</div>
+                        <div id="creatureLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading creature movers...</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Market Categories - Moved Up -->
+            <div class="section-header" style="margin-top:2rem;"><h2 class="section-title">📈 Market Categories</h2></div>
+            <div class="category-grid" id="categoryGridTop">
+                <div class="category-card" onclick="loadCategory('mythic')"><div class="category-icon" style="background:linear-gradient(135deg,#ff6b35,#f7931e);">🔥</div><div class="category-info"><h3>Hot Mythics</h3><p>Trending mythic rares</p></div></div>
+                <div class="category-card" onclick="loadCategory('rare')"><div class="category-icon" style="background:linear-gradient(135deg,#ffd700,#ffaa00);">⭐</div><div class="category-info"><h3>Hot Rares</h3><p>Most valuable rares</p></div></div>
+                <div class="category-card" onclick="loadCategory('uncommon')"><div class="category-icon" style="background:linear-gradient(135deg,#c0c0c0,#888);">💎</div><div class="category-info"><h3>Hot Uncommons</h3><p>Uncommons punching up</p></div></div>
+                <div class="category-card" onclick="loadCategory('drops')"><div class="category-icon" style="background:linear-gradient(135deg,#ff4757,#ff6b81);">📉</div><div class="category-info"><h3>Price Drops</h3><p>Cards that tanked</p></div></div>
+                <div class="category-card" onclick="loadCategory('reprints')"><div class="category-icon" style="background:linear-gradient(135deg,#00d9ff,#0ea5e9);">🔄</div><div class="category-info"><h3>Reprints</h3><p>Reprint impacts</p></div></div>
+                <div class="category-card" onclick="loadCategory('reserved')"><div class="category-icon" style="background:linear-gradient(135deg,#9d4edd,#c77dff);">💰</div><div class="category-info"><h3>Reserved List</h3><p>RL card prices</p></div></div>
+            </div>
+
+            <!-- Shop by Function - Moved Up -->
+            <div class="section-header"><h2 class="section-title">🎯 Shop by Function</h2></div>
+            <div class="category-grid" id="functionGridTop">
+                <div class="category-card" onclick="loadFunction('ramp')"><div class="category-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">🌱</div><div class="category-info"><h3>Ramp</h3><p>Mana acceleration</p></div></div>
+                <div class="category-card" onclick="loadFunction('removal')"><div class="category-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">💀</div><div class="category-info"><h3>Removal</h3><p>Destroy & exile</p></div></div>
+                <div class="category-card" onclick="loadFunction('draw')"><div class="category-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">🎴</div><div class="category-info"><h3>Card Draw</h3><p>Draw engines</p></div></div>
+                <div class="category-card" onclick="loadFunction('protection')"><div class="category-icon" style="background:linear-gradient(135deg,#a855f7,#9333ea);">🛡️</div><div class="category-info"><h3>Protection</h3><p>Keep stuff safe</p></div></div>
+                <div class="category-card" onclick="loadFunction('wipes')"><div class="category-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">💥</div><div class="category-info"><h3>Board Wipes</h3><p>Clear the board</p></div></div>
+                <div class="category-card" onclick="loadFunction('tutor')"><div class="category-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);">🔍</div><div class="category-info"><h3>Tutors</h3><p>Search library</p></div></div>
+            </div>
+
             <!-- Latest Sets Quick Access -->
-            <section class="category-movers-section" style="margin-bottom:1.5rem;">
+            <section class="category-movers-section" style="margin-bottom:1.5rem;margin-top:2rem;">
                 <div class="section-header">
                     <h2 class="section-title">🆕 Latest Set Releases</h2>
                     <p style="color:var(--text-secondary);font-size:0.85rem;">Newest sets - tracked immediately on release</p>
@@ -1289,35 +1428,6 @@
                 <div id="trackedSetsChips"></div>
             </div>
 
-            <!-- Upcoming Releases -->
-            <section class="releases-section" id="releasesSection">
-                <div class="section-header">
-                    <h2 class="section-title">📅 Upcoming Releases</h2>
-                    <span class="last-updated" id="lastUpdated"></span>
-                </div>
-                <div class="releases-grid" id="releasesGrid"></div>
-            </section>
-
-            <div class="section-header"><h2 class="section-title">📈 Market Categories</h2></div>
-            <div class="category-grid" id="categoryGrid">
-                <div class="category-card" onclick="loadCategory('mythic')"><div class="category-icon" style="background:linear-gradient(135deg,#ff6b35,#f7931e);">🔥</div><div class="category-info"><h3>Hot Mythics</h3><p>Trending mythic rares</p></div></div>
-                <div class="category-card" onclick="loadCategory('rare')"><div class="category-icon" style="background:linear-gradient(135deg,#ffd700,#ffaa00);">⭐</div><div class="category-info"><h3>Hot Rares</h3><p>Most valuable rares</p></div></div>
-                <div class="category-card" onclick="loadCategory('uncommon')"><div class="category-icon" style="background:linear-gradient(135deg,#c0c0c0,#888);">💎</div><div class="category-info"><h3>Hot Uncommons</h3><p>Uncommons punching up</p></div></div>
-                <div class="category-card" onclick="loadCategory('drops')"><div class="category-icon" style="background:linear-gradient(135deg,#ff4757,#ff6b81);">📉</div><div class="category-info"><h3>Price Drops</h3><p>Cards that tanked</p></div></div>
-                <div class="category-card" onclick="loadCategory('reprints')"><div class="category-icon" style="background:linear-gradient(135deg,#00d9ff,#0ea5e9);">🔄</div><div class="category-info"><h3>Reprints</h3><p>Reprint impacts</p></div></div>
-                <div class="category-card" onclick="loadCategory('reserved')"><div class="category-icon" style="background:linear-gradient(135deg,#9d4edd,#c77dff);">💰</div><div class="category-info"><h3>Reserved List</h3><p>RL card prices</p></div></div>
-            </div>
-            
-            <div class="section-header"><h2 class="section-title">🎯 Shop by Function</h2></div>
-            <div class="category-grid" id="functionGrid">
-                <div class="category-card" onclick="loadFunction('ramp')"><div class="category-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">🌱</div><div class="category-info"><h3>Ramp</h3><p>Mana acceleration</p></div></div>
-                <div class="category-card" onclick="loadFunction('removal')"><div class="category-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">💀</div><div class="category-info"><h3>Removal</h3><p>Destroy & exile</p></div></div>
-                <div class="category-card" onclick="loadFunction('draw')"><div class="category-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">🎴</div><div class="category-info"><h3>Card Draw</h3><p>Draw engines</p></div></div>
-                <div class="category-card" onclick="loadFunction('protection')"><div class="category-icon" style="background:linear-gradient(135deg,#a855f7,#9333ea);">🛡️</div><div class="category-info"><h3>Protection</h3><p>Keep stuff safe</p></div></div>
-                <div class="category-card" onclick="loadFunction('wipes')"><div class="category-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">💥</div><div class="category-info"><h3>Board Wipes</h3><p>Clear the board</p></div></div>
-                <div class="category-card" onclick="loadFunction('tutor')"><div class="category-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);">🔍</div><div class="category-info"><h3>Tutors</h3><p>Search library</p></div></div>
-            </div>
-            
             <section id="trendingSection">
                 <div class="section-header">
                     <h2 class="section-title">🔥 Trending Now</h2>
@@ -2359,6 +2469,9 @@
                 renderMovers(midGainers, document.getElementById('midGainersContent'), 'positive', 'midGainers');
                 renderMovers(midLosers, document.getElementById('midLosersContent'), 'negative', 'midLosers');
 
+                // Load category-specific movers (mythic, commander, lands, etc.)
+                loadCategoryMoversData();
+
                 // Show debug info if no movers
                 if (!gainers.length && !losers.length && historyDocs.size > 0) {
                     gainersEl.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">📊 ${historyDocs.size} cards tracked. ${cardsWithData} have 2+ days data. Prices stable or more time needed.</p>`;
@@ -2405,6 +2518,53 @@
             const movers = type === 'gainers' ? State.priceMovers.gainers : State.priceMovers.losers;
             const cls = type === 'gainers' ? 'positive' : 'negative';
             renderMovers(movers, container, cls, type);
+        }
+
+        // ====== CATEGORY-SPECIFIC MOVERS ======
+        async function loadCategoryMoversData() {
+            if (!State.priceMovers?.allMovers) return;
+            const allMovers = State.priceMovers.allMovers;
+
+            // Get card details from Scryfall to filter by type
+            const categoryQueries = {
+                mythic: { query: 'r:mythic usd>0', gainersId: 'mythicGainersContent', losersId: 'mythicLosersContent' },
+                commander: { query: 'f:commander is:staple usd>0', gainersId: 'commanderGainersContent', losersId: 'commanderLosersContent' },
+                lands: { query: 't:land usd>1', gainersId: 'landsGainersContent', losersId: 'landsLosersContent' },
+                modern: { query: 'f:modern is:staple usd>0', gainersId: 'modernGainersContent', losersId: 'modernLosersContent' },
+                reserved: { query: 'is:reserved usd>0', gainersId: 'reservedGainersContent', losersId: 'reservedLosersContent' },
+                creature: { query: 't:creature usd>0.50', gainersId: 'creatureGainersContent', losersId: 'creatureLosersContent' }
+            };
+
+            for (const [cat, config] of Object.entries(categoryQueries)) {
+                try {
+                    const gainersEl = document.getElementById(config.gainersId);
+                    const losersEl = document.getElementById(config.losersId);
+                    if (!gainersEl || !losersEl) continue;
+
+                    // Fetch cards matching this category
+                    const data = await API.search(config.query, { order: 'usd', dir: 'desc' });
+                    if (!data.data?.length) {
+                        gainersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">No data yet</p>';
+                        losersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">No data yet</p>';
+                        continue;
+                    }
+
+                    // Cross-reference with our movers data
+                    const cardIds = new Set(data.data.map(c => c.id));
+                    const categoryMovers = allMovers.filter(m => cardIds.has(m.cardId));
+
+                    const gainers = categoryMovers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 15);
+                    const losers = categoryMovers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 15);
+
+                    State.priceMovers[cat + 'Gainers'] = gainers;
+                    State.priceMovers[cat + 'Losers'] = losers;
+
+                    renderMovers(gainers, gainersEl, 'positive', cat + 'Gainers');
+                    renderMovers(losers, losersEl, 'negative', cat + 'Losers');
+                } catch(e) {
+                    console.error(`Error loading ${cat} movers:`, e);
+                }
+            }
         }
 
         // ====== TRACKED SETS SUMMARY ======
@@ -3019,11 +3179,34 @@
                     // Store full data for expansion (up to 50 cards)
                     categoryCardData[cat] = { cards: d.data.slice(0, 50), expanded: false, config };
                     renderCategoryCards(cat, container, false);
+                    // Load price history for displayed cards (first 5) to show % changes
+                    loadPriceHistoryForCards(d.data.slice(0, 5), cat, container);
                 } else {
                     container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;">No data</p>';
                 }
             } catch(e) {
                 container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;">Loading...</p>';
+            }
+        }
+
+        // Batch load price history for cards and re-render category
+        async function loadPriceHistoryForCards(cards, cat, container) {
+            if (!db) return;
+            let updated = false;
+            for (const card of cards) {
+                if (State.priceHistory[card.id]) continue; // Already loaded
+                try {
+                    const snapshots = await db.collection('priceHistory').doc(card.id).collection('snapshots').limit(30).get();
+                    if (snapshots.docs.length >= 2) {
+                        const sorted = snapshots.docs.sort((a, b) => a.id.localeCompare(b.id));
+                        State.priceHistory[card.id] = sorted.map(d => ({ date: d.id, ...d.data() }));
+                        updated = true;
+                    }
+                } catch(e) { /* ignore */ }
+            }
+            // Re-render if we loaded new history
+            if (updated && categoryCardData[cat]) {
+                renderCategoryCards(cat, container, categoryCardData[cat].expanded);
             }
         }
 
@@ -3070,7 +3253,12 @@
             if (!data) return;
             const container = document.getElementById(data.config.id);
             if (!container) return;
-            renderCategoryCards(cat, container, !data.expanded);
+            const willExpand = !data.expanded;
+            renderCategoryCards(cat, container, willExpand);
+            // Load price history for all visible cards when expanding
+            if (willExpand) {
+                loadPriceHistoryForCards(data.cards.slice(0, 30), cat, container);
+            }
         }
 
         // ====== CATEGORY TRACKING ======
