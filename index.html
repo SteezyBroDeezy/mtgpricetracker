@@ -57,6 +57,111 @@
         /* Theme: Simic - Evolution */
         [data-theme="simic"] { --bg-primary: #001a1a; --bg-secondary: #003333; --bg-tertiary: #004d4d; --bg-card: rgba(0, 60, 60, 0.95); --bg-glass: rgba(0, 45, 45, 0.9); --accent-primary: #14b8a6; --accent-secondary: #22c55e; --accent-gold: #2dd4bf; --accent-blue: #06b6d4; --accent-green: #4ade80; --glow-primary: 0 0 40px rgba(20, 184, 166, 0.6), 0 0 80px rgba(34, 197, 94, 0.4); }
 
+        /* === WILD ANIMATED THEMES === */
+        /* Theme: Cosmos - Deep Space */
+        [data-theme="cosmos"] { --bg-primary: #000005; --bg-secondary: #05051a; --bg-tertiary: #0a0a2e; --bg-card: rgba(5, 5, 30, 0.9); --bg-glass: rgba(10, 10, 40, 0.8); --accent-primary: #818cf8; --accent-secondary: #c084fc; --accent-gold: #fbbf24; --accent-blue: #60a5fa; --accent-green: #34d399; --glow-primary: 0 0 60px rgba(129, 140, 248, 0.6), 0 0 120px rgba(192, 132, 252, 0.3); }
+        /* Theme: Aurora - Northern Lights */
+        [data-theme="aurora"] { --bg-primary: #000510; --bg-secondary: #001020; --bg-tertiary: #002040; --bg-card: rgba(0, 20, 40, 0.9); --bg-glass: rgba(0, 30, 60, 0.8); --accent-primary: #22d3ee; --accent-secondary: #4ade80; --accent-gold: #a78bfa; --accent-blue: #38bdf8; --accent-green: #34d399; --glow-primary: 0 0 60px rgba(34, 211, 238, 0.5), 0 0 100px rgba(74, 222, 128, 0.3); }
+        /* Theme: Nebula - Cosmic Dust */
+        [data-theme="nebula"] { --bg-primary: #0a0015; --bg-secondary: #150025; --bg-tertiary: #250040; --bg-card: rgba(20, 0, 40, 0.9); --bg-glass: rgba(30, 0, 60, 0.8); --accent-primary: #e879f9; --accent-secondary: #f472b6; --accent-gold: #fcd34d; --accent-blue: #a78bfa; --accent-green: #c084fc; --glow-primary: 0 0 50px rgba(232, 121, 249, 0.6), 0 0 100px rgba(244, 114, 182, 0.4); }
+        /* Theme: Void - Endless Dark */
+        [data-theme="void"] { --bg-primary: #000000; --bg-secondary: #020204; --bg-tertiary: #050508; --bg-card: rgba(2, 2, 8, 0.98); --bg-glass: rgba(5, 5, 15, 0.95); --accent-primary: #6366f1; --accent-secondary: #8b5cf6; --accent-gold: #a855f7; --accent-blue: #7c3aed; --accent-green: #a78bfa; --text-primary: #c4b5fd; --glow-primary: 0 0 80px rgba(99, 102, 241, 0.4), 0 0 150px rgba(139, 92, 246, 0.2); }
+
+        /* Stars animation for space themes */
+        [data-theme="cosmos"] .bg-effects::before,
+        [data-theme="void"] .bg-effects::before {
+            background: radial-gradient(2px 2px at 20px 30px, white, transparent),
+                        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                        radial-gradient(1px 1px at 90px 40px, white, transparent),
+                        radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.9), transparent),
+                        radial-gradient(1px 1px at 230px 80px, white, transparent),
+                        radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.7), transparent),
+                        radial-gradient(1px 1px at 350px 200px, white, transparent),
+                        radial-gradient(2px 2px at 400px 50px, rgba(255,255,255,0.8), transparent);
+            background-size: 450px 250px;
+            animation: twinkle 4s ease-in-out infinite alternate, drift 60s linear infinite;
+        }
+        @keyframes twinkle { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes drift { 0% { transform: translateX(0); } 100% { transform: translateX(-450px); } }
+
+        /* Aurora effect */
+        [data-theme="aurora"] .bg-effects::before {
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(34, 211, 238, 0.1) 20%,
+                rgba(74, 222, 128, 0.15) 40%,
+                rgba(167, 139, 250, 0.1) 60%,
+                transparent 100%);
+            animation: aurora 8s ease-in-out infinite;
+        }
+        [data-theme="aurora"] .bg-effects::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(34, 211, 238, 0.05) 25%,
+                rgba(74, 222, 128, 0.08) 50%,
+                rgba(56, 189, 248, 0.05) 75%,
+                transparent 100%);
+            animation: auroraShift 12s ease-in-out infinite alternate;
+        }
+        @keyframes aurora { 0%, 100% { opacity: 0.6; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-20px); } }
+        @keyframes auroraShift { 0% { transform: translateX(-10%) skewX(-5deg); } 100% { transform: translateX(10%) skewX(5deg); } }
+
+        /* Nebula swirl effect */
+        [data-theme="nebula"] .bg-effects::before {
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(232, 121, 249, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(244, 114, 182, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(167, 139, 250, 0.1) 0%, transparent 60%);
+            animation: nebulaPulse 10s ease-in-out infinite;
+        }
+        @keyframes nebulaPulse { 0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; } 50% { transform: scale(1.1) rotate(2deg); opacity: 1; } }
+
+        /* Shooting stars for cosmos/void themes */
+        [data-theme="cosmos"] .bg-effects::after,
+        [data-theme="nebula"] .bg-effects::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(45deg, white, transparent);
+            border-radius: 50%;
+            box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
+            top: 10%;
+            left: -10%;
+            animation: shootingStar 8s linear infinite;
+        }
+        @keyframes shootingStar {
+            0% { transform: translateX(0) translateY(0); opacity: 1; }
+            10% { opacity: 1; }
+            20% { transform: translateX(100vw) translateY(30vh); opacity: 0; }
+            100% { transform: translateX(100vw) translateY(30vh); opacity: 0; }
+        }
+        [data-theme="cosmos"] .shooting-star-2,
+        [data-theme="nebula"] .shooting-star-2 {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.4);
+            top: 30%;
+            left: -5%;
+            animation: shootingStar2 12s linear infinite;
+            animation-delay: 4s;
+            pointer-events: none;
+            z-index: -1;
+        }
+        @keyframes shootingStar2 {
+            0% { transform: translateX(0) translateY(0); opacity: 0; }
+            5% { opacity: 1; }
+            15% { transform: translateX(80vw) translateY(20vh); opacity: 0; }
+            100% { transform: translateX(80vw) translateY(20vh); opacity: 0; }
+        }
+
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: var(--font-body); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; font-size: 16px; line-height: 1.6; }
@@ -352,6 +457,10 @@
         .theme-option.azorius::before { background: linear-gradient(135deg, #dbeafe, #fef3c7); } .theme-option.azorius { border-color: #2563eb; }
         .theme-option.rakdos::before { background: linear-gradient(135deg, #1a0008, #0f0005); } .theme-option.rakdos { border-color: #dc2626; box-shadow: inset 0 0 15px rgba(251, 191, 36, 0.4); }
         .theme-option.simic::before { background: linear-gradient(135deg, #003333, #004d1a); } .theme-option.simic { border-color: #14b8a6; }
+        .theme-option.cosmos::before { background: linear-gradient(135deg, #000010, #0a0a3e); } .theme-option.cosmos { border-color: #818cf8; box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1); }
+        .theme-option.aurora::before { background: linear-gradient(180deg, #001030, #003020); } .theme-option.aurora { border-color: #22d3ee; }
+        .theme-option.nebula::before { background: linear-gradient(135deg, #1a0030, #300040); } .theme-option.nebula { border-color: #e879f9; }
+        .theme-option.void::before { background: #000000; } .theme-option.void { border-color: #6366f1; box-shadow: inset 0 0 30px rgba(99, 102, 241, 0.2); }
         .theme-option:hover { transform: scale(1.08); box-shadow: var(--glow-primary); }
         .theme-option.selected { box-shadow: 0 0 0 3px var(--accent-gold), var(--glow-primary); }
         .theme-option-label { position: relative; z-index: 1; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
@@ -487,13 +596,22 @@
         /* Last Updated */
         .last-updated { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; }
 
-        /* Add to List Dropdown */
+        /* Add to List Dropdown - Enhanced for Mobile */
         .add-to-list-dropdown { position: relative; display: inline-block; }
-        .add-to-list-menu { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--bg-tertiary); border-radius: var(--radius-md); min-width: 200px; max-height: 250px; overflow-y: auto; z-index: 100; display: none; }
-        .add-to-list-menu.active { display: block; }
-        .add-to-list-item { padding: 0.75rem 1rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--bg-tertiary); }
+        .add-to-list-menu { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); min-width: 220px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        .add-to-list-menu.active { display: block; animation: slideIn 0.2s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .add-to-list-item { padding: 0.85rem 1rem; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; align-items: center; gap: 0.5rem; }
         .add-to-list-item:hover { background: var(--bg-tertiary); }
         .add-to-list-item:last-child { border-bottom: none; }
+        .add-to-list-item.create-new { color: var(--accent-gold); font-weight: 600; border-top: 2px solid var(--accent-primary); }
+        .add-to-list-item.create-new:hover { background: color-mix(in srgb, var(--accent-gold) 10%, var(--bg-card)); }
+        .add-to-list-input { width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--accent-primary); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 0.9rem; margin: 0.5rem 0; }
+        .add-to-list-input:focus { outline: none; border-color: var(--accent-gold); }
+        @media (max-width: 768px) {
+            .add-to-list-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 320px; max-height: 70vh; }
+            .add-to-list-item { padding: 1rem 1.25rem; font-size: 1rem; min-height: 50px; }
+        }
 
         /* Price Movers Section */
         .movers-section { margin-bottom: 2rem; }
@@ -649,6 +767,7 @@
 <body>
     <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text">Consulting the Oracle...</div></div>
     <div class="bg-effects"></div>
+    <div class="shooting-star-2"></div>
     <div class="toast-container" id="toastContainer"></div>
 
     <div class="sites-bar">
@@ -1728,8 +1847,12 @@
         <div class="page" id="listsPage">
             <div class="section-header">
                 <h2 class="section-title">📋 My Lists</h2>
-                <button class="btn btn-gold" onclick="openNewListModal()">+ New List</button>
+                <div style="display:flex;gap:0.5rem;align-items:center;">
+                    <button class="btn btn-secondary" onclick="syncLists()" id="syncListsBtn" style="display:none;">🔄 Sync</button>
+                    <button class="btn btn-gold" onclick="openNewListModal()">+ New List</button>
+                </div>
             </div>
+            <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">Lists sync automatically with <strong>MTG Card Search</strong> when signed in.</p>
             <div id="listsContent">
                 <div class="auth-notice"><span>🔒</span><span>Sign in to access your lists from <strong>MTG Card Search</strong></span></div>
             </div>
@@ -1772,6 +1895,10 @@
                         <div class="theme-option azorius" onclick="setTheme('azorius')"><span class="theme-option-label">Azorius</span></div>
                         <div class="theme-option rakdos" onclick="setTheme('rakdos')"><span class="theme-option-label">Rakdos</span></div>
                         <div class="theme-option simic" onclick="setTheme('simic')"><span class="theme-option-label">Simic</span></div>
+                        <div class="theme-option cosmos" onclick="setTheme('cosmos')"><span class="theme-option-label">🌌 Cosmos</span></div>
+                        <div class="theme-option aurora" onclick="setTheme('aurora')"><span class="theme-option-label">🌈 Aurora</span></div>
+                        <div class="theme-option nebula" onclick="setTheme('nebula')"><span class="theme-option-label">💫 Nebula</span></div>
+                        <div class="theme-option void" onclick="setTheme('void')"><span class="theme-option-label">🕳️ Void</span></div>
                     </div>
                 </div>
                 <div class="settings-section">
@@ -2142,8 +2269,14 @@
             // Record price snapshot (don't await - do in background)
             recordPriceSnapshot(c).catch(()=>{});
             const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const inPortfolio=State.portfolio.some(p=>p.cardId===c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
-            // Build add-to-list dropdown
-            let listDropdown='';if(currentUser&&State.userLists.length){listDropdown=`<div class="add-to-list-dropdown"><button class="btn btn-secondary" onclick="toggleListDropdown(event)">📋 Add to List</button><div class="add-to-list-menu" id="addToListMenu">${State.userLists.map(l=>`<div class="add-to-list-item" onclick="addToListFromModal('${l.id}','${c.id}')">${l.name}</div>`).join('')}</div></div>`;}else if(currentUser){listDropdown=`<button class="btn btn-secondary" onclick="openNewListModal()">📋 New List</button>`;}
+            // Build add-to-list dropdown with "Create New List" option
+            let listDropdown='';
+            if(currentUser){
+                const listItems = State.userLists.map(l=>`<div class="add-to-list-item" onclick="addToListFromModal('${l.id}','${c.id}')">📋 ${l.name}</div>`).join('');
+                const createNewItem = `<div class="add-to-list-item create-new" onclick="showInlineListCreator(event)">➕ Create New List</div>`;
+                const inlineCreator = `<div id="inlineListCreator" style="display:none;padding:0.75rem;"><input type="text" class="add-to-list-input" id="inlineListName" placeholder="List name..." onkeypress="if(event.key==='Enter')createListAndAddCard()"><div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><button class="btn btn-primary" onclick="createListAndAddCard()" style="flex:1;font-size:0.85rem;">Create & Add</button><button class="btn btn-secondary" onclick="hideInlineListCreator()" style="font-size:0.85rem;">Cancel</button></div></div>`;
+                listDropdown=`<div class="add-to-list-dropdown"><button class="btn btn-secondary" onclick="toggleListDropdown(event)">📋 Add to List</button><div class="add-to-list-menu" id="addToListMenu">${listItems}${createNewItem}${inlineCreator}</div></div>`;
+            }
             // Portfolio button - opens modal to add with quantity/price, or removes if already in
             const portfolioBtn = currentUser ? `<button class="btn ${inPortfolio?'btn-secondary':'btn-gold'}" onclick="closeModal('cardModal');${inPortfolio?`removeFromPortfolio('${c.id}');showToast('Removed from portfolio','info')`:`addCardToPortfolioFromModal('${c.id}')`};">${inPortfolio?'✓ In Portfolio':'💼 Portfolio'}</button>` : '';
             // Price chart with time toggle
@@ -2281,6 +2414,52 @@
         function toggleAlert(id){const a=State.alerts.find(x=>x.id===id);if(a){a.enabled=!a.enabled;State.save();updateStats();}}
         function deleteAlert(id){State.alerts=State.alerts.filter(a=>a.id!==id);State.save();renderAlerts();updateStats();showToast('Deleted','info');}
 
+        // ====== INLINE LIST CREATION ======
+        function showInlineListCreator(e) {
+            e.stopPropagation();
+            document.getElementById('inlineListCreator').style.display = 'block';
+            document.getElementById('inlineListName').focus();
+        }
+        function hideInlineListCreator() {
+            document.getElementById('inlineListCreator').style.display = 'none';
+            document.getElementById('inlineListName').value = '';
+        }
+        async function createListAndAddCard() {
+            const name = document.getElementById('inlineListName').value.trim();
+            if (!name) { showToast('Enter a list name', 'warning'); return; }
+            if (!currentUser || !db) { showToast('Please sign in', 'warning'); return; }
+            try {
+                // Create the list
+                const listRef = await db.collection('users').doc(currentUser.uid).collection('lists').add({
+                    name,
+                    description: '',
+                    createdAt: new Date().toISOString()
+                });
+                // Add the current card to it
+                if (State.currentDetailCard) {
+                    const c = State.currentDetailCard;
+                    await listRef.collection('cards').doc(c.id).set({
+                        id: c.id,
+                        name: c.name,
+                        set: c.set,
+                        setName: c.set_name,
+                        image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                        prices: c.prices,
+                        addedAt: new Date().toISOString()
+                    });
+                }
+                // Refresh lists
+                State.userLists = await getUserLists();
+                showToast(`Created "${name}" and added card!`, 'success');
+                // Close the dropdown
+                document.getElementById('addToListMenu').classList.remove('active');
+                hideInlineListCreator();
+            } catch(e) {
+                console.error('Failed to create list:', e);
+                showToast('Failed to create list', 'error');
+            }
+        }
+
         // ====== CROSS-SITE LISTS (from MTG Card Search) ======
         async function getUserLists() {
             if (!currentUser || !db) return [];
@@ -2299,6 +2478,27 @@
             } catch(e) { console.error('Failed to load list cards:', e); return []; }
         }
 
+        // Sync lists with server (refreshes from Firebase)
+        async function syncLists() {
+            const btn = document.getElementById('syncListsBtn');
+            if (btn) {
+                btn.innerHTML = '🔄 Syncing...';
+                btn.disabled = true;
+            }
+            try {
+                State.userLists = await getUserLists();
+                await renderLists();
+                showToast('Lists synced!', 'success');
+            } catch(e) {
+                showToast('Sync failed', 'error');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '🔄 Sync';
+                    btn.disabled = false;
+                }
+            }
+        }
+
         async function renderLists() {
             const content = document.getElementById('listsContent');
             const listCardsView = document.getElementById('listCardsView');
@@ -2307,8 +2507,10 @@
 
             if (!currentUser) {
                 content.innerHTML = '<div class="auth-notice"><span>🔒</span><span>Sign in to access your lists from <strong>MTG Card Search</strong></span></div>';
+                document.getElementById('syncListsBtn').style.display = 'none';
                 return;
             }
+            document.getElementById('syncListsBtn').style.display = 'inline-flex';
             content.innerHTML = '<div class="loading-spinner"></div>';
             const lists = await getUserLists();
             State.userLists = lists;
