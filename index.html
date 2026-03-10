@@ -119,6 +119,54 @@
             .printing-info { padding: 0.5rem; }
             .printing-set { font-size: 0.75rem; }
             .printing-price { font-size: 0.8rem; }
+
+            /* Mobile collapsible sections */
+            .mobile-section { margin-bottom: 1rem; background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; }
+            .mobile-section-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; cursor: pointer; background: var(--bg-tertiary); border-bottom: 1px solid rgba(255,255,255,0.05); }
+            .mobile-section-header h3 { font-family: var(--font-display); font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+            .mobile-section-header .toggle-icon { font-size: 0.8rem; color: var(--text-secondary); transition: transform 0.2s; }
+            .mobile-section-header.expanded .toggle-icon { transform: rotate(180deg); }
+            .mobile-section-content { display: none; padding: 0.75rem; }
+            .mobile-section-content.expanded { display: block; }
+            .mobile-section-badge { background: var(--accent-primary); color: white; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600; }
+
+            /* Compact mobile movers */
+            .mobile-mover-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+            .mobile-mover-row:last-child { border-bottom: none; }
+            .mobile-mover-name { font-size: 0.85rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 0.5rem; }
+            .mobile-mover-price { font-size: 0.8rem; color: var(--accent-gold); margin-right: 0.5rem; }
+            .mobile-mover-change { font-size: 0.8rem; font-weight: 600; min-width: 55px; text-align: right; }
+            .mobile-mover-change.positive { color: var(--accent-green); }
+            .mobile-mover-change.negative { color: var(--accent-red); }
+
+            /* Hide desktop sections on mobile, show mobile sections */
+            .desktop-only { display: none !important; }
+            .mobile-only { display: block !important; }
+
+            /* Compact category grid on mobile */
+            .category-movers-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
+            .category-mover-card { padding: 0.5rem !important; }
+            .category-mover-header { font-size: 0.75rem !important; padding: 0.4rem !important; }
+            .category-mover-item { padding: 0.3rem 0 !important; font-size: 0.75rem !important; }
+
+            /* Compact releases grid */
+            .releases-grid { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
+            .release-card { padding: 0.75rem !important; }
+
+            /* Hide ALL desktop sections on mobile - use mobile dashboard instead */
+            .movers-section { display: none !important; }
+            .category-movers-section { display: none !important; }
+            .releases-section { display: none !important; }
+            #categoryGridTop, #functionGridTop { display: none !important; }
+            .section-header:has(+ #categoryGridTop), .section-header:has(+ #functionGridTop) { display: none !important; }
+            #trendingSection { display: none !important; }
+
+            /* Show mobile dashboard */
+            #mobileDashboard { display: block !important; }
+        }
+        @media (min-width: 769px) {
+            .mobile-only { display: none !important; }
+            #mobileDashboard { display: none !important; }
         }
 
         .sites-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--bg-tertiary); padding: 0.5rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; }
@@ -665,8 +713,122 @@
                 <div class="watchlist-preview-cards" id="watchlistPreviewCards"></div>
             </div>
 
-            <!-- Upcoming Releases - At Top -->
-            <section class="releases-section" id="releasesSection">
+            <!-- Mobile Dashboard - Collapsible Sections -->
+            <div id="mobileDashboard" class="mobile-only" style="display:none;">
+                <!-- Upcoming Releases - Always Visible -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>📅 Upcoming Releases</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded" id="mobileReleasesContent">
+                        <div id="mobileReleasesGrid" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Market Movers - Collapsed by Default -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header" onclick="toggleMobileSection(this)">
+                        <h3>📈 Market Movers <span class="mobile-section-badge" id="mobileMoversCount">0</span></h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content" id="mobileMoversContent">
+                        <div style="margin-bottom:0.75rem;">
+                            <strong style="color:var(--accent-green);font-size:0.85rem;">📈 Top Gainers</strong>
+                            <div id="mobileGainersContent"></div>
+                        </div>
+                        <div>
+                            <strong style="color:var(--accent-red);font-size:0.85rem;">📉 Top Losers</strong>
+                            <div id="mobileLosersContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Movers -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header" onclick="toggleMobileSection(this)">
+                        <h3>💰 Budget Movers</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content" id="mobileBudgetContent">
+                        <div style="margin-bottom:0.75rem;">
+                            <strong style="color:var(--accent-green);font-size:0.85rem;">📈 Under $5 Gainers</strong>
+                            <div id="mobileBudgetGainers"></div>
+                        </div>
+                        <div>
+                            <strong style="color:var(--accent-red);font-size:0.85rem;">📉 Under $5 Losers</strong>
+                            <div id="mobileBudgetLosers"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latest Sets -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>🆕 Latest Sets</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded" id="mobileLatestSets">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;" id="mobileLatestSetsGrid"></div>
+                    </div>
+                </div>
+
+                <!-- All Mover Categories -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header" onclick="toggleMobileSection(this)">
+                        <h3>🔥 All Movers Categories</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content" id="mobileAllMovers">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('mythic')" style="font-size:0.8rem;padding:0.5rem;">🔥 Mythic</button>
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('commander')" style="font-size:0.8rem;padding:0.5rem;">⚔️ Commander</button>
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('lands')" style="font-size:0.8rem;padding:0.5rem;">🏔️ Lands</button>
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('modern')" style="font-size:0.8rem;padding:0.5rem;">🌀 Modern</button>
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('reserved')" style="font-size:0.8rem;padding:0.5rem;">💰 Reserved</button>
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('creature')" style="font-size:0.8rem;padding:0.5rem;">🐲 Creatures</button>
+                        </div>
+                        <div id="mobileMoverCategoryContent" style="margin-top:0.75rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Browse Categories -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header" onclick="toggleMobileSection(this)">
+                        <h3>📈 Browse Categories</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content" id="mobileCategoriesContent">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                            <button class="btn btn-secondary" onclick="loadCategory('mythic')" style="font-size:0.8rem;padding:0.5rem;">🔥 Mythics</button>
+                            <button class="btn btn-secondary" onclick="loadCategory('rare')" style="font-size:0.8rem;padding:0.5rem;">⭐ Rares</button>
+                            <button class="btn btn-secondary" onclick="loadCategory('drops')" style="font-size:0.8rem;padding:0.5rem;">📉 Drops</button>
+                            <button class="btn btn-secondary" onclick="loadCategory('reserved')" style="font-size:0.8rem;padding:0.5rem;">💰 Reserved</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shop by Function -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header" onclick="toggleMobileSection(this)">
+                        <h3>🎯 Shop by Function</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content" id="mobileFunctionsContent">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;">
+                            <button class="btn btn-secondary" onclick="loadFunction('ramp')" style="font-size:0.75rem;padding:0.4rem;">🌱 Ramp</button>
+                            <button class="btn btn-secondary" onclick="loadFunction('removal')" style="font-size:0.75rem;padding:0.4rem;">💀 Remove</button>
+                            <button class="btn btn-secondary" onclick="loadFunction('draw')" style="font-size:0.75rem;padding:0.4rem;">🎴 Draw</button>
+                            <button class="btn btn-secondary" onclick="loadFunction('protection')" style="font-size:0.75rem;padding:0.4rem;">🛡️ Protect</button>
+                            <button class="btn btn-secondary" onclick="loadFunction('wipes')" style="font-size:0.75rem;padding:0.4rem;">💥 Wipes</button>
+                            <button class="btn btn-secondary" onclick="loadFunction('tutor')" style="font-size:0.75rem;padding:0.4rem;">🔍 Tutor</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop: Upcoming Releases - At Top -->
+            <section class="releases-section desktop-only" id="releasesSection">
                 <div class="section-header">
                     <h2 class="section-title">📅 Upcoming Releases</h2>
                     <span class="last-updated" id="lastUpdated"></span>
@@ -675,7 +837,7 @@
             </section>
 
             <!-- Price Movers Section -->
-            <section class="movers-section" id="moversSection">
+            <section class="movers-section desktop-only" id="moversSection">
                 <div class="section-header">
                     <h2 class="section-title">📈 Market Movers</h2>
                     <div class="time-selector">
@@ -701,7 +863,7 @@
             </section>
 
             <!-- Budget Movers Section -->
-            <section class="movers-section" id="budgetMoversSection" style="margin-top:1.5rem;">
+            <section class="movers-section desktop-only" id="budgetMoversSection" style="margin-top:1.5rem;">
                 <div class="section-header">
                     <h2 class="section-title">💰 Budget Movers</h2>
                     <p style="color:var(--text-secondary);font-size:0.85rem;">Price changes on affordable cards</p>
@@ -2248,10 +2410,14 @@
                 .sort((a, b) => a.released_at.localeCompare(b.released_at))
                 .slice(0, 6);
 
-            State.upcomingReleases = upcoming;
+            State.upcomingReleases = upcoming.map(s => {
+                const releaseDate = new Date(s.released_at);
+                const daysAway = Math.ceil((releaseDate - new Date()) / (1000 * 60 * 60 * 24));
+                return { ...s, daysAway, icon: s.icon_svg_uri };
+            });
             if (!upcoming.length) {
-                grid.innerHTML = '<p style="color:var(--text-secondary);">No upcoming releases found.</p>';
-                return;
+                if (grid) grid.innerHTML = '<p style="color:var(--text-secondary);">No upcoming releases found.</p>';
+                return State.upcomingReleases;
             }
             grid.innerHTML = upcoming.map(s => {
                 const releaseDate = new Date(s.released_at);
@@ -2268,6 +2434,7 @@
                     <button class="track-btn ${isTracked?'tracked':''}" onclick="toggleTrackSet('${s.code}')">${isTracked?'✓ Tracked':'Track'}</button>
                 </div>`;
             }).join('');
+            return State.upcomingReleases;
         }
 
         function toggleTrackSet(code) {
@@ -2519,6 +2686,110 @@
             const movers = type === 'gainers' ? State.priceMovers.gainers : State.priceMovers.losers;
             const cls = type === 'gainers' ? 'positive' : 'negative';
             renderMovers(movers, container, cls, type);
+        }
+
+        // ====== MOBILE DASHBOARD FUNCTIONS ======
+        function toggleMobileSection(header) {
+            header.classList.toggle('expanded');
+            const content = header.nextElementSibling;
+            content.classList.toggle('expanded');
+        }
+
+        function renderMobileMovers(movers, container, limit = 5) {
+            if (!movers || !movers.length) {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;padding:0.5rem 0;">No data yet</p>';
+                return;
+            }
+            container.innerHTML = movers.slice(0, limit).map(m => `
+                <div class="mobile-mover-row" onclick="openCardDetail('${m.cardId}')">
+                    <span class="mobile-mover-name">${m.name}</span>
+                    <span class="mobile-mover-price">$${parseFloat(m.price).toFixed(2)}</span>
+                    <span class="mobile-mover-change ${parseFloat(m.change) >= 0 ? 'positive' : 'negative'}">${parseFloat(m.change) >= 0 ? '+' : ''}${m.change}%</span>
+                </div>
+            `).join('');
+        }
+
+        function updateMobileDashboard() {
+            if (!isMobile) return;
+
+            // Update movers
+            if (State.priceMovers) {
+                const gainers = State.priceMovers.gainers || [];
+                const losers = State.priceMovers.losers || [];
+                document.getElementById('mobileMoversCount').textContent = gainers.length + losers.length;
+                renderMobileMovers(gainers, document.getElementById('mobileGainersContent'));
+                renderMobileMovers(losers, document.getElementById('mobileLosersContent'));
+
+                // Budget movers
+                const budgetGainers = State.priceMovers.budgetGainers || [];
+                const budgetLosers = State.priceMovers.budgetLosers || [];
+                renderMobileMovers(budgetGainers, document.getElementById('mobileBudgetGainers'));
+                renderMobileMovers(budgetLosers, document.getElementById('mobileBudgetLosers'));
+            }
+        }
+
+        function renderMobileReleases(releases) {
+            const grid = document.getElementById('mobileReleasesGrid');
+            if (!grid || !releases?.length) return;
+            grid.innerHTML = releases.slice(0, 5).map(r => `
+                <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);" onclick="loadSet('${r.code}')">
+                    <img src="${r.icon}" alt="" style="width:32px;height:32px;object-fit:contain;">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+                        <div style="font-size:0.75rem;color:var(--accent-gold);">${r.daysAway > 0 ? r.daysAway + ' days' : 'Released!'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMobileLatestSets() {
+            const grid = document.getElementById('mobileLatestSetsGrid');
+            if (!grid) return;
+            const sets = [
+                { name: 'Spider-Man', icon: '🕷️', code: 'spg' },
+                { name: 'Lorwyn', icon: '🧚', code: 'ecl' },
+                { name: 'Final Fantasy', icon: '⚔️', code: 'fdn' },
+                { name: 'Aetherdrift', icon: '🏎️', code: 'dft' },
+                { name: 'Avatar', icon: '🌊', code: 'tla' },
+                { name: 'Duskmourn', icon: '🏚️', code: 'dsk' }
+            ];
+            grid.innerHTML = sets.map(s => `
+                <button class="btn btn-secondary" onclick="loadSet('${s.code}')" style="font-size:0.8rem;padding:0.5rem;display:flex;align-items:center;gap:0.4rem;justify-content:center;">
+                    <span>${s.icon}</span> ${s.name}
+                </button>
+            `).join('');
+        }
+
+        async function showMobileMoverCategory(cat) {
+            const container = document.getElementById('mobileMoverCategoryContent');
+            if (!container) return;
+            container.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
+
+            const categoryNames = {
+                mythic: '🔥 Mythic Movers',
+                commander: '⚔️ Commander Movers',
+                lands: '🏔️ Lands Movers',
+                modern: '🌀 Modern Movers',
+                reserved: '💰 Reserved List',
+                creature: '🐲 Creature Movers'
+            };
+
+            // Check if we have data already
+            const gainersKey = cat + 'Gainers';
+            const losersKey = cat + 'Losers';
+            if (State.priceMovers && State.priceMovers[gainersKey]) {
+                container.innerHTML = `
+                    <div style="margin-bottom:0.5rem;font-weight:600;color:var(--accent-primary);">${categoryNames[cat]}</div>
+                    <div style="margin-bottom:0.5rem;"><strong style="color:var(--accent-green);font-size:0.8rem;">Gainers</strong></div>
+                    <div id="mobileCat${cat}Gainers"></div>
+                    <div style="margin:0.5rem 0;"><strong style="color:var(--accent-red);font-size:0.8rem;">Losers</strong></div>
+                    <div id="mobileCat${cat}Losers"></div>
+                `;
+                renderMobileMovers(State.priceMovers[gainersKey], document.getElementById('mobileCat' + cat + 'Gainers'));
+                renderMobileMovers(State.priceMovers[losersKey], document.getElementById('mobileCat' + cat + 'Losers'));
+            } else {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;">Loading data... Check back after tracker runs.</p>';
+            }
         }
 
         // ====== CATEGORY-SPECIFIC MOVERS ======
@@ -3618,15 +3889,25 @@
             updateCTAVisibility();
 
             if (isMobile) {
-                // Mobile: Minimal loading for fast startup
+                // Mobile: Optimized loading with collapsible sections
                 renderTrackedSets();
                 renderTrackedSetsWidget();
-                loadCategoryMovers(); // Only loads essential categories on mobile
+                renderMobileLatestSets();
+
+                // Load data in parallel
+                Promise.all([
+                    loadPriceMovers(1),
+                    loadUpcomingReleases()
+                ]).then(() => {
+                    updateMobileDashboard();
+                    if (State.upcomingReleases) renderMobileReleases(State.upcomingReleases);
+                });
+
                 // Hide loading overlay quickly
                 setTimeout(()=>{
                     document.getElementById('loadingOverlay').style.opacity='0';
                     setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',300);
-                },200);
+                },400);
             } else {
                 // Desktop: Full loading
                 await loadTrending();
