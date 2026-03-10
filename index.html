@@ -690,6 +690,34 @@
                 </div>
             </section>
 
+            <!-- Budget Movers Section -->
+            <section class="movers-section" id="budgetMoversSection" style="margin-top:1.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">💰 Budget Movers</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Price changes on affordable cards</p>
+                </div>
+                <div class="movers-grid">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Under $5 Gainers</div>
+                        <div id="budgetGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading budget movers...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Under $5 Losers</div>
+                        <div id="budgetLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading budget movers...</p></div>
+                    </div>
+                </div>
+                <div class="movers-grid" style="margin-top:1rem;">
+                    <div class="movers-column">
+                        <div class="movers-column-title gainers">📈 Under $20 Gainers</div>
+                        <div id="midGainersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading...</p></div>
+                    </div>
+                    <div class="movers-column">
+                        <div class="movers-column-title losers">📉 Under $20 Losers</div>
+                        <div id="midLosersContent"><p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Loading...</p></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Latest Sets Quick Access -->
             <section class="category-movers-section" style="margin-bottom:1.5rem;">
                 <div class="section-header">
@@ -2309,9 +2337,28 @@
                 // Store up to 30 movers for expansion
                 const gainers = movers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 30);
                 const losers = movers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 30);
-                State.priceMovers = { gainers, losers };
+                State.priceMovers = { gainers, losers, allMovers: movers };
                 renderMovers(gainers, gainersEl, 'positive', 'gainers');
                 renderMovers(losers, losersEl, 'negative', 'losers');
+
+                // Budget Movers (Under $5)
+                const budgetMovers = movers.filter(m => m.price < 5);
+                const budgetGainers = budgetMovers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 15);
+                const budgetLosers = budgetMovers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 15);
+                State.priceMovers.budgetGainers = budgetGainers;
+                State.priceMovers.budgetLosers = budgetLosers;
+                renderMovers(budgetGainers, document.getElementById('budgetGainersContent'), 'positive', 'budgetGainers');
+                renderMovers(budgetLosers, document.getElementById('budgetLosersContent'), 'negative', 'budgetLosers');
+
+                // Mid-range Movers (Under $20)
+                const midMovers = movers.filter(m => m.price >= 5 && m.price < 20);
+                const midGainers = midMovers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 15);
+                const midLosers = midMovers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 15);
+                State.priceMovers.midGainers = midGainers;
+                State.priceMovers.midLosers = midLosers;
+                renderMovers(midGainers, document.getElementById('midGainersContent'), 'positive', 'midGainers');
+                renderMovers(midLosers, document.getElementById('midLosersContent'), 'negative', 'midLosers');
+
                 // Show debug info if no movers
                 if (!gainers.length && !losers.length && historyDocs.size > 0) {
                     gainersEl.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">📊 ${historyDocs.size} cards tracked. ${cardsWithData} have 2+ days data. Prices stable or more time needed.</p>`;
