@@ -2275,42 +2275,50 @@
             const gainersEl = document.getElementById('gainersContent');
             const losersEl = document.getElementById('losersContent');
             if (!db) {
-                gainersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Sign in to track price changes over time.</p>';
-                losersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Sign in to track price changes over time.</p>';
+                gainersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Firebase not connected.</p>';
+                losersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Firebase not connected.</p>';
                 return;
             }
             gainersEl.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
             losersEl.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
             try {
-                const historyDocs = await db.collection('priceHistory').limit(100).get();
+                const historyDocs = await db.collection('priceHistory').limit(200).get();
+                console.log('Price history docs found:', historyDocs.size);
                 const movers = [];
                 const cutoff = new Date();
-                cutoff.setDate(cutoff.getDate() - days);
+                cutoff.setDate(cutoff.getDate() - Math.max(days, 7)); // Always look back at least 7 days
                 const cutoffStr = cutoff.toISOString().split('T')[0];
+                let cardsWithData = 0;
                 for (const doc of historyDocs.docs) {
                     const snapshots = await doc.ref.collection('snapshots')
-                        .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
-                        .orderBy(firebase.firestore.FieldPath.documentId())
+                        .orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
+                        .limit(30)
                         .get();
                     if (snapshots.docs.length >= 2) {
-                        const oldest = snapshots.docs[0].data();
-                        const newest = snapshots.docs[snapshots.docs.length - 1].data();
-                        if (oldest.usd && newest.usd) {
+                        cardsWithData++;
+                        const newest = snapshots.docs[0].data();
+                        const oldest = snapshots.docs[snapshots.docs.length - 1].data();
+                        if (oldest.usd && newest.usd && oldest.usd !== newest.usd) {
                             const change = ((newest.usd - oldest.usd) / oldest.usd) * 100;
-                            movers.push({ cardId: doc.id, change: change.toFixed(1), price: newest.usd, name: newest.name || doc.id, set: newest.set });
+                            movers.push({ cardId: doc.id, change: change.toFixed(1), price: newest.usd, name: newest.name || doc.data()?.name || doc.id, set: newest.set || doc.data()?.set });
                         }
                     }
                 }
+                console.log('Cards with 2+ snapshots:', cardsWithData, 'Movers found:', movers.length);
                 const gainers = movers.filter(m => parseFloat(m.change) > 0).sort((a,b) => parseFloat(b.change) - parseFloat(a.change)).slice(0, 5);
                 const losers = movers.filter(m => parseFloat(m.change) < 0).sort((a,b) => parseFloat(a.change) - parseFloat(b.change)).slice(0, 5);
                 State.priceMovers = { gainers, losers };
                 renderMovers(gainers, gainersEl, 'positive');
                 renderMovers(losers, losersEl, 'negative');
-                // Update dashboard stats
-                if (gainers.length) document.getElementById('statSpike')?.closest('.stat-card')?.querySelector('.stat-value')?.textContent || '';
+                // Show debug info if no movers
+                if (!gainers.length && !losers.length && historyDocs.size > 0) {
+                    gainersEl.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">📊 ${historyDocs.size} cards tracked. ${cardsWithData} have 2+ days data. Prices stable or more time needed.</p>`;
+                    losersEl.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Price changes appear here when cards move ±1% or more.</p>`;
+                }
             } catch(e) {
-                gainersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p>';
-                losersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Tracking prices... Data builds over time.</p>';
+                console.error('Price movers error:', e);
+                gainersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">⚠️ Error loading data. Check console.</p>';
+                losersEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">Error: ' + e.message + '</p>';
             }
         }
 
