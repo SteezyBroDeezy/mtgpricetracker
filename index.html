@@ -2144,8 +2144,8 @@
             const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const inPortfolio=State.portfolio.some(p=>p.cardId===c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
             // Build add-to-list dropdown
             let listDropdown='';if(currentUser&&State.userLists.length){listDropdown=`<div class="add-to-list-dropdown"><button class="btn btn-secondary" onclick="toggleListDropdown(event)">📋 Add to List</button><div class="add-to-list-menu" id="addToListMenu">${State.userLists.map(l=>`<div class="add-to-list-item" onclick="addToListFromModal('${l.id}','${c.id}')">${l.name}</div>`).join('')}</div></div>`;}else if(currentUser){listDropdown=`<button class="btn btn-secondary" onclick="openNewListModal()">📋 New List</button>`;}
-            // Portfolio button
-            const portfolioBtn = currentUser ? `<button class="btn ${inPortfolio?'btn-secondary':'btn-gold'}" onclick="closeModal('cardModal');${inPortfolio?`removeFromPortfolio('${c.id}')`:`State.pendingPortfolioCard=${JSON.stringify(c).replace(/'/g,"\\'")};selectPortfolioCard('${c.id}')`};">${inPortfolio?'✓ In Portfolio':'💼 Portfolio'}</button>` : '';
+            // Portfolio button - opens modal to add with quantity/price, or removes if already in
+            const portfolioBtn = currentUser ? `<button class="btn ${inPortfolio?'btn-secondary':'btn-gold'}" onclick="closeModal('cardModal');${inPortfolio?`removeFromPortfolio('${c.id}');showToast('Removed from portfolio','info')`:`addCardToPortfolioFromModal('${c.id}')`};">${inPortfolio?'✓ In Portfolio':'💼 Portfolio'}</button>` : '';
             // Price chart with time toggle
             const chartHtml = `<div class="price-chart-container">
                 <div class="price-chart-title">Price History</div>
@@ -2945,6 +2945,14 @@
             document.getElementById('portfolioCardSelected').style.display = 'none';
             document.getElementById('portfolioSearchResults').innerHTML = '';
             openModal('portfolioModal');
+        }
+
+        // Add card to portfolio from card detail modal - opens portfolio modal pre-filled
+        async function addCardToPortfolioFromModal(cardId) {
+            if (!currentUser) { showToast('Please sign in first', 'warning'); openAuthModal('login'); return; }
+            openModal('portfolioModal');
+            // Pre-fill the card
+            await selectPortfolioCard(cardId);
         }
 
         // Portfolio search handler
