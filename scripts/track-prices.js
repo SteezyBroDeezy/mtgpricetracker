@@ -1,11 +1,12 @@
 /**
- * MTG Price Oracle - Daily Price Tracker v2.1
+ * MTG Price Oracle - Daily Price Tracker v2.2
  * 
- * ONE query: usd>=0.50, unique=cards (one per card name, cheapest printing)
- * Firestore batch writes. Runs once daily.
+ * ONE query: usd>=0.50, pages through all results.
+ * Firestore batch writes with delays between batches to avoid quota spikes.
+ * Runs once daily.
  *
- * v2.1 fixes: removed unique=prints (was returning 25K+ results),
- * increased timeout, added progress ETA
+ * v2.2: Added 1s delay between Firebase batches to avoid RESOURCE_EXHAUSTED.
+ *        Smaller batch size (200 ops) for smoother writes.
  */
 
 const admin = require('firebase-admin');
@@ -20,7 +21,8 @@ const db = admin.firestore();
 // ====== CONFIG ======
 const MIN_PRICE = 0.50;
 const SCRYFALL_DELAY = 110;
-const BATCH_SIZE = 500;
+const BATCH_SIZE = 200;          // Reduced from 500 — gentler on Firebase
+const BATCH_PAUSE = 1500;        // 1.5s pause between batches
 const MAX_RETRIES = 3;
 
 // ====== SCRYFALL FETCHER ======
@@ -60,12 +62,13 @@ async function main() {
   const startTime = Date.now();
   const today = new Date().toISOString().split('T')[0];
   
-  console.log('=== MTG Price Oracle - Daily Price Tracker v2.1 ===');
+  console.log('=== MTG Price Oracle - Daily Price Tracker v2.2 ===');
   console.log(`Date: ${today}`);
   console.log(`Min price: $${MIN_PRICE}`);
+  console.log(`Batch size: ${BATCH_SIZE} ops, ${BATCH_PAUSE}ms pause between`);
   console.log('');
 
-  // STEP 1: Fetch all cards with usd >= $0.50 (unique=cards = one per card name)
+  // STEP 1: Fetch all cards with usd >= $0.50
   console.log('Step 1: Fetching all priced cards from Scryfall...');
   
   const allCards = [];
@@ -80,7 +83,7 @@ async function main() {
       const data = await scryfallFetch(pageUrl);
       if (pageNum === 1) {
         totalCards = data.total_cards;
-        console.log(`  Scryfall reports ${totalCards} total cards matching query`);
+        console.log(`  Scryfall reports ${totalCards} total cards`);
       }
 
       for (const card of data.data) {
@@ -103,23 +106,22 @@ async function main() {
     }
   }
 
-  console.log(`\n  Fetched ${allCards.length} unique cards across ${pageNum} pages`);
-  console.log(`  Scryfall API calls: ${totalApiCalls}`);
+  console.log(`\n  Total: ${allCards.length} unique cards, ${pageNum} pages, ${totalApiCalls} API calls`);
 
   if (!allCards.length) {
     console.error('No cards fetched! Aborting.');
     process.exit(1);
   }
 
-  // STEP 2: Batch write to Firestore
-  console.log(`\nStep 2: Writing ${allCards.length} snapshots to Firebase...`);
+  // STEP 2: Batch write to Firestore with pacing
+  console.log(`\nStep 2: Writing ${allCards.length} snapshots to Firebase (with pacing)...`);
   
   let totalWritten = 0;
   let totalSkipped = 0;
   let totalErrors = 0;
   let batchNum = 0;
 
-  // Each card = 2 writes, so chunk at BATCH_SIZE/2
+  // Each card = 2 writes (snapshot + meta), so chunk at BATCH_SIZE/2
   const chunkSize = Math.floor(BATCH_SIZE / 2);
   
   for (let i = 0; i < allCards.length; i += chunkSize) {
@@ -155,13 +157,27 @@ async function main() {
       } catch (e) {
         totalErrors += batchCount;
         console.error(`  Batch ${batchNum} FAILED: ${e.message}`);
+        
+        // If quota exhausted, stop — no point continuing
+        if (e.message.includes('RESOURCE_EXHAUSTED') || e.message.includes('Quota')) {
+          console.error('\n  *** FIREBASE QUOTA EXHAUSTED ***');
+          console.error('  Stopping writes. Quota resets at midnight Pacific time.');
+          console.error(`  Successfully wrote ${totalWritten} cards before quota hit.`);
+          break;
+        }
       }
     }
 
-    if (batchNum % 5 === 0 || i + chunkSize >= allCards.length) {
+    // Progress log
+    if (batchNum % 10 === 0 || i + chunkSize >= allCards.length) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
-      const pct = ((i + chunkSize) / allCards.length * 100).toFixed(0);
-      console.log(`  Batch ${batchNum}: ${totalWritten} written (${Math.min(pct,100)}%) — ${elapsed}s`);
+      const pct = Math.min(((i + chunkSize) / allCards.length * 100), 100).toFixed(0);
+      console.log(`  Batch ${batchNum}: ${totalWritten} written (${pct}%) — ${elapsed}s`);
+    }
+
+    // Pause between batches to avoid quota spikes
+    if (i + chunkSize < allCards.length) {
+      await new Promise(r => setTimeout(r, BATCH_PAUSE));
     }
   }
 
