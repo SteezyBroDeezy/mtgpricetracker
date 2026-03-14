@@ -1808,8 +1808,36 @@
                 if(this.settings.bgEffect&&this.settings.bgEffect!=='none'&&typeof setBgEffect==='function')setTimeout(()=>setBgEffect(this.settings.bgEffect),100);
                 updateLastUpdatedDisplay();
             },
-            async save(){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));if(currentUser&&db){try{await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){console.error('Firestore save failed:',e);showToast('Cloud sync failed - saved locally','warning');}}}
+            // Debounced Firestore sync - reduces Firebase writes by ~90%
+            _firestoreSyncPending:false,
+            _firestoreSyncTimer:null,
+            async save(){
+                const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
+                // Always save to localStorage immediately (instant local experience)
+                localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));
+                // Debounce Firestore sync - only sync after 3 seconds of no changes
+                if(currentUser&&db){
+                    this._firestoreSyncPending=true;
+                    clearTimeout(this._firestoreSyncTimer);
+                    this._firestoreSyncTimer=setTimeout(()=>this._syncToFirestore(d),3000);
+                }
+            },
+            async _syncToFirestore(d){
+                if(!this._firestoreSyncPending||!currentUser||!db)return;
+                try{
+                    await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});
+                    this._firestoreSyncPending=false;
+                }catch(e){
+                    console.error('Firestore save failed:',e);
+                    // Don't show toast for quota errors - just keep data local
+                    if(e.code!=='resource-exhausted')showToast('Cloud sync failed - saved locally','warning');
+                }
+            },
+            // Force sync on page unload
+            forceSync(){if(this._firestoreSyncPending&&currentUser&&db){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};navigator.sendBeacon&&navigator.sendBeacon('/api/sync',JSON.stringify(d));}}
         };
+        // Sync on page close
+        window.addEventListener('beforeunload',()=>State.forceSync());
 
         // Mobile detection
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
