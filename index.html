@@ -297,7 +297,15 @@
         .nav-btn-ghost:hover { color: var(--text-primary); background: var(--bg-tertiary); }
         .nav-btn-primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; box-shadow: var(--glow-primary); }
         .nav-btn-primary:hover { transform: translateY(-2px); }
-        
+        .nav-btn-sync { background: var(--accent-success, #22c55e); color: white; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .nav-btn-sync.pending { background: var(--accent-gold, #eab308); animation: pulse 2s infinite; }
+        .nav-btn-sync:disabled { opacity: 0.7; cursor: wait; }
+        .sync-icon { font-size: 1rem; }
+        .sync-icon.spinning { animation: spin 1s linear infinite; }
+        .sync-status { font-size: 0.75rem; color: var(--text-secondary); margin-right: 0.5rem; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-gold)); display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; }
 
         .main-content { padding: 1.5rem; max-width: 1600px; margin: 0 auto; }
@@ -837,6 +845,8 @@
             <button class="nav-tab" data-page="alerts">🔔 Alerts</button>
         </div>
         <div class="nav-right">
+            <button id="syncBtn" class="nav-btn nav-btn-sync" onclick="handleSync()" style="display:none;"><span class="sync-icon">✓</span> Synced</button>
+            <span id="syncStatus" class="sync-status" style="display:none;"></span>
             <button class="nav-btn nav-btn-ghost" onclick="switchPage('settings')">⚙️</button>
             <div id="authSection"><button class="nav-btn nav-btn-primary" onclick="openAuthModal('login')">Sign In</button></div>
         </div>
@@ -1794,11 +1804,8 @@
                     this.settings={...this.settings,...(chosen.settings||{})};
                 }
 
-                // Step 4: If localStorage was newer, sync up to Firestore
-                if(chosen===localData&&firestoreData!==null&&currentUser&&db){
-                    try{const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
-                    await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});}catch(e){console.warn('Firestore sync-up failed:',e);}
-                }
+                // OFFLINE-FIRST: Don't auto-sync to Firestore - wait for manual sync
+                // (removed auto-sync to reduce Firebase usage)
 
                 setTheme(this.settings.theme);document.getElementById('currencySelect').value=this.settings.currency;document.getElementById('browserNotifs').checked=this.settings.browserNotifs;
                 // Apply loading mode setting
@@ -1807,37 +1814,87 @@
                 const bgSel=document.getElementById('bgEffectSelect');if(bgSel)bgSel.value=this.settings.bgEffect||'none';
                 if(this.settings.bgEffect&&this.settings.bgEffect!=='none'&&typeof setBgEffect==='function')setTimeout(()=>setBgEffect(this.settings.bgEffect),100);
                 updateLastUpdatedDisplay();
+                updateSyncUI();
             },
-            // Debounced Firestore sync - reduces Firebase writes by ~90%
-            _firestoreSyncPending:false,
-            _firestoreSyncTimer:null,
-            async save(){
+            // OFFLINE-FIRST: Only save to localStorage, no auto Firebase sync
+            _pendingSync:false,
+            _lastSyncTime:0,
+            save(){
                 const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
-                // Always save to localStorage immediately (instant local experience)
+                // ONLY save to localStorage (no Firebase)
                 localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));
-                // Debounce Firestore sync - only sync after 3 seconds of no changes
-                if(currentUser&&db){
-                    this._firestoreSyncPending=true;
-                    clearTimeout(this._firestoreSyncTimer);
-                    this._firestoreSyncTimer=setTimeout(()=>this._syncToFirestore(d),3000);
-                }
+                this._pendingSync=true;
+                updateSyncUI();
             },
-            async _syncToFirestore(d){
-                if(!this._firestoreSyncPending||!currentUser||!db)return;
+            // Manual sync to Firebase (called by sync button)
+            async manualSync(){
+                if(!currentUser||!db){showToast('Please sign in to sync','warning');return{success:false};}
                 try{
+                    const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
                     await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});
-                    this._firestoreSyncPending=false;
+                    this._pendingSync=false;
+                    this._lastSyncTime=Date.now();
+                    localStorage.setItem('mtg_oracle_lastSync',this._lastSyncTime.toString());
+                    updateSyncUI();
+                    return{success:true};
                 }catch(e){
-                    console.error('Firestore save failed:',e);
-                    // Don't show toast for quota errors - just keep data local
-                    if(e.code!=='resource-exhausted')showToast('Cloud sync failed - saved locally','warning');
+                    console.error('Sync failed:',e);
+                    if(e.code==='resource-exhausted'){showToast('Firebase quota exceeded - try again later','warning');}
+                    else{showToast('Sync failed: '+e.message,'error');}
+                    return{success:false,error:e.message};
                 }
             },
-            // Force sync on page unload
-            forceSync(){if(this._firestoreSyncPending&&currentUser&&db){const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};navigator.sendBeacon&&navigator.sendBeacon('/api/sync',JSON.stringify(d));}}
+            // Pull latest from Firebase
+            async pullFromCloud(){
+                if(!currentUser||!db){showToast('Please sign in','warning');return{success:false};}
+                try{
+                    const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();
+                    if(doc.exists){
+                        const data=doc.data();
+                        this.watchlist=data.watchlist||[];
+                        this.alerts=data.alerts||[];
+                        this.trackedSets=data.trackedSets||[];
+                        this.trackedCategories=data.trackedCategories||[];
+                        this.portfolio=data.portfolio||[];
+                        this.lastRefresh=data.lastRefresh||null;
+                        this.lastPriceRecord=data.lastPriceRecord||{};
+                        this.settings={...this.settings,...(data.settings||{})};
+                        this.save(); // Save to localStorage
+                        this._pendingSync=false;
+                        this._lastSyncTime=Date.now();
+                        updateSyncUI();
+                        showToast('Synced from cloud!','success');
+                    }
+                    return{success:true};
+                }catch(e){
+                    console.error('Pull failed:',e);
+                    if(e.code==='resource-exhausted'){showToast('Firebase quota exceeded','warning');}
+                    return{success:false,error:e.message};
+                }
+            },
+            hasPendingChanges(){return this._pendingSync;},
+            getLastSyncTime(){return this._lastSyncTime||parseInt(localStorage.getItem('mtg_oracle_lastSync')||'0');}
         };
-        // Sync on page close
-        window.addEventListener('beforeunload',()=>State.forceSync());
+
+        // Sync UI helper
+        function updateSyncUI(){
+            const btn=document.getElementById('syncBtn');
+            const status=document.getElementById('syncStatus');
+            if(!btn)return;
+            if(State.hasPendingChanges()){
+                btn.classList.add('pending');
+                btn.innerHTML='<span class="sync-icon">↻</span> Sync Now';
+                if(status)status.textContent='Changes pending';
+            }else{
+                btn.classList.remove('pending');
+                btn.innerHTML='<span class="sync-icon">✓</span> Synced';
+                const lastSync=State.getLastSyncTime();
+                if(status&&lastSync){
+                    const mins=Math.floor((Date.now()-lastSync)/60000);
+                    status.textContent=mins<1?'Just now':mins<60?mins+'m ago':Math.floor(mins/60)+'h ago';
+                }
+            }
+        }
 
         // Mobile detection
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
@@ -1861,7 +1918,33 @@
         async function handleAuth(){const email=document.getElementById('authEmail').value,pass=document.getElementById('authPassword').value,mode=document.getElementById('authForm').dataset.mode,err=document.getElementById('authError');if(!auth){err.textContent='Firebase not configured';err.style.display='block';return;}try{if(mode==='login')await auth.signInWithEmailAndPassword(email,pass);else await auth.createUserWithEmailAndPassword(email,pass);closeModal('authModal');showToast('Signed in!','success');}catch(e){err.textContent=e.message;err.style.display='block';}}
         async function handlePasswordReset(e){e.preventDefault();const email=document.getElementById('authEmail').value;if(!email){showToast('Enter email','warning');return;}try{await auth.sendPasswordResetEmail(email);showToast('Reset email sent!','success');}catch(e){showToast(e.message,'error');}}
         function handleSignOut(){if(auth)auth.signOut();currentUser=null;updateAuthUI();showToast('Signed out','info');}
-        function updateAuthUI(){const s=document.getElementById('authSection'),a=document.getElementById('accountSettings');if(currentUser){s.innerHTML='<div class="user-avatar" onclick="handleSignOut()" title="Sign Out">'+currentUser.email[0].toUpperCase()+'</div>';a.innerHTML='<div class="settings-row"><div class="settings-label">'+currentUser.email+'</div><button class="btn btn-secondary" onclick="handleSignOut()">Sign Out</button></div>';}else{s.innerHTML='<button class="nav-btn nav-btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';a.innerHTML='<p style="color:var(--text-secondary)">Sign in to sync.</p><br><button class="btn btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';}}
+        function updateAuthUI(){
+            const s=document.getElementById('authSection'),a=document.getElementById('accountSettings');
+            const syncBtn=document.getElementById('syncBtn'),syncStatus=document.getElementById('syncStatus');
+            if(currentUser){
+                s.innerHTML='<div class="user-avatar" onclick="handleSignOut()" title="Sign Out">'+currentUser.email[0].toUpperCase()+'</div>';
+                a.innerHTML='<div class="settings-row"><div class="settings-label">'+currentUser.email+'</div><button class="btn btn-secondary" onclick="handleSignOut()">Sign Out</button></div>';
+                // Show sync button when logged in
+                if(syncBtn)syncBtn.style.display='inline-flex';
+                if(syncStatus)syncStatus.style.display='inline';
+                updateSyncUI();
+            }else{
+                s.innerHTML='<button class="nav-btn nav-btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';
+                a.innerHTML='<p style="color:var(--text-secondary)">Sign in to sync.</p><br><button class="btn btn-primary" onclick="openAuthModal(\'login\')">Sign In</button>';
+                // Hide sync button when logged out
+                if(syncBtn)syncBtn.style.display='none';
+                if(syncStatus)syncStatus.style.display='none';
+            }
+        }
+        // Handle sync button click
+        async function handleSync(){
+            const btn=document.getElementById('syncBtn');
+            if(btn){btn.disabled=true;btn.innerHTML='<span class="sync-icon spinning">↻</span> Syncing...';}
+            const result=await State.manualSync();
+            if(btn){btn.disabled=false;}
+            if(result.success){showToast('Synced to cloud!','success');}
+            updateSyncUI();
+        }
 
         // Price helper
         function getPrice(c){const p=c.prices||{};if(p.usd&&parseFloat(p.usd)>0)return{val:'$'+p.usd,num:parseFloat(p.usd),type:''};if(p.usd_foil&&parseFloat(p.usd_foil)>0)return{val:'$'+p.usd_foil,num:parseFloat(p.usd_foil),type:'foil'};if(p.usd_etched&&parseFloat(p.usd_etched)>0)return{val:'$'+p.usd_etched,num:parseFloat(p.usd_etched),type:'etched'};if(p.eur&&parseFloat(p.eur)>0)return{val:'€'+p.eur,num:parseFloat(p.eur),type:'EUR'};return{val:'N/A',num:0,type:''};}
