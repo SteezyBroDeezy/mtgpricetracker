@@ -814,6 +814,63 @@
         #bgCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; opacity: 0.6; }
         [data-bg="none"] #bgCanvas { display: none; }
 
+        /* === FULL SETS BROWSER === */
+        .sets-browser-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2500; display: none; flex-direction: column; }
+        .sets-browser-modal.active { display: flex; animation: fadeIn 0.3s ease; }
+        .sets-browser-header { background: var(--bg-secondary); border-bottom: 1px solid var(--bg-tertiary); padding: 1rem 1.5rem; }
+        .sets-browser-header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .sets-browser-title { display: flex; align-items: center; gap: 0.75rem; }
+        .sets-browser-title h2 { font-family: var(--font-display); font-size: 1.3rem; }
+        .sets-browser-title .count { font-size: 0.85rem; color: var(--text-secondary); }
+        .sets-browser-back { padding: 0.5rem 1rem; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+        .sets-browser-back:hover { background: var(--bg-card); }
+        .sets-browser-filters { max-width: 1200px; margin: 1rem auto 0; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .sets-browser-search { flex: 1; min-width: 200px; padding: 0.6rem 1rem; background: var(--bg-tertiary); border: 1px solid var(--bg-card); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95rem; }
+        .sets-browser-search:focus { outline: none; border-color: var(--accent-primary); }
+        .sets-browser-type-select { padding: 0.6rem 1rem; background: var(--bg-tertiary); border: 1px solid var(--bg-card); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.9rem; cursor: pointer; }
+        .sets-browser-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+        .sets-browser-grid { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; }
+        .sets-browser-item { background: var(--bg-secondary); border: 1px solid var(--bg-tertiary); border-radius: var(--radius-md); padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s ease; }
+        .sets-browser-item:hover { border-color: var(--accent-primary); transform: translateX(4px); background: var(--bg-tertiary); }
+        .sets-browser-item-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .sets-browser-item-icon img { width: 40px; height: 40px; object-fit: contain; filter: brightness(0) invert(1); }
+        .sets-browser-item-icon .fallback { width: 40px; height: 40px; background: var(--bg-card); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); }
+        .sets-browser-item-info { flex: 1; min-width: 0; }
+        .sets-browser-item-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .sets-browser-item-meta { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.75rem; }
+        .sets-browser-item-meta .code { font-family: var(--font-mono); text-transform: uppercase; }
+        .sets-browser-type-badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600; text-transform: uppercase; }
+        .sets-browser-type-badge.expansion { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .sets-browser-type-badge.core { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .sets-browser-type-badge.masters { background: rgba(234, 179, 8, 0.2); color: #fcd34d; }
+        .sets-browser-type-badge.draft_innovation { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .sets-browser-type-badge.commander { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .sets-browser-type-badge.starter { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+        .sets-browser-type-badge.promo { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        .sets-browser-type-badge.funny { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+        .sets-browser-item-arrow { color: var(--text-muted); font-size: 1.25rem; }
+        .sets-browser-load-more { text-align: center; padding: 1.5rem; }
+        .sets-browser-load-more button { padding: 0.75rem 2rem; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); border: none; border-radius: var(--radius-md); color: white; font-weight: 600; cursor: pointer; }
+        .sets-browser-load-more button:hover { transform: translateY(-2px); }
+
+        /* Set Header Banner */
+        .set-header-banner { background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1rem; border: 1px solid var(--accent-primary); display: flex; align-items: center; gap: 1rem; }
+        .set-header-banner-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .set-header-banner-icon img { width: 44px; height: 44px; object-fit: contain; filter: brightness(0) invert(1); }
+        .set-header-banner-info { flex: 1; }
+        .set-header-banner-info h3 { font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 0.2rem; }
+        .set-header-banner-info p { font-size: 0.85rem; color: var(--text-secondary); }
+        .set-header-banner-close { padding: 0.5rem 0.75rem; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; }
+        .set-header-banner-close:hover { background: var(--accent-red); color: white; }
+
+        @media (max-width: 768px) {
+            .sets-browser-header-inner { flex-direction: column; align-items: stretch; }
+            .sets-browser-filters { flex-direction: column; }
+            .sets-browser-item { padding: 0.75rem 1rem; }
+            .sets-browser-item-icon { width: 40px; height: 40px; }
+            .sets-browser-item-icon img { width: 32px; height: 32px; }
+        }
+
     </style>
 </head>
 <body>
@@ -1526,13 +1583,15 @@
 
             <!-- Full Sets List -->
             <div id="fullSetsList">
-                <div class="section-header" style="margin-top:1.5rem;"><h2 class="section-title">📚 All Sets</h2></div>
+                <div class="section-header" style="margin-top:1.5rem;">
+                    <h2 class="section-title">📚 All Sets</h2>
+                    <button class="btn btn-primary" onclick="openSetsBrowser()" style="padding:0.6rem 1.2rem;font-size:0.9rem;">📦 Browse All Sets</button>
+                </div>
                 <div class="sets-list" id="setsList"></div>
             </div>
 
             <div id="setCardsView" style="display:none;">
-                <button class="back-btn" onclick="closeSetView()">← Back to Sets</button>
-                <div class="section-header"><h2 class="section-title" id="setViewTitle">Set</h2></div>
+                <div id="setViewTitle" style="margin-bottom:1rem;"></div>
                 <div class="filters-bar">
                     <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="setRarity" onchange="loadSetCards()"><option value="">All</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
                     <div class="filter-group"><span class="filter-label">Sort</span><select class="filter-select" id="setSort" onchange="loadSetCards()"><option value="usd">Price ↓</option><option value="name">Name</option><option value="rarity">Rarity</option></select></div>
@@ -1954,6 +2013,39 @@
     <!-- Card Detail Modal -->
     <div class="modal-overlay" id="cardModal">
         <div class="modal" style="max-width:700px;"><div class="modal-header"><h3 class="modal-title" id="cardModalTitle">Card</h3><button class="modal-close" onclick="closeModal('cardModal')">✕</button></div><div class="modal-body" id="cardModalBody"></div></div>
+    </div>
+
+    <!-- Full Sets Browser Modal -->
+    <div class="sets-browser-modal" id="setsBrowserModal">
+        <div class="sets-browser-header">
+            <div class="sets-browser-header-inner">
+                <div class="sets-browser-title">
+                    <button class="sets-browser-back" onclick="closeSetsBrowser()">← Back</button>
+                    <h2>Browse All Sets</h2>
+                    <span class="count" id="setsBrowserCount">0 sets</span>
+                </div>
+            </div>
+            <div class="sets-browser-filters">
+                <input type="text" class="sets-browser-search" id="setsBrowserSearch" placeholder="Search sets by name or code...">
+                <select class="sets-browser-type-select" id="setsBrowserType">
+                    <option value="all">All Set Types</option>
+                    <option value="expansion">Expansions</option>
+                    <option value="core">Core Sets</option>
+                    <option value="masters">Masters</option>
+                    <option value="draft_innovation">Draft Innovation</option>
+                    <option value="commander">Commander</option>
+                    <option value="starter">Starter</option>
+                    <option value="promo">Promos</option>
+                    <option value="funny">Funny (Un-sets)</option>
+                </select>
+            </div>
+        </div>
+        <div class="sets-browser-content">
+            <div class="sets-browser-grid" id="setsBrowserGrid"></div>
+            <div class="sets-browser-load-more" id="setsBrowserLoadMore" style="display:none;">
+                <button onclick="loadMoreBrowserSets()">Load More (<span id="setsBrowserRemaining">0</span> remaining)</button>
+            </div>
+        </div>
     </div>
 
     <!-- New List Modal -->
@@ -2587,8 +2679,201 @@
             renderSets(filtered);
         }
         document.getElementById('setSearch')?.addEventListener('input',e=>{const q=e.target.value.toLowerCase();renderSets(State.sets.filter(s=>s.name.toLowerCase().includes(q)||s.code.includes(q)), true);});
-        async function openSetView(code){State.currentSet=code;document.getElementById('setsList').style.display='none';document.getElementById('recentSetsPreview').style.display='none';document.getElementById('fullSetsList').style.display='none';if(document.getElementById('browseResultsView'))document.getElementById('browseResultsView').style.display='none';document.querySelector('#browsePage > .section-header').style.display='none';document.getElementById('setCardsView').style.display='block';const set=State.sets.find(s=>s.code===code);document.getElementById('setViewTitle').textContent='📚 '+(set?.name||code.toUpperCase());loadSetCards();}
-        function closeSetView(){document.getElementById('setCardsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';document.querySelector('#browsePage > .section-header').style.display='flex';}
+        async function openSetView(code){
+            State.currentSet=code;
+            document.getElementById('setsList').style.display='none';
+            document.getElementById('recentSetsPreview').style.display='none';
+            document.getElementById('fullSetsList').style.display='none';
+            if(document.getElementById('browseResultsView'))document.getElementById('browseResultsView').style.display='none';
+            document.querySelector('#browsePage > .section-header').style.display='none';
+            document.getElementById('setCardsView').style.display='block';
+            const set=State.sets.find(s=>s.code===code) || State.allSetsData?.find(s=>s.code===code);
+            State.currentBrowsingSet = set;
+            const titleEl = document.getElementById('setViewTitle');
+            if (set) {
+                titleEl.innerHTML = `
+                    <div class="set-header-banner">
+                        <div class="set-header-banner-icon">
+                            ${set.icon_svg_uri ? `<img src="${set.icon_svg_uri}" alt="${set.name}">` : ''}
+                        </div>
+                        <div class="set-header-banner-info">
+                            <h3>${set.name}</h3>
+                            <p>${set.code.toUpperCase()} • ${set.card_count} cards • ${formatSetDate(set.released_at)}</p>
+                        </div>
+                        <button class="set-header-banner-close" onclick="closeSetView()">✕ Close</button>
+                    </div>
+                `;
+            } else {
+                titleEl.textContent='📚 '+(code.toUpperCase());
+            }
+            loadSetCards();
+        }
+        function closeSetView(){document.getElementById('setCardsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';document.querySelector('#browsePage > .section-header').style.display='flex';State.currentBrowsingSet=null;}
+
+        // === FULL SETS BROWSER ===
+        State.allSetsData = [];
+        State.browserSetsFiltered = [];
+        State.browserSetsDisplayCount = 50;
+        State.currentBrowsingSet = null;
+
+        async function openSetsBrowser() {
+            document.getElementById('setsBrowserModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            const grid = document.getElementById('setsBrowserGrid');
+
+            if (!State.allSetsData.length) {
+                grid.innerHTML = '<div style="text-align:center;padding:3rem;"><div class="loading-spinner"></div><p style="color:var(--text-secondary);margin-top:1rem;">Loading all sets...</p></div>';
+                try {
+                    const d = await API.sets();
+                    State.allSetsData = d.data.filter(s => !s.digital && s.card_count > 0).sort((a, b) => new Date(b.released_at) - new Date(a.released_at));
+                } catch(e) {
+                    grid.innerHTML = '<p style="text-align:center;color:var(--accent-red);">Failed to load sets</p>';
+                    return;
+                }
+            }
+
+            State.browserSetsDisplayCount = 50;
+            filterBrowserSets();
+        }
+
+        function closeSetsBrowser() {
+            document.getElementById('setsBrowserModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function filterBrowserSets() {
+            const search = document.getElementById('setsBrowserSearch').value.toLowerCase();
+            const typeFilter = document.getElementById('setsBrowserType').value;
+
+            let filtered = State.allSetsData;
+
+            if (typeFilter !== 'all') {
+                filtered = filtered.filter(s => s.set_type === typeFilter);
+            }
+
+            if (search.trim()) {
+                filtered = filtered.filter(s =>
+                    s.name.toLowerCase().includes(search) ||
+                    s.code.toLowerCase().includes(search)
+                );
+            }
+
+            State.browserSetsFiltered = filtered;
+            State.browserSetsDisplayCount = 50;
+            renderBrowserSets();
+        }
+
+        function renderBrowserSets() {
+            const displayed = State.browserSetsFiltered.slice(0, State.browserSetsDisplayCount);
+            const hasMore = State.browserSetsFiltered.length > State.browserSetsDisplayCount;
+
+            document.getElementById('setsBrowserCount').textContent = `${State.browserSetsFiltered.length} sets`;
+
+            const html = displayed.map(s => {
+                const typeLabel = getSetTypeLabel(s.set_type);
+                const dateStr = s.released_at ? formatSetDate(s.released_at) : 'TBA';
+                return `
+                    <div class="sets-browser-item" onclick="selectBrowserSet('${s.code}')">
+                        <div class="sets-browser-item-icon">
+                            ${s.icon_svg_uri ? `<img src="${s.icon_svg_uri}" alt="${s.name}">` : `<div class="fallback">${s.code.toUpperCase()}</div>`}
+                        </div>
+                        <div class="sets-browser-item-info">
+                            <div class="sets-browser-item-name">
+                                ${s.name}
+                                <span class="sets-browser-type-badge ${s.set_type}">${typeLabel}</span>
+                            </div>
+                            <div class="sets-browser-item-meta">
+                                <span class="code">${s.code}</span>
+                                <span>•</span>
+                                <span>${s.card_count} cards</span>
+                                <span>•</span>
+                                <span>${dateStr}</span>
+                            </div>
+                        </div>
+                        <div class="sets-browser-item-arrow">→</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('setsBrowserGrid').innerHTML = html || '<p style="text-align:center;color:var(--text-secondary);padding:2rem;">No sets found matching your filters</p>';
+
+            const loadMoreEl = document.getElementById('setsBrowserLoadMore');
+            if (hasMore) {
+                loadMoreEl.style.display = 'block';
+                document.getElementById('setsBrowserRemaining').textContent = State.browserSetsFiltered.length - State.browserSetsDisplayCount;
+            } else {
+                loadMoreEl.style.display = 'none';
+            }
+        }
+
+        function loadMoreBrowserSets() {
+            State.browserSetsDisplayCount += 50;
+            renderBrowserSets();
+        }
+
+        function getSetTypeLabel(type) {
+            const labels = {
+                'expansion': 'Expansion', 'core': 'Core Set', 'masters': 'Masters',
+                'draft_innovation': 'Draft', 'commander': 'Commander', 'starter': 'Starter',
+                'promo': 'Promo', 'funny': 'Un-Set', 'memorabilia': 'Memorabilia',
+                'arsenal': 'Arsenal', 'from_the_vault': 'FTV', 'spellbook': 'Spellbook',
+                'premium_deck': 'Premium', 'duel_deck': 'Duel Deck', 'box': 'Box Set',
+                'archenemy': 'Archenemy', 'planechase': 'Planechase', 'vanguard': 'Vanguard',
+                'treasure_chest': 'Treasure', 'masterpiece': 'Masterpiece', 'token': 'Tokens',
+                'alchemy': 'Alchemy', 'minigame': 'Minigame'
+            };
+            return labels[type] || type;
+        }
+
+        function formatSetDate(dateStr) {
+            if (!dateStr) return 'TBA';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        async function selectBrowserSet(code) {
+            closeSetsBrowser();
+            const set = State.allSetsData.find(s => s.code === code) || State.sets.find(s => s.code === code);
+            State.currentBrowsingSet = set;
+            State.currentSet = code;
+
+            // Switch to browse page if not there
+            switchPage('browse');
+
+            // Hide other views and show set cards
+            document.getElementById('setsList').style.display = 'none';
+            document.getElementById('recentSetsPreview').style.display = 'none';
+            document.getElementById('fullSetsList').style.display = 'none';
+            if (document.getElementById('browseResultsView')) document.getElementById('browseResultsView').style.display = 'none';
+            document.querySelector('#browsePage > .section-header').style.display = 'none';
+            document.getElementById('setCardsView').style.display = 'block';
+
+            // Update title with set header banner
+            const titleEl = document.getElementById('setViewTitle');
+            if (set) {
+                titleEl.innerHTML = `
+                    <div class="set-header-banner">
+                        <div class="set-header-banner-icon">
+                            ${set.icon_svg_uri ? `<img src="${set.icon_svg_uri}" alt="${set.name}">` : ''}
+                        </div>
+                        <div class="set-header-banner-info">
+                            <h3>${set.name}</h3>
+                            <p>${set.code.toUpperCase()} • ${set.card_count} cards • ${formatSetDate(set.released_at)}</p>
+                        </div>
+                        <button class="set-header-banner-close" onclick="closeSetView()">✕ Close</button>
+                    </div>
+                `;
+            } else {
+                titleEl.textContent = '📚 ' + code.toUpperCase();
+            }
+
+            loadSetCards();
+        }
+
+        // Event listeners for sets browser filters
+        document.getElementById('setsBrowserSearch')?.addEventListener('input', () => filterBrowserSets());
+        document.getElementById('setsBrowserType')?.addEventListener('change', () => filterBrowserSets());
+
         async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}}catch(e){grid.innerHTML='<p>No cards</p>';}}
 
         // Trending
