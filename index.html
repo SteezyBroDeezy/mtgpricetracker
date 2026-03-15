@@ -1251,7 +1251,59 @@
 
         <!-- Browse Sets -->
         <div class="page" id="browsePage">
-            <div class="section-header"><h2 class="section-title">📚 Browse</h2><input type="text" class="search-input" id="setSearch" placeholder="Search sets..." style="max-width:300px;padding-left:1rem;"></div>
+            <div class="section-header"><h2 class="section-title">📚 Browse Cards & Sets</h2></div>
+
+            <!-- Advanced Card Search Panel -->
+            <div class="browse-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,0.05);">
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+                    <div style="flex:1;min-width:250px;">
+                        <label style="display:block;font-size:0.75rem;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.4rem;">Search Cards (Scryfall Syntax)</label>
+                        <input type="text" class="search-input" id="browseCardSearch" placeholder="t:creature c:red, otag:ramp, o:draw..." style="width:100%;padding-left:1rem;">
+                    </div>
+                    <button class="btn btn-primary" onclick="performAdvancedSearch()" style="padding:0.75rem 1.5rem;">🔍 Search</button>
+                </div>
+                <!-- Quick Filters -->
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem;">
+                    <div class="filter-group"><span class="filter-label">Type</span><select class="filter-select" id="advType" onchange="updateAdvQuery()"><option value="">Any</option><option value="creature">Creature</option><option value="instant">Instant</option><option value="sorcery">Sorcery</option><option value="enchantment">Enchantment</option><option value="artifact">Artifact</option><option value="land">Land</option><option value="planeswalker">Planeswalker</option></select></div>
+                    <div class="filter-group"><span class="filter-label">Color</span><select class="filter-select" id="advColor" onchange="updateAdvQuery()"><option value="">Any</option><option value="w">White</option><option value="u">Blue</option><option value="b">Black</option><option value="r">Red</option><option value="g">Green</option><option value="c">Colorless</option><option value="m">Multi</option></select></div>
+                    <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="advRarity" onchange="updateAdvQuery()"><option value="">Any</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
+                    <div class="filter-group"><span class="filter-label">Price</span><select class="filter-select" id="advPrice" onchange="updateAdvQuery()"><option value="">Any</option><option value="usd<1">Under $1</option><option value="usd<5">Under $5</option><option value="usd<10">Under $10</option><option value="usd>10">$10+</option><option value="usd>50">$50+</option></select></div>
+                    <div class="filter-group"><span class="filter-label">Format</span><select class="filter-select" id="advFormat" onchange="updateAdvQuery()"><option value="">Any</option><option value="standard">Standard</option><option value="modern">Modern</option><option value="commander">Commander</option><option value="pioneer">Pioneer</option><option value="pauper">Pauper</option></select></div>
+                </div>
+                <!-- Quick Tags -->
+                <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+                    <span style="font-size:0.75rem;text-transform:uppercase;color:var(--text-secondary);">Quick:</span>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:ramp')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">🌱 Ramp</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">💀 Removal</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:draw')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">🎴 Draw</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">💥 Wipes</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:tutor')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">🔍 Tutors</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">👑 Commanders</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:reserved')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">💎 Reserved</button>
+                </div>
+                <!-- Collapsible Syntax Help -->
+                <div style="margin-top:1rem;border-top:1px solid var(--bg-tertiary);padding-top:0.75rem;">
+                    <button onclick="toggleSyntaxHelp()" style="background:none;border:none;color:var(--accent-secondary);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;"><span id="syntaxHelpIcon">▶</span> Search Syntax Help</button>
+                    <div id="syntaxHelpContent" style="display:none;margin-top:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:1rem;font-size:0.8rem;">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Basic</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">t:creature</code> Type<br><code style="color:var(--accent-blue);">c:red</code> Color<br><code style="color:var(--accent-blue);">r:mythic</code> Rarity<br><code style="color:var(--accent-blue);">s:mkm</code> Set code</div></div>
+                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Text & Stats</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">o:draw</code> Oracle text<br><code style="color:var(--accent-blue);">cmc<=3</code> Mana value<br><code style="color:var(--accent-blue);">pow>=4</code> Power<br><code style="color:var(--accent-blue);">tou<=2</code> Toughness</div></div>
+                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">otag:ramp</code><br><code style="color:var(--accent-blue);">otag:removal</code><br><code style="color:var(--accent-blue);">otag:draw</code><br><code style="color:var(--accent-blue);">otag:tutor</code></div></div>
+                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Exclusions</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-red);">-t:creature</code> NOT creature<br><code style="color:var(--accent-red);">-c:green</code> Exclude green<br><code style="color:var(--accent-red);">-r:common</code> No commons</div></div>
+                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Price & Format</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">usd<5</code> Under $5<br><code style="color:var(--accent-blue);">f:commander</code> Legal in EDH<br><code style="color:var(--accent-blue);">f:modern</code> Modern legal</div></div>
+                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Special</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">is:commander</code><br><code style="color:var(--accent-blue);">is:reserved</code><br><code style="color:var(--accent-blue);">id:bg</code> Golgari ID</div></div>
+                        </div>
+                        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--bg-card);"><span style="color:var(--accent-gold);">Examples:</span> <button class="btn btn-sm" onclick="quickAdvSearch('t:creature c:g cmc<=3 f:commander')" style="font-size:0.7rem;">Green creatures CMC 3</button> <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal -t:creature usd<2')" style="font-size:0.7rem;">Budget removal spells</button> <button class="btn btn-sm" onclick="quickAdvSearch('t:legendary t:creature id:ub')" style="font-size:0.7rem;">Dimir commanders</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Search Results -->
+            <div id="advSearchResults" style="display:none;margin-bottom:1.5rem;">
+                <div class="section-header"><h3 class="section-title" id="advResultsTitle">🔍 Results</h3><button class="btn btn-secondary" onclick="closeAdvSearch()">← Back</button></div>
+                <div class="card-grid" id="advResultsGrid"></div>
+                <div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-primary" id="advLoadMore" onclick="loadMoreAdvResults()" style="display:none;">Load More</button></div>
+            </div>
 
             <!-- Category/Function Results (shown when clicking browse buttons) -->
             <div id="browseResultsView" style="display:none;">
@@ -2144,6 +2196,134 @@
         }
         function expandRS(code){const d=rsData[code];const grid=document.getElementById('rsCards_'+code);const btn=document.getElementById('rsMore_'+code);if(d&&d.data&&grid){grid.innerHTML=d.data.slice(0,50).map(c=>cardEl(c)).join('');if(btn)btn.style.display='none';}}
 
+        // Advanced Card Search Functions
+        let advSearchData = null;
+        let advSearchQuery = '';
+
+        function toggleSyntaxHelp() {
+            const content = document.getElementById('syntaxHelpContent');
+            const icon = document.getElementById('syntaxHelpIcon');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+
+        function updateAdvQuery() {
+            const type = document.getElementById('advType').value;
+            const color = document.getElementById('advColor').value;
+            const rarity = document.getElementById('advRarity').value;
+            const price = document.getElementById('advPrice').value;
+            const format = document.getElementById('advFormat').value;
+
+            let parts = [];
+            if (type) parts.push('t:' + type);
+            if (color) parts.push('c:' + color);
+            if (rarity) parts.push('r:' + rarity);
+            if (price) parts.push(price);
+            if (format) parts.push('f:' + format);
+
+            document.getElementById('browseCardSearch').value = parts.join(' ');
+        }
+
+        function quickAdvSearch(query) {
+            document.getElementById('browseCardSearch').value = query;
+            // Reset filters when using quick search
+            document.getElementById('advType').value = '';
+            document.getElementById('advColor').value = '';
+            document.getElementById('advRarity').value = '';
+            document.getElementById('advPrice').value = '';
+            document.getElementById('advFormat').value = '';
+            performAdvancedSearch();
+        }
+
+        async function performAdvancedSearch() {
+            const query = document.getElementById('browseCardSearch').value.trim();
+            if (!query) {
+                showToast('Enter a search query', 'warning');
+                return;
+            }
+
+            advSearchQuery = query;
+            const resultsSection = document.getElementById('advSearchResults');
+            const grid = document.getElementById('advResultsGrid');
+            const loadMoreBtn = document.getElementById('advLoadMore');
+
+            // Show results section, hide browse views
+            resultsSection.style.display = 'block';
+            document.getElementById('recentSetsPreview').style.display = 'none';
+            document.getElementById('fullSetsList').style.display = 'none';
+            if (document.getElementById('browseResultsView')) document.getElementById('browseResultsView').style.display = 'none';
+
+            grid.innerHTML = '<div class="loading-spinner"></div>';
+            document.getElementById('advResultsTitle').textContent = '🔍 Searching: ' + query;
+
+            try {
+                const data = await API.search(query, { order: 'usd', dir: 'desc' });
+                advSearchData = data;
+
+                if (data.data && data.data.length > 0) {
+                    grid.innerHTML = data.data.map(c => cardEl(c, c.rarity)).join('');
+                    document.getElementById('advResultsTitle').textContent = '🔍 Results for: ' + query + ' (' + (data.total_cards || data.data.length) + ' cards)';
+                    loadMoreBtn.style.display = data.has_more ? 'inline-flex' : 'none';
+                } else {
+                    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);"><div style="font-size:3rem;margin-bottom:1rem;">🔍</div><p>No cards found for "' + query + '"</p><p style="font-size:0.85rem;margin-top:0.5rem;">Try different search terms or check the syntax help</p></div>';
+                    loadMoreBtn.style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Advanced search error:', e);
+                grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);"><div style="font-size:3rem;margin-bottom:1rem;">⚠️</div><p>Search failed. Check your query syntax.</p><p style="font-size:0.85rem;margin-top:0.5rem;">Error: ' + (e.message || 'Unknown error') + '</p></div>';
+                loadMoreBtn.style.display = 'none';
+            }
+        }
+
+        async function loadMoreAdvResults() {
+            if (!advSearchData || !advSearchData.next_page) return;
+
+            const grid = document.getElementById('advResultsGrid');
+            const loadMoreBtn = document.getElementById('advLoadMore');
+            loadMoreBtn.textContent = 'Loading...';
+            loadMoreBtn.disabled = true;
+
+            try {
+                const resp = await fetch(advSearchData.next_page);
+                const data = await resp.json();
+                advSearchData = data;
+
+                if (data.data) {
+                    grid.innerHTML += data.data.map(c => cardEl(c, c.rarity)).join('');
+                    loadMoreBtn.style.display = data.has_more ? 'inline-flex' : 'none';
+                }
+            } catch (e) {
+                console.error('Load more error:', e);
+                showToast('Failed to load more results', 'error');
+            }
+
+            loadMoreBtn.textContent = 'Load More';
+            loadMoreBtn.disabled = false;
+        }
+
+        function closeAdvSearch() {
+            document.getElementById('advSearchResults').style.display = 'none';
+            document.getElementById('recentSetsPreview').style.display = 'block';
+            document.getElementById('fullSetsList').style.display = 'block';
+            advSearchData = null;
+        }
+
+        // Handle Enter key on search input
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('browseCardSearch');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performAdvancedSearch();
+                    }
+                });
+            }
+        });
 
         // Sets
         State.setsDisplayCount = 40;
