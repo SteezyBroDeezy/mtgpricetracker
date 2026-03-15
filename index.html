@@ -1285,15 +1285,133 @@
                 <div style="margin-top:1rem;border-top:1px solid var(--bg-tertiary);padding-top:0.75rem;">
                     <button onclick="toggleSyntaxHelp()" style="background:none;border:none;color:var(--accent-secondary);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;"><span id="syntaxHelpIcon">▶</span> Search Syntax Help</button>
                     <div id="syntaxHelpContent" style="display:none;margin-top:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:1rem;font-size:0.8rem;">
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
-                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Basic</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">t:creature</code> Type<br><code style="color:var(--accent-blue);">c:red</code> Color<br><code style="color:var(--accent-blue);">r:mythic</code> Rarity<br><code style="color:var(--accent-blue);">s:mkm</code> Set code</div></div>
-                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Text & Stats</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">o:draw</code> Oracle text<br><code style="color:var(--accent-blue);">cmc<=3</code> Mana value<br><code style="color:var(--accent-blue);">pow>=4</code> Power<br><code style="color:var(--accent-blue);">tou<=2</code> Toughness</div></div>
-                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">otag:ramp</code><br><code style="color:var(--accent-blue);">otag:removal</code><br><code style="color:var(--accent-blue);">otag:draw</code><br><code style="color:var(--accent-blue);">otag:tutor</code></div></div>
-                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Exclusions</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-red);">-t:creature</code> NOT creature<br><code style="color:var(--accent-red);">-c:green</code> Exclude green<br><code style="color:var(--accent-red);">-r:common</code> No commons</div></div>
-                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Price & Format</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">usd<5</code> Under $5<br><code style="color:var(--accent-blue);">f:commander</code> Legal in EDH<br><code style="color:var(--accent-blue);">f:modern</code> Modern legal</div></div>
-                            <div><h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Special</h4><div style="color:var(--text-secondary);line-height:1.7;"><code style="color:var(--accent-blue);">is:commander</code><br><code style="color:var(--accent-blue);">is:reserved</code><br><code style="color:var(--accent-blue);">id:bg</code> Golgari ID</div></div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+                            <!-- Basic Filters -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Basic Filters</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">t:creature</code> Card type<br>
+                                    <code style="color:var(--accent-blue);">t:legendary</code> Supertype<br>
+                                    <code style="color:var(--accent-blue);">c:red</code> or <code style="color:var(--accent-blue);">c:r</code> Color<br>
+                                    <code style="color:var(--accent-blue);">c:ub</code> Blue AND black<br>
+                                    <code style="color:var(--accent-blue);">r:mythic</code> Rarity<br>
+                                    <code style="color:var(--accent-blue);">s:mkm</code> Set code
+                                </div>
+                            </div>
+                            <!-- Text & Stats -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Text & Stats</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">o:draw</code> Oracle text<br>
+                                    <code style="color:var(--accent-blue);">o:"enters the"</code> Exact phrase<br>
+                                    <code style="color:var(--accent-blue);">cmc=3</code> Mana value equals<br>
+                                    <code style="color:var(--accent-blue);">cmc&lt;=3</code> MV 3 or less<br>
+                                    <code style="color:var(--accent-blue);">pow&gt;=4</code> Power 4+<br>
+                                    <code style="color:var(--accent-blue);">tou&lt;=2</code> Toughness 2-
+                                </div>
+                            </div>
+                            <!-- Mana & Costs -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Mana & Costs</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">m:GG</code> Has GG in cost<br>
+                                    <code style="color:var(--accent-blue);">m:2WW</code> Costs 2WW<br>
+                                    <code style="color:var(--accent-blue);">m:{X}</code> Has X in cost<br>
+                                    <code style="color:var(--accent-blue);">m:{W/U}</code> Hybrid mana<br>
+                                    <code style="color:var(--accent-blue);">m:{W/P}</code> Phyrexian mana<br>
+                                    <code style="color:var(--accent-blue);">devotion:www</code> 3+ white pips
+                                </div>
+                            </div>
+                            <!-- Oracle Tags -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags (otag:)</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">otag:ramp</code> Mana ramp<br>
+                                    <code style="color:var(--accent-blue);">otag:removal</code> Removal<br>
+                                    <code style="color:var(--accent-blue);">otag:draw</code> Card draw<br>
+                                    <code style="color:var(--accent-blue);">otag:board-wipe</code> Wipes<br>
+                                    <code style="color:var(--accent-blue);">otag:tutor</code> Tutors<br>
+                                    <code style="color:var(--accent-blue);">otag:counterspell</code> Counters<br>
+                                    <code style="color:var(--accent-blue);">otag:token-producer</code> Tokens<br>
+                                    <code style="color:var(--accent-blue);">otag:sacrifice-outlet</code> Sac outlets<br>
+                                    <code style="color:var(--accent-blue);">otag:life-gain</code> Lifegain<br>
+                                    <code style="color:var(--accent-blue);">otag:graveyard-hate</code> GY hate
+                                </div>
+                            </div>
+                            <!-- Exclusions -->
+                            <div>
+                                <h4 style="color:var(--accent-red);margin-bottom:0.4rem;">Exclusions (- prefix)</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-red);">-t:creature</code> NOT creatures<br>
+                                    <code style="color:var(--accent-red);">-t:legendary</code> Non-legendary<br>
+                                    <code style="color:var(--accent-red);">-c:green</code> Exclude green<br>
+                                    <code style="color:var(--accent-red);">-c:g</code> Exclude green (short)<br>
+                                    <code style="color:var(--accent-red);">-r:common</code> No commons<br>
+                                    <code style="color:var(--accent-red);">-r:uncommon</code> No uncommons<br>
+                                    <code style="color:var(--accent-red);">-o:flying</code> No flying text<br>
+                                    <code style="color:var(--accent-red);">-s:mkm</code> Not from set
+                                </div>
+                            </div>
+                            <!-- Color Identity -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Color Identity (EDH)</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">id:bg</code> Golgari identity<br>
+                                    <code style="color:var(--accent-blue);">id:wubrg</code> 5-color identity<br>
+                                    <code style="color:var(--accent-blue);">id&lt;=ub</code> Fits in Dimir<br>
+                                    <code style="color:var(--accent-blue);">id:c</code> Colorless identity<br>
+                                    <code style="color:var(--accent-blue);">id=rg</code> Exactly Gruul<br>
+                                    <code style="color:var(--accent-blue);">is:commander</code> Can be cmdr<br>
+                                    <code style="color:var(--accent-blue);">is:partner</code> Has partner
+                                </div>
+                            </div>
+                            <!-- Price & Format -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Price & Format</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">usd&lt;5</code> Under $5<br>
+                                    <code style="color:var(--accent-blue);">usd&gt;10</code> Over $10<br>
+                                    <code style="color:var(--accent-blue);">usd&lt;=1</code> $1 or less<br>
+                                    <code style="color:var(--accent-blue);">f:commander</code> EDH legal<br>
+                                    <code style="color:var(--accent-blue);">f:modern</code> Modern legal<br>
+                                    <code style="color:var(--accent-blue);">f:standard</code> Standard<br>
+                                    <code style="color:var(--accent-blue);">f:pioneer</code> Pioneer<br>
+                                    <code style="color:var(--accent-blue);">f:pauper</code> Pauper
+                                </div>
+                            </div>
+                            <!-- Special Filters -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Special Filters</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">is:reserved</code> Reserved list<br>
+                                    <code style="color:var(--accent-blue);">is:reprint</code> Reprints only<br>
+                                    <code style="color:var(--accent-blue);">is:firstprint</code> First prints<br>
+                                    <code style="color:var(--accent-blue);">is:full</code> Full art<br>
+                                    <code style="color:var(--accent-blue);">is:extended</code> Extended art<br>
+                                    <code style="color:var(--accent-blue);">is:foil</code> Foil available<br>
+                                    <code style="color:var(--accent-blue);">is:modal</code> Modal DFC<br>
+                                    <code style="color:var(--accent-blue);">is:split</code> Split cards
+                                </div>
+                            </div>
                         </div>
-                        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--bg-card);"><span style="color:var(--accent-gold);">Examples:</span> <button class="btn btn-sm" onclick="quickAdvSearch('t:creature c:g cmc<=3 f:commander')" style="font-size:0.7rem;">Green creatures CMC 3</button> <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal -t:creature usd<2')" style="font-size:0.7rem;">Budget removal spells</button> <button class="btn btn-sm" onclick="quickAdvSearch('t:legendary t:creature id:ub')" style="font-size:0.7rem;">Dimir commanders</button></div>
+                        <!-- Examples Section -->
+                        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--bg-card);">
+                            <span style="color:var(--accent-gold);font-weight:600;">Try Examples:</span>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
+                                <button class="btn btn-sm" onclick="quickAdvSearch('t:creature c:g cmc<=3 f:commander')" style="font-size:0.7rem;">Green creatures CMC 3 or less</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal -t:creature usd<2')" style="font-size:0.7rem;">Budget non-creature removal</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('t:legendary t:creature id:ub')" style="font-size:0.7rem;">Dimir commanders</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:ramp c:g -t:creature')" style="font-size:0.7rem;">Green non-creature ramp</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('t:creature pow>=7 cmc<=4')" style="font-size:0.7rem;">Big creatures, low cost</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('o:\"draw a card\" t:instant c:u')" style="font-size:0.7rem;">Blue instants with draw</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('is:reserved usd>50')" style="font-size:0.7rem;">Expensive Reserved List</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe c:w')" style="font-size:0.7rem;">White board wipes</button>
+                            </div>
+                        </div>
+                        <!-- Tips -->
+                        <div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--bg-card);color:var(--text-muted);font-size:0.75rem;">
+                            <span style="color:var(--accent-secondary);font-weight:600;">Tips:</span> Combine filters with spaces. Use <code style="color:var(--accent-blue);">otag:</code> for functional searches. Prefix with <code style="color:var(--accent-red);">-</code> to exclude cards matching that filter.
+                        </div>
                     </div>
                 </div>
             </div>
