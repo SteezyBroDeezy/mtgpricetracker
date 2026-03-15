@@ -902,7 +902,7 @@
             <button class="nav-tab" data-page="alerts">🔔 Alerts</button>
         </div>
         <div class="nav-right">
-            <button id="syncBtn" class="nav-btn nav-btn-sync" onclick="handleSync()" style="display:none;"><span class="sync-icon">✓</span> Synced</button>
+            <button id="syncBtn" class="nav-btn nav-btn-sync" onclick="handleSync()" style="display:none;"><span class="sync-icon">✓</span> Lists Synced</button>
             <span id="syncStatus" class="sync-status" style="display:none;"></span>
             <button class="nav-btn nav-btn-ghost" onclick="switchPage('settings')">⚙️</button>
             <div id="authSection"><button class="nav-btn nav-btn-primary" onclick="openAuthModal('login')">Sign In</button></div>
@@ -2230,11 +2230,11 @@
             if(!btn)return;
             if(State.hasPendingChanges()){
                 btn.classList.add('pending');
-                btn.innerHTML='<span class="sync-icon">↻</span> Sync Now';
+                btn.innerHTML='<span class="sync-icon">↻</span> Sync Lists';
                 if(status)status.textContent='Changes pending';
             }else{
                 btn.classList.remove('pending');
-                btn.innerHTML='<span class="sync-icon">✓</span> Synced';
+                btn.innerHTML='<span class="sync-icon">✓</span> Lists Synced';
                 const lastSync=State.getLastSyncTime();
                 if(status&&lastSync){
                     const mins=Math.floor((Date.now()-lastSync)/60000);
@@ -2288,7 +2288,7 @@
         // Handle sync button click
         async function handleSync(){
             const btn=document.getElementById('syncBtn');
-            if(btn){btn.disabled=true;btn.innerHTML='<span class="sync-icon spinning">↻</span> Syncing...';}
+            if(btn){btn.disabled=true;btn.innerHTML='<span class="sync-icon spinning">↻</span> Syncing Lists...';}
             const result=await State.manualSync();
             if(btn){btn.disabled=false;}
             if(result.success){showToast('Synced to cloud!','success');}
