@@ -2112,7 +2112,7 @@
         };
 
         const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,loadingMode:'balanced',bgEffect:'none'},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,
-            portfolio:[],priceMovers:null,marketAnalytics:null,lastPriceRecord:{},staplesData:null,currentStaplesFormat:'commander',currentStaplesTier:0.5,priceHistory:{},
+            portfolio:[],priceMovers:null,marketAnalytics:null,lastPriceRecord:{},staplesData:null,currentStaplesFormat:'commander',currentStaplesTier:0.5,priceHistory:{},flippedCards:{},
             async load(){
                 // Step 1: Load from localStorage
                 let localData=null;
@@ -2880,14 +2880,51 @@
         async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');grid.innerHTML='<div class="loading-spinner"></div>';let q='usd>0.5';if(f==='standard')q='f:standard';else if(f==='modern')q='f:modern usd>1';else if(f==='commander')q='f:commander is:popular';try{const d=await API.search(q,{order:'usd',dir:'desc'});State.trendingData=d;if(d.data){const badges=['spike','hot','drop',''];grid.innerHTML=d.data.slice(0,16).map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');document.getElementById('loadMoreBtn').style.display=d.has_more?'inline-flex':'none';}}catch(e){grid.innerHTML='<p>Failed</p>';}}
         async function loadMoreTrending(){const grid=document.getElementById('trendingGrid');const btn=document.getElementById('loadMoreBtn');btn.textContent='Loading...';btn.disabled=true;if(State.trendingData?.next_page){try{const resp=await fetch(State.trendingData.next_page);const d=await resp.json();State.trendingData=d;const badges=['spike','hot','drop',''];grid.innerHTML+=d.data.map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}}btn.textContent='Load More';btn.disabled=false;}
 
+        // Helper to check if card is double-faced
+        function isDoubleFaced(c) {
+            return c.card_faces && c.card_faces.length > 1 && c.card_faces[0]?.image_uris;
+        }
+
+        // Get card image for current face
+        function getCardFaceImage(c) {
+            const isFlipped = State.flippedCards[c.id] || false;
+            if (isDoubleFaced(c)) {
+                const faceIndex = isFlipped ? 1 : 0;
+                return c.card_faces[faceIndex]?.image_uris?.normal || c.card_faces[faceIndex]?.image_uris?.small || '';
+            }
+            return c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.normal || '';
+        }
+
+        // Toggle card flip on main grid
+        function toggleGridCardFlip(cardId, e) {
+            e.stopPropagation();
+            State.flippedCards[cardId] = !State.flippedCards[cardId];
+            // Re-render the card image
+            const imgEl = document.querySelector(`[data-card-id="${cardId}"] .mtg-card-img`);
+            if (imgEl) {
+                const cardData = State.cardCache?.[cardId];
+                if (cardData && isDoubleFaced(cardData)) {
+                    imgEl.src = getCardFaceImage(cardData);
+                }
+            }
+        }
+
         // Card element with real price change support
-        function cardEl(c,badge='',priceChange=null){const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const pr=getPrice(c);
+        function cardEl(c,badge='',priceChange=null){
+            // Cache card data for flip functionality
+            if (!State.cardCache) State.cardCache = {};
+            State.cardCache[c.id] = c;
+
+            const img = getCardFaceImage(c);
+            const pr=getPrice(c);
+            const isDFC = isDoubleFaced(c);
             // Use real price change if available, otherwise check cached history
             let chg=priceChange;let showChange=true;
             if(chg===null){const hist=State.priceHistory[c.id];if(hist&&hist.length>=2){const oldest=hist[0].usd;const current=pr.num;if(oldest&&current)chg=((current-oldest)/oldest*100).toFixed(1);else showChange=false;}else showChange=false;}
             const cls=chg>=0?'positive':'negative';const inWL=isInWatchlist(c.id);let bc=badge;if(['mythic','rare','uncommon','common'].includes(badge))bc=badge;
             const changeHtml=showChange&&chg!==null?`<span class="mtg-card-change ${cls}">${chg>=0?'+':''}${chg}%</span>`:'';
-            return`<div class="mtg-card"><div class="mtg-card-img-container" onclick="openCardDetail('${c.id}')"><img src="${img}" class="mtg-card-img" loading="lazy">${badge?`<span class="mtg-card-badge badge-${bc}">${badge}</span>`:''}<div class="mtg-card-quick"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Alert">🔔</button></div></div><div class="mtg-card-info" onclick="openCardDetail('${c.id}')"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-set">${c.set_name}${pr.type?` <span style="color:var(--accent-blue);font-size:0.65rem;">${pr.type}</span>`:''}</div><div class="mtg-card-prices"><span class="mtg-card-price">${pr.val}</span>${changeHtml}</div></div></div>`;}
+            const flipBtn = isDFC ? `<button class="quick-btn" onclick="toggleGridCardFlip('${c.id}',event)" title="Flip card" style="background:var(--bg-tertiary);font-size:0.8rem;">🔄</button>` : '';
+            return`<div class="mtg-card" data-card-id="${c.id}"><div class="mtg-card-img-container" onclick="openCardDetail('${c.id}')"><img src="${img}" class="mtg-card-img" loading="lazy">${badge?`<span class="mtg-card-badge badge-${bc}">${badge}</span>`:''}<div class="mtg-card-quick">${flipBtn}<button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Alert">🔔</button></div></div><div class="mtg-card-info" onclick="openCardDetail('${c.id}')"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-set">${c.set_name}${pr.type?` <span style="color:var(--accent-blue);font-size:0.65rem;">${pr.type}</span>`:''}</div><div class="mtg-card-prices"><span class="mtg-card-price">${pr.val}</span>${changeHtml}</div></div></div>`;}
 
         // Alerts
         function openAlertModal(cardId=null,cardName=null){document.getElementById('alertForm').reset();document.getElementById('alertModalTitle').textContent=cardId?'Alert: '+cardName:'Create Alert Rule';if(cardId){document.getElementById('alertScope').value='specific';document.getElementById('alertCardId').value=cardId;document.getElementById('alertCardName').value=cardName;}updateAlertUI();updateScopeUI();openModal('alertModal');}
