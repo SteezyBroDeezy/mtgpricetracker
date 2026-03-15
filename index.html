@@ -1313,9 +1313,10 @@
             <!-- Advanced Card Search Panel -->
             <div class="browse-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,0.05);">
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
-                    <div style="flex:1;min-width:250px;">
+                    <div style="flex:1;min-width:250px;position:relative;">
                         <label style="display:block;font-size:0.75rem;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.4rem;">Search Cards (Scryfall Syntax)</label>
-                        <input type="text" class="search-input" id="browseCardSearch" placeholder="t:creature c:red, otag:ramp, o:draw..." style="width:100%;padding-left:1rem;">
+                        <input type="text" class="search-input" id="browseCardSearch" placeholder="t:creature c:red, otag:ramp, o:draw..." style="width:100%;padding-left:1rem;" autocomplete="off">
+                        <div class="search-results" id="browseSearchResults" style="position:absolute;top:100%;left:0;right:0;"></div>
                     </div>
                     <button class="btn btn-primary" onclick="performAdvancedSearch()" style="padding:0.75rem 1.5rem;">🔍 Search</button>
                 </div>
@@ -2108,7 +2109,8 @@
             search:(q,o={})=>API.req('/cards/search?q='+encodeURIComponent(q)+'&'+new URLSearchParams(o)),
             searchPriority:(q,o={})=>API.req('/cards/search?q='+encodeURIComponent(q)+'&'+new URLSearchParams(o),{priority:true}),
             card:(id,pri=false)=>API.req('/cards/'+id,{priority:pri}),
-            sets:()=>API.req('/sets')
+            sets:()=>API.req('/sets'),
+            autocomplete:(q)=>API.req('/cards/autocomplete?q='+encodeURIComponent(q),{priority:true,cacheTTL:60000})
         };
 
         const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,loadingMode:'balanced',bgEffect:'none'},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,
@@ -2297,15 +2299,38 @@
 
         // Search
         const searchInput=document.getElementById('cardSearch'),searchResults=document.getElementById('searchResults');
-        const handleSearch=debounce(async q=>{if(q.length<2){searchResults.classList.remove('active');return;}try{const d=await API.searchPriority(q,{unique:'cards'});if(d.data?.length){searchResults.innerHTML=d.data.slice(0,8).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item" onclick="event.stopPropagation();openCardDetail('${c.id}')"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img"><div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div class="search-result-actions"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="${inWL?'Remove from':'Add to'} Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Create Alert">🔔</button></div></div>`;}).join('');searchResults.classList.add('active');}else{searchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';searchResults.classList.add('active');}}catch(e){}},200);
+        const handleSearch=debounce(async q=>{if(q.length<2){searchResults.classList.remove('active');return;}try{const d=await API.searchPriority(q,{unique:'cards'});if(d.data?.length){searchResults.innerHTML=d.data.slice(0,12).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item" onclick="event.stopPropagation();openCardDetail('${c.id}')"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img"><div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div class="search-result-actions"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="${inWL?'Remove from':'Add to'} Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Create Alert">🔔</button></div></div>`;}).join('');searchResults.classList.add('active');}else{searchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';searchResults.classList.add('active');}}catch(e){}},200);
         searchInput.addEventListener('input',e=>handleSearch(e.target.value));
         document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.classList.remove('active');});
 
         // Watchlist page search
         const watchlistSearchInput=document.getElementById('watchlistSearch'),watchlistSearchResults=document.getElementById('watchlistSearchResults');
-        const handleWatchlistSearch=debounce(async q=>{if(q.length<2){watchlistSearchResults.classList.remove('active');return;}try{const d=await API.searchPriority(q,{unique:'cards'});if(d.data?.length){watchlistSearchResults.innerHTML=d.data.slice(0,8).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item" onclick="event.stopPropagation();quickWatchFromWatchlistSearch('${c.id}')"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img"><div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div style="font-size:1.5rem;">${inWL?'✓':'➕'}</div></div>`;}).join('');watchlistSearchResults.classList.add('active');}else{watchlistSearchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';watchlistSearchResults.classList.add('active');}}catch(e){}},200);
+        const handleWatchlistSearch=debounce(async q=>{if(q.length<2){watchlistSearchResults.classList.remove('active');return;}try{const d=await API.searchPriority(q,{unique:'cards'});if(d.data?.length){watchlistSearchResults.innerHTML=d.data.slice(0,12).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item" onclick="event.stopPropagation();quickWatchFromWatchlistSearch('${c.id}')"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img"><div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div style="font-size:1.5rem;">${inWL?'✓':'➕'}</div></div>`;}).join('');watchlistSearchResults.classList.add('active');}else{watchlistSearchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';watchlistSearchResults.classList.add('active');}}catch(e){}},200);
         watchlistSearchInput.addEventListener('input',e=>handleWatchlistSearch(e.target.value));
         document.addEventListener('click',e=>{if(!watchlistSearchInput.contains(e.target)&&!watchlistSearchResults.contains(e.target))watchlistSearchResults.classList.remove('active');});
+
+        // Browse page card search with suggestions
+        const browseSearchInput=document.getElementById('browseCardSearch'),browseSearchResults=document.getElementById('browseSearchResults');
+        const handleBrowseSearch=debounce(async q=>{
+            // Don't show suggestions for syntax queries (contains : or other operators)
+            if(q.length<2 || q.includes(':') || q.includes('=') || q.includes('<') || q.includes('>')){
+                browseSearchResults.classList.remove('active');
+                return;
+            }
+            try{
+                const d=await API.autocomplete(q);
+                if(d.data?.length){
+                    browseSearchResults.innerHTML=d.data.slice(0,12).map(name=>`<div class="search-result-item" onclick="selectBrowseSuggestion('${name.replace(/'/g,"\\'")}')" style="padding:0.6rem 1rem;cursor:pointer;"><div class="search-result-info"><h4 style="font-size:0.9rem;">${name}</h4></div></div>`).join('');
+                    browseSearchResults.classList.add('active');
+                }else{
+                    browseSearchResults.classList.remove('active');
+                }
+            }catch(e){browseSearchResults.classList.remove('active');}
+        },200);
+        browseSearchInput?.addEventListener('input',e=>handleBrowseSearch(e.target.value));
+        browseSearchInput?.addEventListener('keydown',e=>{if(e.key==='Enter'){browseSearchResults.classList.remove('active');performAdvancedSearch();}});
+        document.addEventListener('click',e=>{if(browseSearchInput && browseSearchResults && !browseSearchInput.contains(e.target)&&!browseSearchResults.contains(e.target))browseSearchResults.classList.remove('active');});
+        function selectBrowseSuggestion(name){browseSearchInput.value=name;browseSearchResults.classList.remove('active');performAdvancedSearch();}
 
         async function quickWatchFromWatchlistSearch(id){
             if(!isInWatchlist(id)){
