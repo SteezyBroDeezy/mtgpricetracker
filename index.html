@@ -1270,16 +1270,67 @@
                     <div class="filter-group"><span class="filter-label">Price</span><select class="filter-select" id="advPrice" onchange="updateAdvQuery()"><option value="">Any</option><option value="usd<1">Under $1</option><option value="usd<5">Under $5</option><option value="usd<10">Under $10</option><option value="usd>10">$10+</option><option value="usd>50">$50+</option></select></div>
                     <div class="filter-group"><span class="filter-label">Format</span><select class="filter-select" id="advFormat" onchange="updateAdvQuery()"><option value="">Any</option><option value="standard">Standard</option><option value="modern">Modern</option><option value="commander">Commander</option><option value="pioneer">Pioneer</option><option value="pauper">Pauper</option></select></div>
                 </div>
-                <!-- Quick Tags -->
+                <!-- Quick Tags - EDH Staples -->
                 <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                    <span style="font-size:0.75rem;text-transform:uppercase;color:var(--text-secondary);">Quick:</span>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:ramp')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">🌱 Ramp</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">💀 Removal</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:draw')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">🎴 Draw</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">💥 Wipes</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:tutor')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">🔍 Tutors</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">👑 Commanders</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:reserved')" style="font-size:0.8rem;padding:0.3rem 0.6rem;">💎 Reserved</button>
+                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">EDH Staples:</span>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:ramp f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🌱 Ramp</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💀 Removal</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:draw f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🎴 Draw</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💥 Wipes</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:tutor f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🔍 Tutors</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:counterspell f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🛡️ Counters</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:mana-rock f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💎 Rocks</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:land-ramp f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🏔️ Land Ramp</button>
+                </div>
+                <!-- Quick Tags - Commanders -->
+                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">👑 Commanders:</span>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander usd>0')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">All</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:w')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">⚪ White</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:u')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">🔵 Blue</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:b')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">⚫ Black</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:r')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">🔴 Red</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:g')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">🟢 Green</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:c')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#9e9e9e,#bdbdbd);color:#333;">⬜ Colorless</button>
+                </div>
+                <!-- Quick Tags - Popular Guild/Shard Commanders -->
+                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">Guilds:</span>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=ub')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Dimir</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=bg')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Golgari</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=rg')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Gruul</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=uw')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Azorius</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=br')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Rakdos</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=wg')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Selesnya</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=ur')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Izzet</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=wb')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Orzhov</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=gu')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Simic</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=rw')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Boros</button>
+                </div>
+                <!-- Quick Tags - Commander Features -->
+                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">Features:</span>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander is:partner')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🤝 Partners</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"background\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">📜 Backgrounds</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander cmc<=3')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚡ Low Cost (≤3)</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander usd<5')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💰 Budget (<$5)</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander usd>20')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💎 Premium (>$20)</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander pow>=5')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💪 High Power (5+)</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"when ~ deals combat damage\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚔️ Combat Damage</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"whenever you cast\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🎯 Cast Triggers</button>
+                </div>
+                <!-- Quick Tags - Archetypes -->
+                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">Archetypes:</span>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"token\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🪙 Tokens</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"+1/+1 counter\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">📈 +1/+1 Counters</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"graveyard\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚰️ Graveyard</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"sacrifice\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🩸 Sacrifice</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"artifact\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚙️ Artifacts</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"enchantment\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">✨ Enchantments</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:dragon')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🐉 Dragons</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:elf')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🧝 Elves</button>
+                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:zombie')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🧟 Zombies</button>
                 </div>
                 <!-- Collapsible Syntax Help -->
                 <div style="margin-top:1rem;border-top:1px solid var(--bg-tertiary);padding-top:0.75rem;">
@@ -1398,14 +1449,14 @@
                         <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--bg-card);">
                             <span style="color:var(--accent-gold);font-weight:600;">Try Examples:</span>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
-                                <button class="btn btn-sm" onclick="quickAdvSearch('t:creature c:g cmc<=3 f:commander')" style="font-size:0.7rem;">Green creatures CMC 3 or less</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id<=bg cmc<=4')" style="font-size:0.7rem;">Budget Golgari commanders</button>
                                 <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal -t:creature usd<2')" style="font-size:0.7rem;">Budget non-creature removal</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('t:legendary t:creature id:ub')" style="font-size:0.7rem;">Dimir commanders</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander is:partner')" style="font-size:0.7rem;">Partner commanders</button>
                                 <button class="btn btn-sm" onclick="quickAdvSearch('otag:ramp c:g -t:creature')" style="font-size:0.7rem;">Green non-creature ramp</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('t:creature pow>=7 cmc<=4')" style="font-size:0.7rem;">Big creatures, low cost</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('o:\"draw a card\" t:instant c:u')" style="font-size:0.7rem;">Blue instants with draw</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('is:reserved usd>50')" style="font-size:0.7rem;">Expensive Reserved List</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe c:w')" style="font-size:0.7rem;">White board wipes</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"draw\" id<=u')" style="font-size:0.7rem;">Blue draw commanders</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:dragon')" style="font-size:0.7rem;">Dragon commanders</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander pow>=6 cmc<=5')" style="font-size:0.7rem;">Strong low-cost commanders</button>
+                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe f:commander usd<3')" style="font-size:0.7rem;">Budget board wipes</button>
                             </div>
                         </div>
                         <!-- Tips -->
