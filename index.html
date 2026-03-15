@@ -1373,20 +1373,52 @@
                                     <code style="color:var(--accent-blue);">devotion:www</code> 3+ white pips in cost
                                 </div>
                             </div>
-                            <!-- Oracle Tags -->
+                            <!-- Oracle Tags - Basics -->
                             <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags (otag:)</h4>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags - Basics</h4>
                                 <div style="color:var(--text-secondary);line-height:1.8;">
                                     <code style="color:var(--accent-blue);">otag:ramp</code> Produces extra mana<br>
-                                    <code style="color:var(--accent-blue);">otag:removal</code> Destroys/exiles permanents<br>
-                                    <code style="color:var(--accent-blue);">otag:draw</code> Draws extra cards<br>
-                                    <code style="color:var(--accent-blue);">otag:board-wipe</code> Destroys all creatures<br>
-                                    <code style="color:var(--accent-blue);">otag:tutor</code> Searches library for cards<br>
+                                    <code style="color:var(--accent-blue);">otag:mana-rock</code> Artifact mana sources<br>
+                                    <code style="color:var(--accent-blue);">otag:land-ramp</code> Fetches lands<br>
+                                    <code style="color:var(--accent-blue);">otag:mana-dork</code> Creatures tap for mana<br>
+                                    <code style="color:var(--accent-blue);">otag:draw</code> Draws cards<br>
+                                    <code style="color:var(--accent-blue);">otag:card-advantage</code> Card advantage<br>
+                                    <code style="color:var(--accent-blue);">otag:cantrip</code> Draws when cast<br>
+                                    <code style="color:var(--accent-blue);">otag:removal</code> Removes permanents<br>
+                                    <code style="color:var(--accent-blue);">otag:spot-removal</code> Single target<br>
+                                    <code style="color:var(--accent-blue);">otag:board-wipe</code> Destroys all
+                                </div>
+                            </div>
+                            <!-- Oracle Tags - More -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags - More</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">otag:tutor</code> Searches library<br>
                                     <code style="color:var(--accent-blue);">otag:counterspell</code> Counters spells<br>
-                                    <code style="color:var(--accent-blue);">otag:token-producer</code> Creates token creatures<br>
-                                    <code style="color:var(--accent-blue);">otag:sacrifice-outlet</code> Lets you sacrifice<br>
+                                    <code style="color:var(--accent-blue);">otag:token-producer</code> Creates tokens<br>
+                                    <code style="color:var(--accent-blue);">otag:sacrifice-outlet</code> Free sac outlet<br>
+                                    <code style="color:var(--accent-blue);">otag:recursion</code> Returns from GY<br>
+                                    <code style="color:var(--accent-blue);">otag:reanimator</code> Reanimates creatures<br>
+                                    <code style="color:var(--accent-blue);">otag:graveyard-hate</code> Exiles graveyards<br>
                                     <code style="color:var(--accent-blue);">otag:life-gain</code> Gains life<br>
-                                    <code style="color:var(--accent-blue);">otag:graveyard-hate</code> Exiles graveyards
+                                    <code style="color:var(--accent-blue);">otag:lifedrain</code> Drains opponents<br>
+                                    <code style="color:var(--accent-blue);">otag:evasion</code> Evasion abilities
+                                </div>
+                            </div>
+                            <!-- Oracle Tags - Combat -->
+                            <div>
+                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags - Combat</h4>
+                                <div style="color:var(--text-secondary);line-height:1.8;">
+                                    <code style="color:var(--accent-blue);">otag:haste-enabler</code> Gives haste<br>
+                                    <code style="color:var(--accent-blue);">otag:pump</code> Buffs creatures<br>
+                                    <code style="color:var(--accent-blue);">otag:lord</code> Tribal lord effects<br>
+                                    <code style="color:var(--accent-blue);">otag:anthem</code> Team-wide buffs<br>
+                                    <code style="color:var(--accent-blue);">otag:protection</code> Gives protection<br>
+                                    <code style="color:var(--accent-blue);">otag:flicker</code> Exile and return<br>
+                                    <code style="color:var(--accent-blue);">otag:copy</code> Copies creatures/spells<br>
+                                    <code style="color:var(--accent-blue);">otag:theft</code> Steals permanents<br>
+                                    <code style="color:var(--accent-blue);">otag:extra-turn</code> Extra turns<br>
+                                    <code style="color:var(--accent-blue);">otag:extra-combat</code> Extra combats
                                 </div>
                             </div>
                             <!-- Exclusions -->
@@ -2212,7 +2244,13 @@
             try{
             const c=await API.card(id, true);
             recordPriceSnapshot(c).catch(()=>{});
-            const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';const inWL=isInWatchlist(c.id);const inPortfolio=State.portfolio.some(p=>p.cardId===c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
+            const hasMultipleFaces = c.card_faces && c.card_faces.length > 1;
+            const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';
+            const backImg = hasMultipleFaces ? (c.card_faces[1]?.image_uris?.normal || '') : '';
+            State.currentCardFaces = hasMultipleFaces ? [img, backImg] : null;
+            State.currentFaceIndex = 0;
+            const inWL=isInWatchlist(c.id);const inPortfolio=State.portfolio.some(p=>p.cardId===c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
+            const flipBtn = hasMultipleFaces ? `<button class="btn btn-secondary" onclick="flipCardImage()" style="position:absolute;bottom:0.75rem;right:0.75rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;"><svg style="width:1rem;height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Flip</button>` : '';
             // Build add-to-list dropdown with "Create New List" option
             let listDropdown='';
             if(currentUser){
@@ -2238,7 +2276,7 @@
             const extLinks=`<div class="external-links"><a href="${getMTGStocksUrl(c.name)}" target="_blank" class="ext-link">📈 MTGStocks</a><a href="${getTCGPlayerUrl(c.name)}" target="_blank" class="ext-link">🛒 TCGPlayer</a><a href="${getCardKingdomUrl(c.name)}" target="_blank" class="ext-link">👑 Card Kingdom</a><a href="${getEDHRECUrl(c.name)}" target="_blank" class="ext-link">📊 EDHREC</a></div>`;
             // Printings placeholder
             const printingsHtml = `<div id="printingsContainer"></div>`;
-            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div><img src="${img}" style="width:100%;border-radius:var(--radius-md);" id="mainCardImage">${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
+            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div><div style="position:relative;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);transition:opacity 0.15s;" id="mainCardImage">${flipBtn}</div>${hasMultipleFaces ? `<div style="text-align:center;margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem;" id="faceIndicator">${c.card_faces[0].name} (1/2)</div>` : ''}${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
             // Store current card for add-to-list
             State.currentDetailCard=c;openModal('cardModal');
             // Load and draw price chart
@@ -2256,6 +2294,23 @@
             document.getElementById('cardModalTitle').textContent='Error';
             document.getElementById('cardModalBody').innerHTML='<div style="text-align:center;padding:2rem;"><p style="color:var(--accent-red);font-size:1.2rem;">⚠️ Failed to load card</p><p style="margin-top:1rem;color:var(--text-secondary);">Please try again</p><button class="btn btn-primary" onclick="closeModal(\'cardModal\')" style="margin-top:1rem;">Close</button></div>';
         }}
+
+        function flipCardImage() {
+            if (!State.currentCardFaces || State.currentCardFaces.length < 2) return;
+            const img = document.getElementById('mainCardImage');
+            const indicator = document.getElementById('faceIndicator');
+            if (!img) return;
+            img.style.opacity = '0.5';
+            setTimeout(() => {
+                State.currentFaceIndex = (State.currentFaceIndex + 1) % State.currentCardFaces.length;
+                img.src = State.currentCardFaces[State.currentFaceIndex];
+                if (indicator && State.currentDetailCard?.card_faces) {
+                    const face = State.currentDetailCard.card_faces[State.currentFaceIndex];
+                    indicator.textContent = `${face?.name || 'Face ' + (State.currentFaceIndex + 1)} (${State.currentFaceIndex + 1}/${State.currentCardFaces.length})`;
+                }
+                img.style.opacity = '1';
+            }, 150);
+        }
 
         function toggleListDropdown(e){e.stopPropagation();const menu=document.getElementById('addToListMenu');menu.classList.toggle('active');}
         document.addEventListener('click',e=>{const menu=document.getElementById('addToListMenu');if(menu&&!e.target.closest('.add-to-list-dropdown'))menu.classList.remove('active');});
