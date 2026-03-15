@@ -2249,6 +2249,8 @@
 
         // Utilities
         function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+        // Normalize text for fuzzy matching (remove accents, apostrophes)
+        function normalizeText(text){return text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`]/g,'').replace(/[æ]/gi,'ae').replace(/[œ]/gi,'oe').toLowerCase();}
         function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
         function saveSetting(k,v){State.settings[k]=v;State.save();}
         function switchPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();}
@@ -2318,7 +2320,9 @@
                 return;
             }
             try{
-                const d=await API.autocomplete(q);
+                // Normalize query to handle accents/apostrophes (Scryfall handles this too)
+                const normalizedQ = normalizeText(q);
+                const d=await API.autocomplete(normalizedQ.length >= 2 ? normalizedQ : q);
                 if(d.data?.length){
                     browseSearchResults.innerHTML=d.data.slice(0,12).map(name=>`<div class="search-result-item" onclick="selectBrowseSuggestion('${name.replace(/'/g,"\\'")}')" style="padding:0.6rem 1rem;cursor:pointer;"><div class="search-result-info"><h4 style="font-size:0.9rem;">${name}</h4></div></div>`).join('');
                     browseSearchResults.classList.add('active');
