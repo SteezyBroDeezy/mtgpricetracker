@@ -2023,10 +2023,18 @@
                 <div class="auth-notice"><span>🔒</span><span>Sign in to access your lists from <strong>MTG Card Search</strong></span></div>
             </div>
             <div id="listCardsView" style="display:none;">
-                <button class="back-btn" onclick="closeListView()">← Back to Lists</button>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                    <button class="back-btn" onclick="closeListView()">← Back to Lists</button>
+                    <button class="btn" style="background:var(--accent-red);color:white;" onclick="confirmDeleteCurrentList()">🗑️ Delete List</button>
+                </div>
                 <div class="section-header">
                     <h2 class="section-title" id="listViewTitle">List Name</h2>
                     <span id="listCardCount" style="color:var(--text-secondary);"></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+                    <button id="listSelectModeBtn" class="btn btn-secondary" onclick="toggleListSelectMode()" style="font-size:0.85rem;">Select Cards</button>
+                    <button id="listDeleteSelectedBtn" class="btn" style="display:none;background:var(--accent-red);color:white;font-size:0.85rem;" onclick="deleteSelectedListCards()">Delete Selected</button>
+                    <span id="listSelectedCount" style="color:var(--text-secondary);font-size:0.85rem;display:none;">0 selected</span>
                 </div>
                 <div class="card-grid" id="listCardsGrid"></div>
             </div>
@@ -2418,6 +2426,24 @@
         </div>
     </div>
 
+    <!-- Delete List Confirmation Modal -->
+    <div class="modal-overlay" id="deleteListModal">
+        <div class="modal" style="max-width:400px;text-align:center;">
+            <div class="modal-body" style="padding:2rem;">
+                <div style="font-size:3rem;margin-bottom:1rem;">⚠️</div>
+                <h3 style="margin-bottom:0.5rem;">Delete List?</h3>
+                <p style="color:var(--text-secondary);margin-bottom:1.5rem;">
+                    Are you sure you want to delete "<span id="deleteListName" style="color:var(--text-primary);font-weight:600;"></span>"?
+                    This will remove all cards in the list.
+                </p>
+                <div style="display:flex;gap:1rem;justify-content:center;">
+                    <button class="btn btn-secondary" onclick="closeModal('deleteListModal')">Cancel</button>
+                    <button class="btn" style="background:var(--accent-red);color:white;" onclick="executeDeleteList()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const firebaseConfig={apiKey:"AIzaSyDl40JiXr897hVYH63QOA3b8cCgX1e64pI",authDomain:"mtg-card-search-e0ed3.firebaseapp.com",projectId:"mtg-card-search-e0ed3",storageBucket:"mtg-card-search-e0ed3.firebasestorage.app",messagingSenderId:"1041838644245",appId:"1:1041838644245:web:3ed0313b6cd2b1e7e8021c"};
         let app,auth,db,currentUser=null;
@@ -2461,7 +2487,7 @@
             autocomplete:(q)=>API.req('/cards/autocomplete?q='+encodeURIComponent(q),{priority:true,cacheTTL:60000})
         };
 
-        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,loadingMode:'balanced',bgEffect:'none'},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,
+        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,loadingMode:'balanced',bgEffect:'none'},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,listSelectMode:false,selectedListCards:new Set(),
             portfolio:[],priceMovers:null,marketAnalytics:null,lastPriceRecord:{},staplesData:null,currentStaplesFormat:'commander',currentStaplesTier:0.5,priceHistory:{},flippedCards:{},
             async load(){
                 // Step 1: Load from localStorage
@@ -3801,7 +3827,7 @@
             try {
                 const snapshot = await db.collection('users').doc(currentUser.uid)
                     .collection('lists').doc(listId).collection('cards').get();
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return snapshot.docs.map(doc => ({ id: doc.id, docId: doc.id, ...doc.data() }));
             } catch(e) { console.error('Failed to load list cards:', e); return []; }
         }
 
@@ -3860,6 +3886,9 @@
 
         async function openListView(listId) {
             State.currentList = listId;
+            State.listSelectMode = false;
+            State.selectedListCards = new Set();
+            updateListSelectUI();
             const list = State.userLists.find(l => l.id === listId);
             document.getElementById('listViewTitle').textContent = '📋 ' + (list?.name || 'List');
             document.getElementById('listsContent').style.display = 'none';
@@ -3879,7 +3908,7 @@
             for (const card of cards.slice(0, 50)) {
                 try {
                     const c = await API.card(card.scryfallId || card.id);
-                    cardEls.push(cardEl(c));
+                    cardEls.push(listCardEl(c, card.docId));
                 } catch(e) {}
             }
             grid.innerHTML = cardEls.join('');
@@ -3888,6 +3917,146 @@
         function closeListView() {
             document.getElementById('listCardsView').style.display = 'none';
             document.getElementById('listsContent').style.display = 'block';
+            // Reset select mode
+            State.listSelectMode = false;
+            State.selectedListCards = new Set();
+            updateListSelectUI();
+        }
+
+        // List deletion confirmation
+        function confirmDeleteCurrentList() {
+            if (!State.currentList) return;
+            const list = State.userLists.find(l => l.id === State.currentList);
+            if (!list) return;
+            document.getElementById('deleteListName').textContent = list.name || 'Unnamed List';
+            openModal('deleteListModal');
+        }
+
+        async function executeDeleteList() {
+            if (!currentUser || !State.currentList) return;
+            try {
+                // Delete all cards in the list first
+                const cardsRef = db.collection('users').doc(currentUser.uid).collection('lists').doc(State.currentList).collection('cards');
+                const cardsSnap = await cardsRef.get();
+                const batch = db.batch();
+                cardsSnap.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                // Delete the list itself
+                await db.collection('users').doc(currentUser.uid).collection('lists').doc(State.currentList).delete();
+                closeModal('deleteListModal');
+                closeListView();
+                showToast('List deleted!', 'success');
+                await loadUserLists();
+                renderLists();
+            } catch(e) {
+                console.error('Failed to delete list:', e);
+                showToast('Failed to delete list', 'error');
+            }
+        }
+
+        // Card selection in lists
+        function toggleListSelectMode() {
+            State.listSelectMode = !State.listSelectMode;
+            State.selectedListCards = new Set();
+            updateListSelectUI();
+            // Re-render cards with selection checkboxes
+            if (State.currentList) {
+                refreshListCardsDisplay();
+            }
+        }
+
+        function updateListSelectUI() {
+            const btn = document.getElementById('listSelectModeBtn');
+            const deleteBtn = document.getElementById('listDeleteSelectedBtn');
+            const countSpan = document.getElementById('listSelectedCount');
+            if (!btn) return;
+            if (State.listSelectMode) {
+                btn.textContent = '✓ Select Mode';
+                btn.style.background = 'var(--accent-primary)';
+                btn.style.color = 'white';
+                deleteBtn.style.display = State.selectedListCards.size > 0 ? 'inline-block' : 'none';
+                countSpan.style.display = 'inline';
+                countSpan.textContent = State.selectedListCards.size + ' selected';
+            } else {
+                btn.textContent = 'Select Cards';
+                btn.style.background = '';
+                btn.style.color = '';
+                deleteBtn.style.display = 'none';
+                countSpan.style.display = 'none';
+            }
+        }
+
+        function toggleListCardSelection(cardDocId) {
+            if (!State.listSelectMode) return;
+            if (State.selectedListCards.has(cardDocId)) {
+                State.selectedListCards.delete(cardDocId);
+            } else {
+                State.selectedListCards.add(cardDocId);
+            }
+            updateListSelectUI();
+            // Update visual selection on the card
+            const cardEl = document.querySelector(`[data-card-doc-id="${cardDocId}"]`);
+            if (cardEl) {
+                const checkbox = cardEl.querySelector('.list-card-checkbox');
+                if (checkbox) {
+                    checkbox.innerHTML = State.selectedListCards.has(cardDocId) ? '✓' : '';
+                    checkbox.style.background = State.selectedListCards.has(cardDocId) ? 'var(--accent-primary)' : 'rgba(0,0,0,0.5)';
+                }
+                cardEl.style.outline = State.selectedListCards.has(cardDocId) ? '3px solid var(--accent-primary)' : '';
+            }
+        }
+
+        async function deleteSelectedListCards() {
+            if (!currentUser || !State.currentList || State.selectedListCards.size === 0) return;
+            try {
+                const listRef = db.collection('users').doc(currentUser.uid).collection('lists').doc(State.currentList);
+                const batch = db.batch();
+                for (const cardDocId of State.selectedListCards) {
+                    batch.delete(listRef.collection('cards').doc(cardDocId));
+                }
+                await batch.commit();
+                // Update card count
+                const remainingSnap = await listRef.collection('cards').get();
+                await listRef.update({ cardCount: remainingSnap.size });
+                showToast(`Deleted ${State.selectedListCards.size} card(s)!`, 'success');
+                State.selectedListCards = new Set();
+                State.listSelectMode = false;
+                updateListSelectUI();
+                // Refresh the list view
+                openListView(State.currentList);
+            } catch(e) {
+                console.error('Failed to delete cards:', e);
+                showToast('Failed to delete cards', 'error');
+            }
+        }
+
+        async function refreshListCardsDisplay() {
+            const grid = document.getElementById('listCardsGrid');
+            if (!grid || !State.currentList) return;
+            const cards = await getListCards(State.currentList);
+            if (!cards.length) {
+                grid.innerHTML = '<p style="color:var(--text-secondary);">No cards in this list yet.</p>';
+                return;
+            }
+            const cardEls = [];
+            for (const card of cards.slice(0, 50)) {
+                try {
+                    const c = await API.card(card.scryfallId || card.id);
+                    cardEls.push(listCardEl(c, card.docId));
+                } catch(e) {}
+            }
+            grid.innerHTML = cardEls.join('');
+        }
+
+        function listCardEl(c, docId) {
+            const img = c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.normal || '';
+            const selectCheckbox = State.listSelectMode ? `
+                <div class="list-card-checkbox" style="position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;border:2px solid white;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;cursor:pointer;z-index:5;"></div>
+            ` : '';
+            return `<div class="card-item" data-card-doc-id="${docId}" onclick="${State.listSelectMode ? `toggleListCardSelection('${docId}')` : `openCardDetail('${c.id}')`}" style="cursor:pointer;position:relative;">
+                ${selectCheckbox}
+                <img src="${img}" alt="${c.name}" loading="lazy">
+            </div>`;
         }
 
         function openNewListModal() {
