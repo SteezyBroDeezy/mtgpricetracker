@@ -904,7 +904,7 @@
     </div>
 
     <nav class="navbar">
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Price Oracle</div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle</div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -914,8 +914,7 @@
             <button class="nav-tab" data-page="alerts">🔔 Alerts</button>
         </div>
         <div class="nav-right">
-            <button id="syncBtn" class="nav-btn nav-btn-sync" onclick="handleSync()" style="display:none;"><span class="sync-icon">✓</span> Lists Synced</button>
-            <span id="syncStatus" class="sync-status" style="display:none;"></span>
+            <button id="syncBtn" class="nav-btn nav-btn-sync" onclick="handleSync()" style="display:none;font-size:0.8rem;padding:0.4rem 0.6rem;"><span class="sync-icon">✓</span> Synced</button>
             <button class="nav-btn nav-btn-ghost" onclick="switchPage('settings')">⚙️</button>
             <div id="authSection"><button class="nav-btn nav-btn-primary" onclick="openAuthModal('login')">Sign In</button></div>
         </div>
@@ -925,7 +924,7 @@
         <button class="mobile-nav-btn active" data-page="dashboard"><span>📊</span><span>Home</span></button>
         <button class="mobile-nav-btn" data-page="browse"><span>📚</span><span>Sets</span></button>
         <button class="mobile-nav-btn" data-page="watchlist"><span>👁️</span><span>Watch</span></button>
-        <button class="mobile-nav-btn" data-page="portfolio"><span>💼</span><span>Portfolio</span></button>
+        <button class="mobile-nav-btn" data-page="lists"><span>📋</span><span>Lists</span></button>
         <button class="mobile-nav-btn" data-page="alerts"><span>🔔</span><span>Alerts</span></button>
     </div>
 
@@ -937,7 +936,7 @@
                 <!-- Search Input with Button Inside -->
                 <div style="position:relative;">
                     <input type="text" class="search-input" id="cardSearch" placeholder="Search cards..." style="width:100%;padding:0.875rem 5rem 0.875rem 1rem;font-size:1rem;border:2px solid var(--accent-primary);border-radius:var(--radius-md);background:var(--bg-secondary);">
-                    <button type="button" class="search-clear-btn" id="searchClearBtn" title="Clear search" style="position:absolute;right:4.5rem;top:50%;transform:translateY(-50%);">
+                    <button type="button" class="search-clear-btn" id="searchClearBtn" title="Clear search" style="position:absolute;right:5.5rem;top:50%;transform:translateY(-50%);">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -1029,7 +1028,7 @@
                         <!-- Stats Tab -->
                         <div id="dashTabStats" class="dash-tab-content" style="display:none;">
                             <p style="font-weight:500;margin-bottom:0.75rem;">Mana Value (CMC)</p>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
                                 <button onclick="addDashFilter('cmc=0')" class="btn btn-sm">0</button>
                                 <button onclick="addDashFilter('cmc=1')" class="btn btn-sm">1</button>
                                 <button onclick="addDashFilter('cmc=2')" class="btn btn-sm">2</button>
@@ -1038,13 +1037,25 @@
                                 <button onclick="addDashFilter('cmc=5')" class="btn btn-sm">5</button>
                                 <button onclick="addDashFilter('cmc>=6')" class="btn btn-sm">6+</button>
                                 <button onclick="addDashFilter('cmc<=3')" class="btn btn-sm">≤3</button>
+                                <span style="color:var(--text-muted);margin-left:0.5rem;">or</span>
+                                <select id="dashCmcOp" style="padding:0.25rem;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--bg-card);color:var(--text-primary);font-size:0.8rem;">
+                                    <option value="=">=</option><option value="<=">≤</option><option value=">=">≥</option><option value="<"><</option><option value=">">></option>
+                                </select>
+                                <input type="number" id="dashCmcVal" min="0" max="20" style="width:50px;padding:0.25rem;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--bg-card);color:var(--text-primary);font-size:0.8rem;" placeholder="#">
+                                <button onclick="addDashFilter('cmc'+document.getElementById('dashCmcOp').value+document.getElementById('dashCmcVal').value)" class="btn btn-sm" style="padding:0.25rem 0.5rem;">Add</button>
                             </div>
                             <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Power</p>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
                                 <button onclick="addDashFilter('pow>=4')" class="btn btn-sm">4+</button>
                                 <button onclick="addDashFilter('pow>=5')" class="btn btn-sm">5+</button>
                                 <button onclick="addDashFilter('pow>=7')" class="btn btn-sm">7+</button>
                                 <button onclick="addDashFilter('pow<=2')" class="btn btn-sm">≤2</button>
+                                <span style="color:var(--text-muted);margin-left:0.5rem;">or</span>
+                                <select id="dashPowOp" style="padding:0.25rem;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--bg-card);color:var(--text-primary);font-size:0.8rem;">
+                                    <option value=">=">≥</option><option value="<=">≤</option><option value="=">=</option><option value="<"><</option><option value=">">></option>
+                                </select>
+                                <input type="number" id="dashPowVal" min="0" max="20" style="width:50px;padding:0.25rem;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--bg-card);color:var(--text-primary);font-size:0.8rem;" placeholder="#">
+                                <button onclick="addDashFilter('pow'+document.getElementById('dashPowOp').value+document.getElementById('dashPowVal').value)" class="btn btn-sm" style="padding:0.25rem 0.5rem;">Add</button>
                             </div>
                             <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Rarity</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
@@ -1253,10 +1264,10 @@
                     <div class="mobile-section-content" id="mobileAllMovers">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
                             <button class="btn btn-secondary" onclick="showMobileMoverCategory('mythic')" style="font-size:0.8rem;padding:0.5rem;">🔥 Mythic</button>
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('rare')" style="font-size:0.8rem;padding:0.5rem;">⭐ Rare</button>
                             <button class="btn btn-secondary" onclick="showMobileMoverCategory('commander')" style="font-size:0.8rem;padding:0.5rem;">⚔️ Commander</button>
-                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('lands')" style="font-size:0.8rem;padding:0.5rem;">🏔️ Lands</button>
                             <button class="btn btn-secondary" onclick="showMobileMoverCategory('modern')" style="font-size:0.8rem;padding:0.5rem;">🌀 Modern</button>
-                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('reserved')" style="font-size:0.8rem;padding:0.5rem;">💰 Reserved</button>
+                            <button class="btn btn-secondary" onclick="showMobileMoverCategory('pioneer')" style="font-size:0.8rem;padding:0.5rem;">🚀 Pioneer</button>
                             <button class="btn btn-secondary" onclick="showMobileMoverCategory('creature')" style="font-size:0.8rem;padding:0.5rem;">🐲 Creatures</button>
                         </div>
                         <div id="mobileMoverCategoryContent" style="margin-top:0.75rem;"></div>
@@ -1578,7 +1589,7 @@
                 <!-- Search Input with Button Inside -->
                 <div style="position:relative;">
                     <input type="text" class="search-input" id="browseCardSearch" placeholder="Search cards..." style="width:100%;padding:0.875rem 5rem 0.875rem 1rem;font-size:1rem;border:2px solid var(--accent-primary);border-radius:var(--radius-md);background:var(--bg-secondary);" autocomplete="off">
-                    <button type="button" class="search-clear-btn" id="browseClearBtn" title="Clear search" style="position:absolute;right:4.5rem;top:50%;transform:translateY(-50%);">
+                    <button type="button" class="search-clear-btn" id="browseClearBtn" title="Clear search" style="position:absolute;right:5.5rem;top:50%;transform:translateY(-50%);">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -1681,12 +1692,36 @@
                                 <button onclick="addBrowseFilter('cmc>=6')" class="btn btn-sm">6+</button>
                                 <button onclick="addBrowseFilter('cmc<=3')" class="btn btn-sm">≤3</button>
                             </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem;">
+                                <span style="font-size:0.85rem;color:var(--text-secondary);">Custom:</span>
+                                <select id="browseCmcOp" style="padding:0.25rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;">
+                                    <option value="=">=</option>
+                                    <option value="<=">≤</option>
+                                    <option value=">=">≥</option>
+                                    <option value="<">&lt;</option>
+                                    <option value=">">&gt;</option>
+                                </select>
+                                <input type="number" id="browseCmcVal" min="0" max="20" style="width:50px;padding:0.25rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;" placeholder="#">
+                                <button onclick="addBrowseFilter('cmc'+document.getElementById('browseCmcOp').value+document.getElementById('browseCmcVal').value)" class="btn btn-sm">Add</button>
+                            </div>
                             <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Power</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
                                 <button onclick="addBrowseFilter('pow>=4')" class="btn btn-sm">4+</button>
                                 <button onclick="addBrowseFilter('pow>=5')" class="btn btn-sm">5+</button>
                                 <button onclick="addBrowseFilter('pow>=7')" class="btn btn-sm">7+</button>
                                 <button onclick="addBrowseFilter('pow<=2')" class="btn btn-sm">≤2</button>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem;">
+                                <span style="font-size:0.85rem;color:var(--text-secondary);">Custom:</span>
+                                <select id="browsePowOp" style="padding:0.25rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;">
+                                    <option value="=">=</option>
+                                    <option value="<=">≤</option>
+                                    <option value=">=">≥</option>
+                                    <option value="<">&lt;</option>
+                                    <option value=">">&gt;</option>
+                                </select>
+                                <input type="number" id="browsePowVal" min="0" max="20" style="width:50px;padding:0.25rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;" placeholder="#">
+                                <button onclick="addBrowseFilter('pow'+document.getElementById('browsePowOp').value+document.getElementById('browsePowVal').value)" class="btn btn-sm">Add</button>
                             </div>
                             <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Rarity</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
@@ -2004,7 +2039,9 @@
         </div>
 
         <!-- Settings -->
-        <div class="page" id="settingsPage">
+        <div class="page" id="settingsPage" style="position:relative;">
+            <!-- Floating Close Button -->
+            <button onclick="goBackFromSettings()" style="position:fixed;top:80px;right:20px;z-index:100;width:40px;height:40px;border-radius:50%;background:var(--bg-tertiary);border:2px solid var(--accent-primary);color:var(--text-primary);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);">✕</button>
             <h2 class="section-title" style="margin-bottom:1.5rem;">⚙️ Settings</h2>
             <div class="settings-grid">
                 <div class="settings-section">
@@ -2344,10 +2381,12 @@
                     <option value="promo">Promos</option>
                     <option value="funny">Funny (Un-sets)</option>
                 </select>
-                <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);cursor:pointer;white-space:nowrap;">
-                    <input type="checkbox" id="setsBrowserMajorOnly" style="accent-color:var(--accent-primary);">
-                    <span style="font-size:0.9rem;">Major Sets (100+ cards)</span>
-                </label>
+                <select id="setsBrowserMinCards" onchange="filterBrowserSets()" style="padding:0.5rem 1rem;background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:0.9rem;">
+                    <option value="0">All Sizes</option>
+                    <option value="50">50+ cards</option>
+                    <option value="100" selected>100+ cards</option>
+                    <option value="200">200+ cards</option>
+                </select>
             </div>
         </div>
         <div class="sets-browser-content">
@@ -2562,7 +2601,9 @@
         function normalizeText(text){return text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`]/g,'').replace(/[æ]/gi,'ae').replace(/[œ]/gi,'oe').toLowerCase();}
         function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
         function saveSetting(k,v){State.settings[k]=v;State.save();}
-        function switchPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();}
+        let previousPage = 'dashboard';
+        function switchPage(p){if(p!=='settings')previousPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();}
+        function goBackFromSettings(){switchPage(previousPage);}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
         function openModal(id){document.getElementById(id).classList.add('active');}
         function closeModal(id){document.getElementById(id).classList.remove('active');}
@@ -2707,7 +2748,7 @@
 
             // Show modal immediately with loading state
             document.getElementById('cardModalTitle').textContent='Loading...';
-            document.getElementById('cardModalBody').innerHTML='<div style="text-align:center;padding:3rem;"><div class="loading-spinner"></div><p style="margin-top:1rem;color:var(--text-secondary);">Loading card...</p></div>';
+            document.getElementById('cardModalBody').innerHTML='<div style="text-align:center;padding:3rem;"><div style="font-size:3rem;animation:pulse 1s ease-in-out infinite;">🔮</div><p style="margin-top:1rem;color:var(--text-secondary);">Consulting the oracle...</p></div>';
             openModal('cardModal');
 
             try{
@@ -3502,13 +3543,13 @@
         function filterBrowserSets() {
             const search = document.getElementById('setsBrowserSearch').value.toLowerCase();
             const typeFilter = document.getElementById('setsBrowserType').value;
-            const majorOnly = document.getElementById('setsBrowserMajorOnly')?.checked || false;
+            const minCards = parseInt(document.getElementById('setsBrowserMinCards')?.value || '0');
 
             let filtered = State.allSetsData;
 
-            // Filter by major sets (100+ cards)
-            if (majorOnly) {
-                filtered = filtered.filter(s => s.card_count >= 100);
+            // Filter by minimum card count
+            if (minCards > 0) {
+                filtered = filtered.filter(s => s.card_count >= minCards);
             }
 
             if (typeFilter !== 'all') {
@@ -3893,9 +3934,9 @@
             }
             const today = new Date().toISOString().split('T')[0];
             const upcoming = State.sets
-                .filter(s => s.released_at > today && ['expansion', 'core', 'masters', 'draft_innovation', 'commander'].includes(s.set_type))
+                .filter(s => s.released_at > today && ['expansion', 'core', 'masters', 'draft_innovation'].includes(s.set_type))
                 .sort((a, b) => a.released_at.localeCompare(b.released_at))
-                .slice(0, 6);
+                .slice(0, 4);
             State.upcomingReleases = upcoming.map(s => {
                 const releaseDate = new Date(s.released_at);
                 const daysAway = Math.ceil((releaseDate - new Date()) / (1000 * 60 * 60 * 24));
@@ -4237,7 +4278,7 @@
         function renderMobileReleases(releases) {
             const grid = document.getElementById('mobileReleasesGrid');
             if (!grid || !releases?.length) return;
-            grid.innerHTML = releases.slice(0, 5).map(r => `
+            grid.innerHTML = releases.slice(0, 4).map(r => `
                 <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);" onclick="openSetView('${r.code}')">
                     <img src="${r.icon}" alt="" style="width:32px;height:32px;object-fit:contain;">
                     <div style="flex:1;min-width:0;">
@@ -4273,10 +4314,10 @@
 
             const categoryNames = {
                 mythic: '🔥 Mythic Movers',
+                rare: '⭐ Rare Movers',
                 commander: '⚔️ Commander Movers',
-                lands: '🏔️ Lands Movers',
                 modern: '🌀 Modern Movers',
-                reserved: '💰 Reserved List',
+                pioneer: '🚀 Pioneer Movers',
                 creature: '🐲 Creature Movers'
             };
 
@@ -4305,9 +4346,10 @@
 
             const categoryQueries = {
                 mythic: { query: 'r:mythic usd>0', gainersId: 'mythicGainersContent', losersId: 'mythicLosersContent', section: 'mythicMoversSection' },
+                rare: { query: 'r:rare usd>0.50', gainersId: 'rareGainersContent', losersId: 'rareLosersContent', section: 'rareMoversSection' },
                 commander: { query: 'f:commander is:staple usd>0', gainersId: 'commanderGainersContent', losersId: 'commanderLosersContent', section: 'commanderMoversSection' },
-                lands: { query: 't:land usd>1', gainersId: 'landsGainersContent', losersId: 'landsLosersContent', section: 'landsMoversSection' },
-                reserved: { query: 'is:reserved usd>0', gainersId: 'reservedGainersContent', losersId: 'reservedLosersContent', section: 'reservedMoversSection' },
+                modern: { query: 'f:modern usd>0.50', gainersId: 'modernGainersContent', losersId: 'modernLosersContent', section: 'modernMoversSection' },
+                pioneer: { query: 'f:pioneer usd>0.50', gainersId: 'pioneerGainersContent', losersId: 'pioneerLosersContent', section: 'pioneerMoversSection' },
                 creature: { query: 't:creature usd>0.50', gainersId: 'creatureGainersContent', losersId: 'creatureLosersContent', section: 'creatureMoversSection' }
             };
 
