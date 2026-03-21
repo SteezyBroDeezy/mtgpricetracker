@@ -165,6 +165,9 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: var(--font-body); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; font-size: 16px; line-height: 1.6; }
+        /* Hide scrollbar but keep scroll functionality */
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
         
         .bg-effects { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
         .bg-effects::before { content: ''; position: absolute; width: 150%; height: 150%; top: -25%; left: -25%; background: radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--accent-primary) 12%, transparent) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, color-mix(in srgb, var(--accent-blue) 8%, transparent) 0%, transparent 50%); animation: bgFloat 20s ease-in-out infinite; }
@@ -929,114 +932,218 @@
     <main class="main-content">
         <!-- Dashboard -->
         <div class="page active" id="dashboardPage">
-            <!-- Search Bar - Primary Feature -->
-            <div class="dashboard-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1rem;border:1px solid rgba(255,255,255,0.05);">
-                <div class="dashboard-header" style="justify-content:flex-start;margin-bottom:0;">
-                    <div class="search-container hero-search">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" class="search-input" id="cardSearch" placeholder="Search any Magic card... (Scryfall syntax supported)">
-                        <button type="button" class="search-clear-btn" id="searchClearBtn" title="Clear search">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                        <div class="search-results" id="searchResults"></div>
-                    </div>
+            <!-- Search Bar - MTG Card Search Style -->
+            <div class="dashboard-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1rem;border:2px solid var(--accent-primary);box-shadow:0 0 20px rgba(139,92,246,0.15);">
+                <!-- Search Input with Button Inside -->
+                <div style="position:relative;">
+                    <input type="text" class="search-input" id="cardSearch" placeholder="Search cards..." style="width:100%;padding:0.875rem 5rem 0.875rem 1rem;font-size:1rem;border:2px solid var(--accent-primary);border-radius:var(--radius-md);background:var(--bg-secondary);">
+                    <button type="button" class="search-clear-btn" id="searchClearBtn" title="Clear search" style="position:absolute;right:4.5rem;top:50%;transform:translateY(-50%);">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <button onclick="performDashboardSearchFromInput()" class="btn btn-primary" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);padding:0.5rem 1rem;font-size:0.875rem;">Search</button>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+
+                <!-- Quick Actions Row -->
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
+                    <button onclick="toggleDashboardFilters()" id="dashFiltersBtn" style="padding:0.5rem 0.75rem;font-size:0.875rem;font-weight:500;background:var(--bg-tertiary);border:none;border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:0.25rem;">
+                        <span>⚙️</span> Filters
+                    </button>
+                    <button onclick="clearDashSearch()" id="dashClearBtn" style="display:none;padding:0.5rem 0.75rem;font-size:0.875rem;font-weight:500;background:var(--bg-tertiary);border:none;border-radius:var(--radius-md);color:var(--accent-red);cursor:pointer;">
+                        ✕ Clear
+                    </button>
                     <!-- Inline Next Set -->
                     <div id="inlineNextSet" class="desktop-only" style="display:none;margin-left:auto;"></div>
                 </div>
 
-                <!-- Collapsible Advanced Filters Toggle for Dashboard -->
-                <div style="margin-top:0.75rem;border-top:1px solid var(--bg-tertiary);padding-top:0.75rem;">
-                    <button onclick="toggleDashboardFilters()" style="background:none;border:none;color:var(--accent-secondary);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">
-                        <span id="dashFiltersIcon">▶</span> Advanced Search Options & Syntax
-                    </button>
+                <!-- Query Display -->
+                <div id="dashQueryDisplay" style="display:none;margin-top:0.5rem;font-size:0.75rem;color:var(--text-secondary);">
+                    Query: <code id="dashQueryCode" style="color:var(--accent-blue);"></code>
                 </div>
 
-                <!-- Collapsible Dashboard Filters Content -->
-                <div id="dashFiltersContent" style="display:none;">
-                    <!-- Quick Filters -->
-                    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem;">
-                        <div class="filter-group"><span class="filter-label">Type</span><select class="filter-select" id="dashType" onchange="updateDashQuery()"><option value="">Any</option><option value="creature">Creature</option><option value="instant">Instant</option><option value="sorcery">Sorcery</option><option value="enchantment">Enchantment</option><option value="artifact">Artifact</option><option value="land">Land</option><option value="planeswalker">Planeswalker</option></select></div>
-                        <div class="filter-group"><span class="filter-label">Color</span><select class="filter-select" id="dashColor" onchange="updateDashQuery()"><option value="">Any</option><option value="w">White</option><option value="u">Blue</option><option value="b">Black</option><option value="r">Red</option><option value="g">Green</option><option value="c">Colorless</option><option value="m">Multi</option></select></div>
-                        <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="dashRarity" onchange="updateDashQuery()"><option value="">Any</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
-                        <div class="filter-group"><span class="filter-label">Price</span><select class="filter-select" id="dashPrice" onchange="updateDashQuery()"><option value="">Any</option><option value="usd<1">Under $1</option><option value="usd<5">Under $5</option><option value="usd<10">Under $10</option><option value="usd>10">$10+</option><option value="usd>50">$50+</option></select></div>
-                        <div class="filter-group"><span class="filter-label">Format</span><select class="filter-select" id="dashFormat" onchange="updateDashQuery()"><option value="">Any</option><option value="standard">Standard</option><option value="modern">Modern</option><option value="commander">Commander</option><option value="pioneer">Pioneer</option><option value="pauper">Pauper</option></select></div>
+                <!-- Collapsible Tabbed Filter Panel -->
+                <div id="dashFiltersContent" style="display:none;margin-top:0.75rem;background:var(--bg-secondary);border:1px solid var(--bg-tertiary);border-radius:var(--radius-md);overflow:hidden;">
+                    <!-- Filter Tabs -->
+                    <div style="display:flex;border-bottom:1px solid var(--bg-tertiary);overflow-x:auto;" class="scrollbar-hide">
+                        <button onclick="setDashFilterTab('colors')" class="dash-filter-tab active" data-tab="colors" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:var(--accent-primary);color:white;cursor:pointer;">Colors</button>
+                        <button onclick="setDashFilterTab('types')" class="dash-filter-tab" data-tab="types" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Types</button>
+                        <button onclick="setDashFilterTab('stats')" class="dash-filter-tab" data-tab="stats" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Stats</button>
+                        <button onclick="setDashFilterTab('price')" class="dash-filter-tab" data-tab="price" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Price</button>
+                        <button onclick="setDashFilterTab('keywords')" class="dash-filter-tab" data-tab="keywords" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Keywords</button>
+                        <button onclick="setDashFilterTab('syntax')" class="dash-filter-tab" data-tab="syntax" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Syntax</button>
                     </div>
 
-                    <!-- Quick Tags - EDH Staples -->
-                    <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                        <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">EDH Staples:</span>
-                        <button class="btn btn-sm" onclick="quickDashSearch('otag:ramp f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🌱 Ramp</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('otag:removal f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💀 Removal</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('otag:draw f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🎴 Draw</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('otag:board-wipe f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💥 Wipes</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('otag:tutor f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🔍 Tutors</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('otag:counterspell f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🛡️ Counters</button>
-                    </div>
+                    <!-- Tab Content -->
+                    <div style="padding:1rem;max-height:50vh;overflow-y:auto;">
+                        <!-- Colors Tab -->
+                        <div id="dashTabColors" class="dash-tab-content">
+                            <p style="font-weight:500;margin-bottom:0.5rem;">Card Colors</p>
+                            <p style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.75rem;">Cards that CONTAIN these colors</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="toggleDashColor('w')" class="dash-color-btn" data-color="w" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">White</button>
+                                <button onclick="toggleDashColor('u')" class="dash-color-btn" data-color="u" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">Blue</button>
+                                <button onclick="toggleDashColor('b')" class="dash-color-btn" data-color="b" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">Black</button>
+                                <button onclick="toggleDashColor('r')" class="dash-color-btn" data-color="r" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">Red</button>
+                                <button onclick="toggleDashColor('g')" class="dash-color-btn" data-color="g" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">Green</button>
+                                <button onclick="toggleDashColor('c')" class="dash-color-btn" data-color="c" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:#9e9e9e;color:#333;">Colorless</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.5rem;">Color Identity (Commander)</p>
+                            <p style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.75rem;">Cards that fit WITHIN these colors</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="toggleDashIdentity('w')" class="dash-identity-btn" data-id="w" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">White</button>
+                                <button onclick="toggleDashIdentity('u')" class="dash-identity-btn" data-id="u" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">Blue</button>
+                                <button onclick="toggleDashIdentity('b')" class="dash-identity-btn" data-id="b" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">Black</button>
+                                <button onclick="toggleDashIdentity('r')" class="dash-identity-btn" data-id="r" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">Red</button>
+                                <button onclick="toggleDashIdentity('g')" class="dash-identity-btn" data-id="g" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">Green</button>
+                            </div>
+                        </div>
 
-                    <!-- Quick Tags - Commanders -->
-                    <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                        <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">👑 Commanders:</span>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander usd>0')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">All</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander id:w')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">⚪ White</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander id:u')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">🔵 Blue</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander id:b')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">⚫ Black</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander id:r')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">🔴 Red</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander id:g')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">🟢 Green</button>
-                    </div>
+                        <!-- Types Tab -->
+                        <div id="dashTabTypes" class="dash-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Card Types</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('t:creature')" class="btn btn-sm">Creature</button>
+                                <button onclick="addDashFilter('t:instant')" class="btn btn-sm">Instant</button>
+                                <button onclick="addDashFilter('t:sorcery')" class="btn btn-sm">Sorcery</button>
+                                <button onclick="addDashFilter('t:enchantment')" class="btn btn-sm">Enchantment</button>
+                                <button onclick="addDashFilter('t:artifact')" class="btn btn-sm">Artifact</button>
+                                <button onclick="addDashFilter('t:land')" class="btn btn-sm">Land</button>
+                                <button onclick="addDashFilter('t:planeswalker')" class="btn btn-sm">Planeswalker</button>
+                                <button onclick="addDashFilter('t:legendary')" class="btn btn-sm">Legendary</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Subtypes</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('t:dragon')" class="btn btn-sm">Dragon</button>
+                                <button onclick="addDashFilter('t:elf')" class="btn btn-sm">Elf</button>
+                                <button onclick="addDashFilter('t:zombie')" class="btn btn-sm">Zombie</button>
+                                <button onclick="addDashFilter('t:goblin')" class="btn btn-sm">Goblin</button>
+                                <button onclick="addDashFilter('t:human')" class="btn btn-sm">Human</button>
+                                <button onclick="addDashFilter('t:angel')" class="btn btn-sm">Angel</button>
+                                <button onclick="addDashFilter('t:demon')" class="btn btn-sm">Demon</button>
+                                <button onclick="addDashFilter('t:wizard')" class="btn btn-sm">Wizard</button>
+                            </div>
+                        </div>
 
-                    <!-- Quick Tags - Archetypes -->
-                    <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                        <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">Archetypes:</span>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander o:\"token\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🪙 Tokens</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander o:\"+1/+1 counter\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">📈 +1/+1</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander o:\"graveyard\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚰️ Graveyard</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander o:\"sacrifice\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🩸 Sacrifice</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander t:dragon')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🐉 Dragons</button>
-                        <button class="btn btn-sm" onclick="quickDashSearch('is:commander t:zombie')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🧟 Zombies</button>
-                    </div>
+                        <!-- Stats Tab -->
+                        <div id="dashTabStats" class="dash-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Mana Value (CMC)</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('cmc=0')" class="btn btn-sm">0</button>
+                                <button onclick="addDashFilter('cmc=1')" class="btn btn-sm">1</button>
+                                <button onclick="addDashFilter('cmc=2')" class="btn btn-sm">2</button>
+                                <button onclick="addDashFilter('cmc=3')" class="btn btn-sm">3</button>
+                                <button onclick="addDashFilter('cmc=4')" class="btn btn-sm">4</button>
+                                <button onclick="addDashFilter('cmc=5')" class="btn btn-sm">5</button>
+                                <button onclick="addDashFilter('cmc>=6')" class="btn btn-sm">6+</button>
+                                <button onclick="addDashFilter('cmc<=3')" class="btn btn-sm">≤3</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Power</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('pow>=4')" class="btn btn-sm">4+</button>
+                                <button onclick="addDashFilter('pow>=5')" class="btn btn-sm">5+</button>
+                                <button onclick="addDashFilter('pow>=7')" class="btn btn-sm">7+</button>
+                                <button onclick="addDashFilter('pow<=2')" class="btn btn-sm">≤2</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Rarity</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('r:mythic')" class="btn btn-sm" style="background:linear-gradient(135deg,#d35400,#e74c3c);color:white;">Mythic</button>
+                                <button onclick="addDashFilter('r:rare')" class="btn btn-sm" style="background:linear-gradient(135deg,#c9a227,#f1c40f);color:#333;">Rare</button>
+                                <button onclick="addDashFilter('r:uncommon')" class="btn btn-sm" style="background:linear-gradient(135deg,#607d8b,#90a4ae);color:white;">Uncommon</button>
+                                <button onclick="addDashFilter('r:common')" class="btn btn-sm" style="background:#333;color:white;">Common</button>
+                            </div>
+                        </div>
 
-                    <!-- Syntax Help Link -->
-                    <div style="margin-top:1rem;border-top:1px solid var(--bg-tertiary);padding-top:0.75rem;">
-                        <button onclick="toggleDashSyntaxHelp()" style="background:none;border:none;color:var(--accent-secondary);cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:0.5rem;">
-                            <span id="dashSyntaxHelpIcon">▶</span> Search Syntax Reference
-                        </button>
-                        <div id="dashSyntaxHelpContent" style="display:none;margin-top:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:1rem;font-size:0.8rem;">
-                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
+                        <!-- Price Tab -->
+                        <div id="dashTabPrice" class="dash-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Price Range</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('usd<1')" class="btn btn-sm">Under $1</button>
+                                <button onclick="addDashFilter('usd<5')" class="btn btn-sm">Under $5</button>
+                                <button onclick="addDashFilter('usd<10')" class="btn btn-sm">Under $10</button>
+                                <button onclick="addDashFilter('usd>10')" class="btn btn-sm">$10+</button>
+                                <button onclick="addDashFilter('usd>25')" class="btn btn-sm">$25+</button>
+                                <button onclick="addDashFilter('usd>50')" class="btn btn-sm">$50+</button>
+                                <button onclick="addDashFilter('usd>100')" class="btn btn-sm">$100+</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Format Legal</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('f:commander')" class="btn btn-sm">Commander</button>
+                                <button onclick="addDashFilter('f:standard')" class="btn btn-sm">Standard</button>
+                                <button onclick="addDashFilter('f:modern')" class="btn btn-sm">Modern</button>
+                                <button onclick="addDashFilter('f:pioneer')" class="btn btn-sm">Pioneer</button>
+                                <button onclick="addDashFilter('f:pauper')" class="btn btn-sm">Pauper</button>
+                                <button onclick="addDashFilter('f:legacy')" class="btn btn-sm">Legacy</button>
+                            </div>
+                        </div>
+
+                        <!-- Keywords Tab -->
+                        <div id="dashTabKeywords" class="dash-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Oracle Tags (EDH Staples)</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('otag:ramp')" class="btn btn-sm">🌱 Ramp</button>
+                                <button onclick="addDashFilter('otag:removal')" class="btn btn-sm">💀 Removal</button>
+                                <button onclick="addDashFilter('otag:draw')" class="btn btn-sm">🎴 Draw</button>
+                                <button onclick="addDashFilter('otag:board-wipe')" class="btn btn-sm">💥 Board Wipe</button>
+                                <button onclick="addDashFilter('otag:tutor')" class="btn btn-sm">🔍 Tutor</button>
+                                <button onclick="addDashFilter('otag:counterspell')" class="btn btn-sm">🛡️ Counter</button>
+                                <button onclick="addDashFilter('otag:mana-rock')" class="btn btn-sm">💎 Mana Rock</button>
+                                <button onclick="addDashFilter('otag:land-ramp')" class="btn btn-sm">🏔️ Land Ramp</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">More Tags</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('otag:token-producer')" class="btn btn-sm">🪙 Tokens</button>
+                                <button onclick="addDashFilter('otag:recursion')" class="btn btn-sm">♻️ Recursion</button>
+                                <button onclick="addDashFilter('otag:sacrifice-outlet')" class="btn btn-sm">🩸 Sac Outlet</button>
+                                <button onclick="addDashFilter('otag:life-gain')" class="btn btn-sm">❤️ Lifegain</button>
+                                <button onclick="addDashFilter('otag:graveyard-hate')" class="btn btn-sm">⚰️ GY Hate</button>
+                                <button onclick="addDashFilter('otag:evasion')" class="btn btn-sm">🦅 Evasion</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Commander Search</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('is:commander')" class="btn btn-sm">👑 All Commanders</button>
+                                <button onclick="addDashFilter('is:commander is:partner')" class="btn btn-sm">🤝 Partners</button>
+                                <button onclick="addDashFilter('is:commander cmc<=3')" class="btn btn-sm">⚡ Low Cost (≤3)</button>
+                            </div>
+                        </div>
+
+                        <!-- Syntax Tab -->
+                        <div id="dashTabSyntax" class="dash-tab-content" style="display:none;">
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
                                 <div>
                                     <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Basic Filters</h4>
-                                    <div style="color:var(--text-secondary);line-height:1.6;font-size:0.75rem;">
-                                        <code style="color:var(--accent-blue);">t:creature</code> Type<br>
-                                        <code style="color:var(--accent-blue);">c:red</code> Color<br>
-                                        <code style="color:var(--accent-blue);">r:mythic</code> Rarity<br>
-                                        <code style="color:var(--accent-blue);">s:mkm</code> Set code
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-blue);">t:creature</code> Type is creature<br>
+                                        <code style="color:var(--accent-blue);">c:red</code> Contains red<br>
+                                        <code style="color:var(--accent-blue);">r:mythic</code> Mythic rare<br>
+                                        <code style="color:var(--accent-blue);">s:mkm</code> From set code
                                     </div>
                                 </div>
                                 <div>
                                     <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Text & Stats</h4>
-                                    <div style="color:var(--text-secondary);line-height:1.6;font-size:0.75rem;">
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
                                         <code style="color:var(--accent-blue);">o:draw</code> Rules text<br>
                                         <code style="color:var(--accent-blue);">cmc=3</code> Mana cost<br>
-                                        <code style="color:var(--accent-blue);">pow>=4</code> Power<br>
-                                        <code style="color:var(--accent-blue);">usd<5</code> Price
+                                        <code style="color:var(--accent-blue);">pow>=4</code> Power 4+<br>
+                                        <code style="color:var(--accent-blue);">usd<5</code> Under $5
                                     </div>
                                 </div>
                                 <div>
                                     <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags</h4>
-                                    <div style="color:var(--text-secondary);line-height:1.6;font-size:0.75rem;">
-                                        <code style="color:var(--accent-blue);">otag:ramp</code><br>
-                                        <code style="color:var(--accent-blue);">otag:removal</code><br>
-                                        <code style="color:var(--accent-blue);">otag:draw</code><br>
-                                        <code style="color:var(--accent-blue);">otag:tutor</code>
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-blue);">otag:ramp</code> Ramp cards<br>
+                                        <code style="color:var(--accent-blue);">otag:removal</code> Removal<br>
+                                        <code style="color:var(--accent-blue);">otag:draw</code> Card draw<br>
+                                        <code style="color:var(--accent-blue);">otag:tutor</code> Tutors
                                     </div>
                                 </div>
                                 <div>
                                     <h4 style="color:var(--accent-red);margin-bottom:0.4rem;">Exclusions</h4>
-                                    <div style="color:var(--text-secondary);line-height:1.6;font-size:0.75rem;">
-                                        <code style="color:var(--accent-red);">-t:creature</code><br>
-                                        <code style="color:var(--accent-red);">-c:green</code><br>
-                                        <code style="color:var(--accent-red);">-r:common</code>
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-red);">-t:creature</code> NOT creature<br>
+                                        <code style="color:var(--accent-red);">-c:green</code> NOT green<br>
+                                        <code style="color:var(--accent-red);">-r:common</code> NOT common
                                     </div>
                                 </div>
                             </div>
@@ -2845,58 +2952,138 @@
             }
         }
 
+        // Dashboard Filter State
+        let dashSelectedColors = [];
+        let dashSelectedIdentity = [];
+        let dashFiltersOpen = false;
+
         function toggleDashboardFilters() {
             const content = document.getElementById('dashFiltersContent');
-            const icon = document.getElementById('dashFiltersIcon');
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                icon.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                icon.textContent = '▶';
-            }
+            const btn = document.getElementById('dashFiltersBtn');
+            dashFiltersOpen = !dashFiltersOpen;
+            content.style.display = dashFiltersOpen ? 'block' : 'none';
+            btn.style.background = dashFiltersOpen ? 'var(--accent-primary)' : 'var(--bg-tertiary)';
+            btn.style.color = dashFiltersOpen ? 'white' : 'var(--text-primary)';
         }
 
-        function toggleDashSyntaxHelp() {
-            const content = document.getElementById('dashSyntaxHelpContent');
-            const icon = document.getElementById('dashSyntaxHelpIcon');
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                icon.textContent = '▼';
-            } else {
+        function setDashFilterTab(tabId) {
+            // Update tab buttons
+            document.querySelectorAll('.dash-filter-tab').forEach(tab => {
+                if (tab.dataset.tab === tabId) {
+                    tab.style.background = 'var(--accent-primary)';
+                    tab.style.color = 'white';
+                } else {
+                    tab.style.background = 'transparent';
+                    tab.style.color = 'var(--text-secondary)';
+                }
+            });
+            // Update tab content
+            document.querySelectorAll('.dash-tab-content').forEach(content => {
                 content.style.display = 'none';
-                icon.textContent = '▶';
-            }
+            });
+            const activeContent = document.getElementById('dashTab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+            if (activeContent) activeContent.style.display = 'block';
         }
 
-        function updateDashQuery() {
-            const type = document.getElementById('dashType').value;
-            const color = document.getElementById('dashColor').value;
-            const rarity = document.getElementById('dashRarity').value;
-            const price = document.getElementById('dashPrice').value;
-            const format = document.getElementById('dashFormat').value;
+        function toggleDashColor(color) {
+            const idx = dashSelectedColors.indexOf(color);
+            if (idx > -1) {
+                dashSelectedColors.splice(idx, 1);
+            } else {
+                dashSelectedColors.push(color);
+            }
+            updateDashColorButtons();
+            buildDashQuery();
+        }
 
+        function toggleDashIdentity(color) {
+            const idx = dashSelectedIdentity.indexOf(color);
+            if (idx > -1) {
+                dashSelectedIdentity.splice(idx, 1);
+            } else {
+                dashSelectedIdentity.push(color);
+            }
+            updateDashIdentityButtons();
+            buildDashQuery();
+        }
+
+        function updateDashColorButtons() {
+            document.querySelectorAll('.dash-color-btn').forEach(btn => {
+                const color = btn.dataset.color;
+                if (dashSelectedColors.includes(color)) {
+                    btn.style.border = '2px solid var(--accent-blue)';
+                    btn.style.transform = 'scale(1.05)';
+                } else {
+                    btn.style.border = '2px solid transparent';
+                    btn.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        function updateDashIdentityButtons() {
+            document.querySelectorAll('.dash-identity-btn').forEach(btn => {
+                const color = btn.dataset.id;
+                if (dashSelectedIdentity.includes(color)) {
+                    btn.style.border = '2px solid var(--accent-gold)';
+                    btn.style.opacity = '1';
+                    btn.style.transform = 'scale(1.05)';
+                } else {
+                    btn.style.border = '2px solid transparent';
+                    btn.style.opacity = '0.6';
+                    btn.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        function buildDashQuery() {
             let parts = [];
-            if (type) parts.push(`t:${type}`);
-            if (color) parts.push(`c:${color}`);
-            if (rarity) parts.push(`r:${rarity}`);
-            if (price) parts.push(price);
-            if (format) parts.push(`f:${format}`);
-
+            if (dashSelectedColors.length > 0) {
+                parts.push('c:' + dashSelectedColors.join(''));
+            }
+            if (dashSelectedIdentity.length > 0) {
+                parts.push('id<=' + dashSelectedIdentity.join(''));
+            }
             const query = parts.join(' ');
             document.getElementById('cardSearch').value = query;
+            updateDashQueryDisplay();
         }
 
-        function quickDashSearch(query) {
-            document.getElementById('cardSearch').value = query;
-            // Reset dropdowns
-            document.getElementById('dashType').value = '';
-            document.getElementById('dashColor').value = '';
-            document.getElementById('dashRarity').value = '';
-            document.getElementById('dashPrice').value = '';
-            document.getElementById('dashFormat').value = '';
-            // Trigger search - use the existing search system
-            performDashboardSearch(query);
+        function addDashFilter(filter) {
+            const input = document.getElementById('cardSearch');
+            const current = input.value.trim();
+            input.value = current ? current + ' ' + filter : filter;
+            updateDashQueryDisplay();
+        }
+
+        function updateDashQueryDisplay() {
+            const query = document.getElementById('cardSearch').value;
+            const display = document.getElementById('dashQueryDisplay');
+            const code = document.getElementById('dashQueryCode');
+            const clearBtn = document.getElementById('dashClearBtn');
+            if (query.trim()) {
+                display.style.display = 'block';
+                code.textContent = query;
+                clearBtn.style.display = 'inline-flex';
+            } else {
+                display.style.display = 'none';
+                clearBtn.style.display = 'none';
+            }
+        }
+
+        function clearDashSearch() {
+            document.getElementById('cardSearch').value = '';
+            dashSelectedColors = [];
+            dashSelectedIdentity = [];
+            updateDashColorButtons();
+            updateDashIdentityButtons();
+            updateDashQueryDisplay();
+        }
+
+        function performDashboardSearchFromInput() {
+            const query = document.getElementById('cardSearch').value;
+            if (query.trim()) {
+                performDashboardSearch(query);
+            }
         }
 
         async function performDashboardSearch(query) {
@@ -2928,6 +3115,20 @@
                 showToast('Search failed. Please try again.', 'error');
             }
         }
+
+        // Listen for Enter key on dashboard search
+        document.addEventListener('DOMContentLoaded', function() {
+            const dashSearch = document.getElementById('cardSearch');
+            if (dashSearch) {
+                dashSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        performDashboardSearchFromInput();
+                    }
+                });
+                dashSearch.addEventListener('input', updateDashQueryDisplay);
+            }
+        });
 
         function updateAdvQuery() {
             const type = document.getElementById('advType').value;
