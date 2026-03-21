@@ -1573,265 +1573,282 @@
         <div class="page" id="browsePage">
             <div class="section-header"><h2 class="section-title">📚 Browse Cards & Sets</h2></div>
 
-            <!-- Advanced Card Search Panel -->
-            <div class="browse-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,0.05);">
-                <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
-                    <div style="flex:1;min-width:250px;position:relative;">
-                        <label style="display:block;font-size:0.75rem;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.4rem;">Search Cards (Scryfall Syntax)</label>
-                        <div style="position:relative;">
-                            <input type="text" class="search-input" id="browseCardSearch" placeholder="t:creature c:red, otag:ramp, o:draw..." style="width:100%;padding-left:1rem;padding-right:2.5rem;" autocomplete="off">
-                            <button type="button" class="search-clear-btn" id="browseClearBtn" title="Clear search">
-                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="search-results" id="browseSearchResults" style="position:absolute;top:100%;left:0;right:0;"></div>
-                    </div>
-                    <button class="btn btn-primary" onclick="performAdvancedSearch()" style="padding:0.75rem 1.5rem;">🔍 Search</button>
+            <!-- Advanced Card Search Panel - MTG Card Search Style -->
+            <div class="browse-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1.5rem;border:2px solid var(--accent-primary);box-shadow:0 0 20px rgba(139,92,246,0.15);">
+                <!-- Search Input with Button Inside -->
+                <div style="position:relative;">
+                    <input type="text" class="search-input" id="browseCardSearch" placeholder="Search cards..." style="width:100%;padding:0.875rem 5rem 0.875rem 1rem;font-size:1rem;border:2px solid var(--accent-primary);border-radius:var(--radius-md);background:var(--bg-secondary);" autocomplete="off">
+                    <button type="button" class="search-clear-btn" id="browseClearBtn" title="Clear search" style="position:absolute;right:4.5rem;top:50%;transform:translateY(-50%);">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                    <button onclick="performAdvancedSearch()" class="btn btn-primary" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);padding:0.5rem 1rem;font-size:0.875rem;">Search</button>
+                    <div class="search-results" id="browseSearchResults" style="position:absolute;top:100%;left:0;right:0;z-index:50;"></div>
                 </div>
-                <!-- Quick Filters -->
-                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem;">
-                    <div class="filter-group"><span class="filter-label">Type</span><select class="filter-select" id="advType" onchange="updateAdvQuery()"><option value="">Any</option><option value="creature">Creature</option><option value="instant">Instant</option><option value="sorcery">Sorcery</option><option value="enchantment">Enchantment</option><option value="artifact">Artifact</option><option value="land">Land</option><option value="planeswalker">Planeswalker</option></select></div>
-                    <div class="filter-group"><span class="filter-label">Color</span><select class="filter-select" id="advColor" onchange="updateAdvQuery()"><option value="">Any</option><option value="w">White</option><option value="u">Blue</option><option value="b">Black</option><option value="r">Red</option><option value="g">Green</option><option value="c">Colorless</option><option value="m">Multi</option></select></div>
-                    <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="advRarity" onchange="updateAdvQuery()"><option value="">Any</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
-                    <div class="filter-group"><span class="filter-label">Price</span><select class="filter-select" id="advPrice" onchange="updateAdvQuery()"><option value="">Any</option><option value="usd<1">Under $1</option><option value="usd<5">Under $5</option><option value="usd<10">Under $10</option><option value="usd>10">$10+</option><option value="usd>50">$50+</option></select></div>
-                    <div class="filter-group"><span class="filter-label">Format</span><select class="filter-select" id="advFormat" onchange="updateAdvQuery()"><option value="">Any</option><option value="standard">Standard</option><option value="modern">Modern</option><option value="commander">Commander</option><option value="pioneer">Pioneer</option><option value="pauper">Pauper</option></select></div>
-                </div>
-                <!-- Collapsible Quick Filters Toggle -->
-                <div style="margin-top:1rem;border-top:1px solid var(--bg-tertiary);padding-top:0.75rem;">
-                    <button onclick="toggleQuickFilters()" style="background:none;border:none;color:var(--accent-secondary);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">
-                        <span id="quickFiltersIcon">▶</span> Quick Search Filters (EDH Staples, Commanders, Archetypes...)
+
+                <!-- Quick Actions Row -->
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem;flex-wrap:wrap;">
+                    <button onclick="toggleBrowseFilters()" id="browseFiltersBtn" style="padding:0.5rem 0.75rem;font-size:0.875rem;font-weight:500;background:var(--bg-tertiary);border:none;border-radius:var(--radius-md);color:var(--text-primary);cursor:pointer;display:flex;align-items:center;gap:0.25rem;">
+                        <span>⚙️</span> Filters
+                    </button>
+                    <button onclick="clearBrowseSearch()" id="browseClearBtnAction" style="display:none;padding:0.5rem 0.75rem;font-size:0.875rem;font-weight:500;background:var(--bg-tertiary);border:none;border-radius:var(--radius-md);color:var(--accent-red);cursor:pointer;">
+                        ✕ Clear
                     </button>
                 </div>
 
-                <!-- Collapsible Quick Filters Content -->
-                <div id="quickFiltersContent" style="display:none;">
-                <!-- Quick Tags - EDH Staples -->
-                <div style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">EDH Staples:</span>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:ramp f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🌱 Ramp</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💀 Removal</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:draw f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🎴 Draw</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💥 Wipes</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:tutor f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🔍 Tutors</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:counterspell f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🛡️ Counters</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:mana-rock f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💎 Rocks</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('otag:land-ramp f:commander')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🏔️ Land Ramp</button>
+                <!-- Query Display -->
+                <div id="browseQueryDisplay" style="display:none;margin-top:0.5rem;font-size:0.75rem;color:var(--text-secondary);">
+                    Query: <code id="browseQueryCode" style="color:var(--accent-blue);"></code>
                 </div>
-                <!-- Quick Tags - Commanders -->
-                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">👑 Commanders:</span>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander usd>0')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">All</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:w')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">⚪ White</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:u')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">🔵 Blue</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:b')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">⚫ Black</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:r')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">🔴 Red</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:g')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">🟢 Green</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id:c')" style="font-size:0.75rem;padding:0.25rem 0.5rem;background:linear-gradient(135deg,#9e9e9e,#bdbdbd);color:#333;">⬜ Colorless</button>
-                </div>
-                <!-- Quick Tags - Popular Guild/Shard Commanders -->
-                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">Guilds:</span>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=ub')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Dimir</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=bg')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Golgari</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=rg')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Gruul</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=uw')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Azorius</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=br')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Rakdos</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=wg')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Selesnya</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=ur')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Izzet</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=wb')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Orzhov</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=gu')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Simic</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id=rw')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">Boros</button>
-                </div>
-                <!-- Quick Tags - Commander Features -->
-                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">Features:</span>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander is:partner')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🤝 Partners</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"background\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">📜 Backgrounds</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander cmc<=3')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚡ Low Cost (≤3)</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander usd<5')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💰 Budget (<$5)</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander usd>20')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💎 Premium (>$20)</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander pow>=5')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">💪 High Power (5+)</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"when ~ deals combat damage\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚔️ Combat Damage</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"whenever you cast\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🎯 Cast Triggers</button>
-                </div>
-                <!-- Quick Tags - Archetypes -->
-                <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
-                    <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-secondary);font-weight:600;">Archetypes:</span>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"token\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🪙 Tokens</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"+1/+1 counter\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">📈 +1/+1 Counters</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"graveyard\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚰️ Graveyard</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"sacrifice\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🩸 Sacrifice</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"artifact\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">⚙️ Artifacts</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"enchantment\"')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">✨ Enchantments</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:dragon')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🐉 Dragons</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:elf')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🧝 Elves</button>
-                    <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:zombie')" style="font-size:0.75rem;padding:0.25rem 0.5rem;">🧟 Zombies</button>
-                </div>
-                </div><!-- End quickFiltersContent -->
-                <!-- Collapsible Syntax Help -->
-                <div style="margin-top:1rem;border-top:1px solid var(--bg-tertiary);padding-top:0.75rem;">
-                    <button onclick="toggleSyntaxHelp()" style="background:none;border:none;color:var(--accent-secondary);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;"><span id="syntaxHelpIcon">▶</span> Search Syntax Help</button>
-                    <div id="syntaxHelpContent" style="display:none;margin-top:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:1rem;font-size:0.8rem;">
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
-                            <!-- Basic Filters -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Basic Filters</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">t:creature</code> Type is creature<br>
-                                    <code style="color:var(--accent-blue);">t:legendary</code> Has legendary supertype<br>
-                                    <code style="color:var(--accent-blue);">c:red</code> or <code style="color:var(--accent-blue);">c:r</code> Contains red<br>
-                                    <code style="color:var(--accent-blue);">c:ub</code> Contains blue AND black<br>
-                                    <code style="color:var(--accent-blue);">r:mythic</code> Mythic rare cards<br>
-                                    <code style="color:var(--accent-blue);">s:mkm</code> From set (3-letter code)
-                                </div>
+
+                <!-- Collapsible Tabbed Filter Panel -->
+                <div id="browseFiltersContent" style="display:none;margin-top:0.75rem;background:var(--bg-secondary);border:1px solid var(--bg-tertiary);border-radius:var(--radius-md);overflow:hidden;">
+                    <!-- Filter Tabs -->
+                    <div style="display:flex;border-bottom:1px solid var(--bg-tertiary);overflow-x:auto;" class="scrollbar-hide">
+                        <button onclick="setBrowseFilterTab('colors')" class="browse-filter-tab active" data-tab="colors" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:var(--accent-primary);color:white;cursor:pointer;">Colors</button>
+                        <button onclick="setBrowseFilterTab('types')" class="browse-filter-tab" data-tab="types" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Types</button>
+                        <button onclick="setBrowseFilterTab('stats')" class="browse-filter-tab" data-tab="stats" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Stats</button>
+                        <button onclick="setBrowseFilterTab('price')" class="browse-filter-tab" data-tab="price" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Price</button>
+                        <button onclick="setBrowseFilterTab('keywords')" class="browse-filter-tab" data-tab="keywords" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Keywords</button>
+                        <button onclick="setBrowseFilterTab('commanders')" class="browse-filter-tab" data-tab="commanders" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Commanders</button>
+                        <button onclick="setBrowseFilterTab('syntax')" class="browse-filter-tab" data-tab="syntax" style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;white-space:nowrap;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;">Syntax</button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div style="padding:1rem;max-height:50vh;overflow-y:auto;">
+                        <!-- Colors Tab -->
+                        <div id="browseTabColors" class="browse-tab-content">
+                            <p style="font-weight:500;margin-bottom:0.5rem;">Card Colors</p>
+                            <p style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.75rem;">Cards that CONTAIN these colors</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="toggleBrowseColor('w')" class="browse-color-btn" data-color="w" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">White</button>
+                                <button onclick="toggleBrowseColor('u')" class="browse-color-btn" data-color="u" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">Blue</button>
+                                <button onclick="toggleBrowseColor('b')" class="browse-color-btn" data-color="b" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">Black</button>
+                                <button onclick="toggleBrowseColor('r')" class="browse-color-btn" data-color="r" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">Red</button>
+                                <button onclick="toggleBrowseColor('g')" class="browse-color-btn" data-color="g" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">Green</button>
+                                <button onclick="toggleBrowseColor('c')" class="browse-color-btn" data-color="c" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;background:#9e9e9e;color:#333;">Colorless</button>
                             </div>
-                            <!-- Text & Stats -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Text & Stats</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">o:draw</code> Rules text contains "draw"<br>
-                                    <code style="color:var(--accent-blue);">o:"enters the"</code> Exact phrase in text<br>
-                                    <code style="color:var(--accent-blue);">cmc=3</code> Costs exactly 3 mana<br>
-                                    <code style="color:var(--accent-blue);">cmc&lt;=3</code> Costs 3 or less mana<br>
-                                    <code style="color:var(--accent-blue);">pow&gt;=4</code> Power is 4 or greater<br>
-                                    <code style="color:var(--accent-blue);">tou&lt;=2</code> Toughness is 2 or less
-                                </div>
-                            </div>
-                            <!-- Mana & Costs -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Mana & Costs</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">m:GG</code> Requires 2 green mana<br>
-                                    <code style="color:var(--accent-blue);">m:2WW</code> Requires 2 colorless + 2 white<br>
-                                    <code style="color:var(--accent-blue);">m:{X}</code> Has X in mana cost<br>
-                                    <code style="color:var(--accent-blue);">m:{W/U}</code> Has white/blue hybrid<br>
-                                    <code style="color:var(--accent-blue);">m:{W/P}</code> Has Phyrexian white (pay 2 life)<br>
-                                    <code style="color:var(--accent-blue);">devotion:www</code> 3+ white pips in cost
-                                </div>
-                            </div>
-                            <!-- Oracle Tags - Basics -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags - Basics</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">otag:ramp</code> Produces extra mana<br>
-                                    <code style="color:var(--accent-blue);">otag:mana-rock</code> Artifact mana sources<br>
-                                    <code style="color:var(--accent-blue);">otag:land-ramp</code> Fetches lands<br>
-                                    <code style="color:var(--accent-blue);">otag:mana-dork</code> Creatures tap for mana<br>
-                                    <code style="color:var(--accent-blue);">otag:draw</code> Draws cards<br>
-                                    <code style="color:var(--accent-blue);">otag:card-advantage</code> Card advantage<br>
-                                    <code style="color:var(--accent-blue);">otag:cantrip</code> Draws when cast<br>
-                                    <code style="color:var(--accent-blue);">otag:removal</code> Removes permanents<br>
-                                    <code style="color:var(--accent-blue);">otag:spot-removal</code> Single target<br>
-                                    <code style="color:var(--accent-blue);">otag:board-wipe</code> Destroys all
-                                </div>
-                            </div>
-                            <!-- Oracle Tags - More -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags - More</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">otag:tutor</code> Searches library<br>
-                                    <code style="color:var(--accent-blue);">otag:counterspell</code> Counters spells<br>
-                                    <code style="color:var(--accent-blue);">otag:token-producer</code> Creates tokens<br>
-                                    <code style="color:var(--accent-blue);">otag:sacrifice-outlet</code> Free sac outlet<br>
-                                    <code style="color:var(--accent-blue);">otag:recursion</code> Returns from GY<br>
-                                    <code style="color:var(--accent-blue);">otag:reanimator</code> Reanimates creatures<br>
-                                    <code style="color:var(--accent-blue);">otag:graveyard-hate</code> Exiles graveyards<br>
-                                    <code style="color:var(--accent-blue);">otag:life-gain</code> Gains life<br>
-                                    <code style="color:var(--accent-blue);">otag:lifedrain</code> Drains opponents<br>
-                                    <code style="color:var(--accent-blue);">otag:evasion</code> Evasion abilities
-                                </div>
-                            </div>
-                            <!-- Oracle Tags - Combat -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags - Combat</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">otag:haste-enabler</code> Gives haste<br>
-                                    <code style="color:var(--accent-blue);">otag:pump</code> Buffs creatures<br>
-                                    <code style="color:var(--accent-blue);">otag:lord</code> Tribal lord effects<br>
-                                    <code style="color:var(--accent-blue);">otag:anthem</code> Team-wide buffs<br>
-                                    <code style="color:var(--accent-blue);">otag:protection</code> Gives protection<br>
-                                    <code style="color:var(--accent-blue);">otag:flicker</code> Exile and return<br>
-                                    <code style="color:var(--accent-blue);">otag:copy</code> Copies creatures/spells<br>
-                                    <code style="color:var(--accent-blue);">otag:theft</code> Steals permanents<br>
-                                    <code style="color:var(--accent-blue);">otag:extra-turn</code> Extra turns<br>
-                                    <code style="color:var(--accent-blue);">otag:extra-combat</code> Extra combats
-                                </div>
-                            </div>
-                            <!-- Exclusions -->
-                            <div>
-                                <h4 style="color:var(--accent-red);margin-bottom:0.4rem;">Exclusions (- prefix)</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-red);">-t:creature</code> Exclude all creatures<br>
-                                    <code style="color:var(--accent-red);">-t:legendary</code> Exclude legendary cards<br>
-                                    <code style="color:var(--accent-red);">-c:green</code> Exclude cards with green<br>
-                                    <code style="color:var(--accent-red);">-c:g</code> Same as above (shorthand)<br>
-                                    <code style="color:var(--accent-red);">-r:common</code> Exclude common rarity<br>
-                                    <code style="color:var(--accent-red);">-r:uncommon</code> Exclude uncommons<br>
-                                    <code style="color:var(--accent-red);">-o:flying</code> No "flying" in rules text<br>
-                                    <code style="color:var(--accent-red);">-s:mkm</code> Exclude Karlov Manor set
-                                </div>
-                            </div>
-                            <!-- Color Identity -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Color Identity (EDH)</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">id:bg</code> Black+green (Golgari) identity<br>
-                                    <code style="color:var(--accent-blue);">id:wubrg</code> All 5 colors identity<br>
-                                    <code style="color:var(--accent-blue);">id&lt;=ub</code> Playable in blue+black deck<br>
-                                    <code style="color:var(--accent-blue);">id:c</code> Colorless only (no colors)<br>
-                                    <code style="color:var(--accent-blue);">id=rg</code> Exactly red+green only<br>
-                                    <code style="color:var(--accent-blue);">is:commander</code> Legal as commander<br>
-                                    <code style="color:var(--accent-blue);">is:partner</code> Has partner keyword
-                                </div>
-                            </div>
-                            <!-- Price & Format -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Price & Format</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">usd&lt;5</code> Price under $5<br>
-                                    <code style="color:var(--accent-blue);">usd&gt;10</code> Price over $10<br>
-                                    <code style="color:var(--accent-blue);">usd&lt;=1</code> Budget cards ($1 or less)<br>
-                                    <code style="color:var(--accent-blue);">f:commander</code> Legal in Commander/EDH<br>
-                                    <code style="color:var(--accent-blue);">f:modern</code> Legal in Modern format<br>
-                                    <code style="color:var(--accent-blue);">f:standard</code> Legal in Standard<br>
-                                    <code style="color:var(--accent-blue);">f:pioneer</code> Legal in Pioneer<br>
-                                    <code style="color:var(--accent-blue);">f:pauper</code> Legal in Pauper (commons)
-                                </div>
-                            </div>
-                            <!-- Special Filters -->
-                            <div>
-                                <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Special Filters</h4>
-                                <div style="color:var(--text-secondary);line-height:1.8;">
-                                    <code style="color:var(--accent-blue);">is:reserved</code> On Reserved List (no reprints)<br>
-                                    <code style="color:var(--accent-blue);">is:reprint</code> Reprinted versions only<br>
-                                    <code style="color:var(--accent-blue);">is:firstprint</code> Original printing only<br>
-                                    <code style="color:var(--accent-blue);">is:full</code> Full art cards<br>
-                                    <code style="color:var(--accent-blue);">is:extended</code> Extended art treatment<br>
-                                    <code style="color:var(--accent-blue);">is:foil</code> Available in foil<br>
-                                    <code style="color:var(--accent-blue);">is:modal</code> Choose-a-side double-faced<br>
-                                    <code style="color:var(--accent-blue);">is:split</code> Split cards (Fire // Ice)
-                                </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.5rem;">Color Identity (Commander)</p>
+                            <p style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.75rem;">Cards that fit WITHIN these colors</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="toggleBrowseIdentity('w')" class="browse-identity-btn" data-id="w" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">White</button>
+                                <button onclick="toggleBrowseIdentity('u')" class="browse-identity-btn" data-id="u" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">Blue</button>
+                                <button onclick="toggleBrowseIdentity('b')" class="browse-identity-btn" data-id="b" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">Black</button>
+                                <button onclick="toggleBrowseIdentity('r')" class="browse-identity-btn" data-id="r" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">Red</button>
+                                <button onclick="toggleBrowseIdentity('g')" class="browse-identity-btn" data-id="g" style="padding:0.5rem 1rem;border-radius:var(--radius-md);font-weight:500;border:2px solid transparent;cursor:pointer;opacity:0.6;background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">Green</button>
                             </div>
                         </div>
-                        <!-- Examples Section -->
-                        <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--bg-card);">
-                            <span style="color:var(--accent-gold);font-weight:600;">Try Examples:</span>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
-                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander id<=bg cmc<=4')" style="font-size:0.7rem;">Budget Golgari commanders</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:removal -t:creature usd<2')" style="font-size:0.7rem;">Budget non-creature removal</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander is:partner')" style="font-size:0.7rem;">Partner commanders</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:ramp c:g -t:creature')" style="font-size:0.7rem;">Green non-creature ramp</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander o:\"draw\" id<=u')" style="font-size:0.7rem;">Blue draw commanders</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander t:dragon')" style="font-size:0.7rem;">Dragon commanders</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('is:commander pow>=6 cmc<=5')" style="font-size:0.7rem;">Strong low-cost commanders</button>
-                                <button class="btn btn-sm" onclick="quickAdvSearch('otag:board-wipe f:commander usd<3')" style="font-size:0.7rem;">Budget board wipes</button>
+
+                        <!-- Types Tab -->
+                        <div id="browseTabTypes" class="browse-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Card Types</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('t:creature')" class="btn btn-sm">Creature</button>
+                                <button onclick="addBrowseFilter('t:instant')" class="btn btn-sm">Instant</button>
+                                <button onclick="addBrowseFilter('t:sorcery')" class="btn btn-sm">Sorcery</button>
+                                <button onclick="addBrowseFilter('t:enchantment')" class="btn btn-sm">Enchantment</button>
+                                <button onclick="addBrowseFilter('t:artifact')" class="btn btn-sm">Artifact</button>
+                                <button onclick="addBrowseFilter('t:land')" class="btn btn-sm">Land</button>
+                                <button onclick="addBrowseFilter('t:planeswalker')" class="btn btn-sm">Planeswalker</button>
+                                <button onclick="addBrowseFilter('t:legendary')" class="btn btn-sm">Legendary</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Creature Subtypes</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('t:dragon')" class="btn btn-sm">🐉 Dragon</button>
+                                <button onclick="addBrowseFilter('t:elf')" class="btn btn-sm">🧝 Elf</button>
+                                <button onclick="addBrowseFilter('t:zombie')" class="btn btn-sm">🧟 Zombie</button>
+                                <button onclick="addBrowseFilter('t:goblin')" class="btn btn-sm">👺 Goblin</button>
+                                <button onclick="addBrowseFilter('t:human')" class="btn btn-sm">🧑 Human</button>
+                                <button onclick="addBrowseFilter('t:angel')" class="btn btn-sm">😇 Angel</button>
+                                <button onclick="addBrowseFilter('t:demon')" class="btn btn-sm">😈 Demon</button>
+                                <button onclick="addBrowseFilter('t:wizard')" class="btn btn-sm">🧙 Wizard</button>
+                                <button onclick="addBrowseFilter('t:vampire')" class="btn btn-sm">🧛 Vampire</button>
+                                <button onclick="addBrowseFilter('t:merfolk')" class="btn btn-sm">🧜 Merfolk</button>
                             </div>
                         </div>
-                        <!-- Tips -->
-                        <div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--bg-card);color:var(--text-muted);font-size:0.75rem;">
-                            <span style="color:var(--accent-secondary);font-weight:600;">Tips:</span> Combine filters with spaces. Use <code style="color:var(--accent-blue);">otag:</code> for functional searches. Prefix with <code style="color:var(--accent-red);">-</code> to exclude cards matching that filter.
+
+                        <!-- Stats Tab -->
+                        <div id="browseTabStats" class="browse-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Mana Value (CMC)</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('cmc=0')" class="btn btn-sm">0</button>
+                                <button onclick="addBrowseFilter('cmc=1')" class="btn btn-sm">1</button>
+                                <button onclick="addBrowseFilter('cmc=2')" class="btn btn-sm">2</button>
+                                <button onclick="addBrowseFilter('cmc=3')" class="btn btn-sm">3</button>
+                                <button onclick="addBrowseFilter('cmc=4')" class="btn btn-sm">4</button>
+                                <button onclick="addBrowseFilter('cmc=5')" class="btn btn-sm">5</button>
+                                <button onclick="addBrowseFilter('cmc>=6')" class="btn btn-sm">6+</button>
+                                <button onclick="addBrowseFilter('cmc<=3')" class="btn btn-sm">≤3</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Power</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('pow>=4')" class="btn btn-sm">4+</button>
+                                <button onclick="addBrowseFilter('pow>=5')" class="btn btn-sm">5+</button>
+                                <button onclick="addBrowseFilter('pow>=7')" class="btn btn-sm">7+</button>
+                                <button onclick="addBrowseFilter('pow<=2')" class="btn btn-sm">≤2</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Rarity</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('r:mythic')" class="btn btn-sm" style="background:linear-gradient(135deg,#d35400,#e74c3c);color:white;">Mythic</button>
+                                <button onclick="addBrowseFilter('r:rare')" class="btn btn-sm" style="background:linear-gradient(135deg,#c9a227,#f1c40f);color:#333;">Rare</button>
+                                <button onclick="addBrowseFilter('r:uncommon')" class="btn btn-sm" style="background:linear-gradient(135deg,#607d8b,#90a4ae);color:white;">Uncommon</button>
+                                <button onclick="addBrowseFilter('r:common')" class="btn btn-sm" style="background:#333;color:white;">Common</button>
+                            </div>
+                        </div>
+
+                        <!-- Price Tab -->
+                        <div id="browseTabPrice" class="browse-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Price Range</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('usd<1')" class="btn btn-sm">Under $1</button>
+                                <button onclick="addBrowseFilter('usd<5')" class="btn btn-sm">Under $5</button>
+                                <button onclick="addBrowseFilter('usd<10')" class="btn btn-sm">Under $10</button>
+                                <button onclick="addBrowseFilter('usd>10')" class="btn btn-sm">$10+</button>
+                                <button onclick="addBrowseFilter('usd>25')" class="btn btn-sm">$25+</button>
+                                <button onclick="addBrowseFilter('usd>50')" class="btn btn-sm">$50+</button>
+                                <button onclick="addBrowseFilter('usd>100')" class="btn btn-sm">$100+</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Format Legal</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('f:commander')" class="btn btn-sm">Commander</button>
+                                <button onclick="addBrowseFilter('f:standard')" class="btn btn-sm">Standard</button>
+                                <button onclick="addBrowseFilter('f:modern')" class="btn btn-sm">Modern</button>
+                                <button onclick="addBrowseFilter('f:pioneer')" class="btn btn-sm">Pioneer</button>
+                                <button onclick="addBrowseFilter('f:pauper')" class="btn btn-sm">Pauper</button>
+                                <button onclick="addBrowseFilter('f:legacy')" class="btn btn-sm">Legacy</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Special</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('is:reserved')" class="btn btn-sm">💰 Reserved List</button>
+                                <button onclick="addBrowseFilter('is:reprint')" class="btn btn-sm">🔄 Reprints</button>
+                                <button onclick="addBrowseFilter('is:full')" class="btn btn-sm">🖼️ Full Art</button>
+                                <button onclick="addBrowseFilter('is:extended')" class="btn btn-sm">📐 Extended Art</button>
+                            </div>
+                        </div>
+
+                        <!-- Keywords Tab -->
+                        <div id="browseTabKeywords" class="browse-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Oracle Tags (EDH Staples)</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('otag:ramp')" class="btn btn-sm">🌱 Ramp</button>
+                                <button onclick="addBrowseFilter('otag:removal')" class="btn btn-sm">💀 Removal</button>
+                                <button onclick="addBrowseFilter('otag:draw')" class="btn btn-sm">🎴 Draw</button>
+                                <button onclick="addBrowseFilter('otag:board-wipe')" class="btn btn-sm">💥 Board Wipe</button>
+                                <button onclick="addBrowseFilter('otag:tutor')" class="btn btn-sm">🔍 Tutor</button>
+                                <button onclick="addBrowseFilter('otag:counterspell')" class="btn btn-sm">🛡️ Counter</button>
+                                <button onclick="addBrowseFilter('otag:mana-rock')" class="btn btn-sm">💎 Mana Rock</button>
+                                <button onclick="addBrowseFilter('otag:land-ramp')" class="btn btn-sm">🏔️ Land Ramp</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">More Tags</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('otag:token-producer')" class="btn btn-sm">🪙 Tokens</button>
+                                <button onclick="addBrowseFilter('otag:recursion')" class="btn btn-sm">♻️ Recursion</button>
+                                <button onclick="addBrowseFilter('otag:sacrifice-outlet')" class="btn btn-sm">🩸 Sac Outlet</button>
+                                <button onclick="addBrowseFilter('otag:life-gain')" class="btn btn-sm">❤️ Lifegain</button>
+                                <button onclick="addBrowseFilter('otag:graveyard-hate')" class="btn btn-sm">⚰️ GY Hate</button>
+                                <button onclick="addBrowseFilter('otag:evasion')" class="btn btn-sm">🦅 Evasion</button>
+                                <button onclick="addBrowseFilter('otag:flicker')" class="btn btn-sm">✨ Flicker</button>
+                                <button onclick="addBrowseFilter('otag:lord')" class="btn btn-sm">👑 Lord</button>
+                            </div>
+                        </div>
+
+                        <!-- Commanders Tab -->
+                        <div id="browseTabCommanders" class="browse-tab-content" style="display:none;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">👑 Commander Search</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('is:commander')" class="btn btn-sm">All Commanders</button>
+                                <button onclick="addBrowseFilter('is:commander is:partner')" class="btn btn-sm">🤝 Partners</button>
+                                <button onclick="addBrowseFilter('is:commander cmc<=3')" class="btn btn-sm">⚡ Low Cost (≤3)</button>
+                                <button onclick="addBrowseFilter('is:commander usd<5')" class="btn btn-sm">💰 Budget (<$5)</button>
+                                <button onclick="addBrowseFilter('is:commander usd>20')" class="btn btn-sm">💎 Premium (>$20)</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">By Color Identity</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('is:commander id:w')" class="btn btn-sm" style="background:linear-gradient(135deg,#f8f6d8,#e8e4c8);color:#333;">⚪ White</button>
+                                <button onclick="addBrowseFilter('is:commander id:u')" class="btn btn-sm" style="background:linear-gradient(135deg,#0e68ab,#1a8cd8);color:#fff;">🔵 Blue</button>
+                                <button onclick="addBrowseFilter('is:commander id:b')" class="btn btn-sm" style="background:linear-gradient(135deg,#2b2b2b,#4a4a4a);color:#fff;">⚫ Black</button>
+                                <button onclick="addBrowseFilter('is:commander id:r')" class="btn btn-sm" style="background:linear-gradient(135deg,#d32f2f,#f44336);color:#fff;">🔴 Red</button>
+                                <button onclick="addBrowseFilter('is:commander id:g')" class="btn btn-sm" style="background:linear-gradient(135deg,#2e7d32,#4caf50);color:#fff;">🟢 Green</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Popular Guilds</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('is:commander id=ub')" class="btn btn-sm">Dimir</button>
+                                <button onclick="addBrowseFilter('is:commander id=bg')" class="btn btn-sm">Golgari</button>
+                                <button onclick="addBrowseFilter('is:commander id=rg')" class="btn btn-sm">Gruul</button>
+                                <button onclick="addBrowseFilter('is:commander id=uw')" class="btn btn-sm">Azorius</button>
+                                <button onclick="addBrowseFilter('is:commander id=br')" class="btn btn-sm">Rakdos</button>
+                                <button onclick="addBrowseFilter('is:commander id=wg')" class="btn btn-sm">Selesnya</button>
+                                <button onclick="addBrowseFilter('is:commander id=ur')" class="btn btn-sm">Izzet</button>
+                                <button onclick="addBrowseFilter('is:commander id=wb')" class="btn btn-sm">Orzhov</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Archetypes</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('is:commander o:\"token\"')" class="btn btn-sm">🪙 Tokens</button>
+                                <button onclick="addBrowseFilter('is:commander o:\"+1/+1 counter\"')" class="btn btn-sm">📈 +1/+1</button>
+                                <button onclick="addBrowseFilter('is:commander o:\"graveyard\"')" class="btn btn-sm">⚰️ Graveyard</button>
+                                <button onclick="addBrowseFilter('is:commander o:\"sacrifice\"')" class="btn btn-sm">🩸 Sacrifice</button>
+                                <button onclick="addBrowseFilter('is:commander t:dragon')" class="btn btn-sm">🐉 Dragons</button>
+                                <button onclick="addBrowseFilter('is:commander t:zombie')" class="btn btn-sm">🧟 Zombies</button>
+                            </div>
+                        </div>
+
+                        <!-- Syntax Tab -->
+                        <div id="browseTabSyntax" class="browse-tab-content" style="display:none;">
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+                                <div>
+                                    <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Basic Filters</h4>
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-blue);">t:creature</code> Type is creature<br>
+                                        <code style="color:var(--accent-blue);">c:red</code> Contains red<br>
+                                        <code style="color:var(--accent-blue);">r:mythic</code> Mythic rare<br>
+                                        <code style="color:var(--accent-blue);">s:mkm</code> From set code
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Text & Stats</h4>
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-blue);">o:draw</code> Rules text<br>
+                                        <code style="color:var(--accent-blue);">cmc=3</code> Mana cost<br>
+                                        <code style="color:var(--accent-blue);">pow>=4</code> Power 4+<br>
+                                        <code style="color:var(--accent-blue);">usd<5</code> Under $5
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Oracle Tags</h4>
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-blue);">otag:ramp</code> Ramp cards<br>
+                                        <code style="color:var(--accent-blue);">otag:removal</code> Removal<br>
+                                        <code style="color:var(--accent-blue);">otag:draw</code> Card draw<br>
+                                        <code style="color:var(--accent-blue);">otag:tutor</code> Tutors
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Color Identity</h4>
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-blue);">id:bg</code> Golgari identity<br>
+                                        <code style="color:var(--accent-blue);">id<=ub</code> Fits in Dimir<br>
+                                        <code style="color:var(--accent-blue);">is:commander</code> Legal cmdr<br>
+                                        <code style="color:var(--accent-blue);">is:partner</code> Partner
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="color:var(--accent-red);margin-bottom:0.4rem;">Exclusions</h4>
+                                    <div style="color:var(--text-secondary);line-height:1.8;font-size:0.8rem;">
+                                        <code style="color:var(--accent-red);">-t:creature</code> NOT creature<br>
+                                        <code style="color:var(--accent-red);">-c:green</code> NOT green<br>
+                                        <code style="color:var(--accent-red);">-r:common</code> NOT common
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="color:var(--accent-gold);margin-bottom:0.4rem;">Examples</h4>
+                                    <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
+                                        <button onclick="quickAdvSearch('otag:ramp f:commander usd<3')" class="btn btn-sm" style="font-size:0.7rem;">Budget ramp</button>
+                                        <button onclick="quickAdvSearch('is:commander is:partner')" class="btn btn-sm" style="font-size:0.7rem;">Partners</button>
+                                        <button onclick="quickAdvSearch('t:dragon r:mythic')" class="btn btn-sm" style="font-size:0.7rem;">Mythic dragons</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3128,7 +3145,146 @@
                 });
                 dashSearch.addEventListener('input', updateDashQueryDisplay);
             }
+
+            // Listen for Enter key on browse search
+            const browseSearch = document.getElementById('browseCardSearch');
+            if (browseSearch) {
+                browseSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        performAdvancedSearch();
+                    }
+                });
+                browseSearch.addEventListener('input', updateBrowseQueryDisplay);
+            }
         });
+
+        // Browse Filter State
+        let browseSelectedColors = [];
+        let browseSelectedIdentity = [];
+        let browseFiltersOpen = false;
+
+        function toggleBrowseFilters() {
+            const content = document.getElementById('browseFiltersContent');
+            const btn = document.getElementById('browseFiltersBtn');
+            browseFiltersOpen = !browseFiltersOpen;
+            content.style.display = browseFiltersOpen ? 'block' : 'none';
+            btn.style.background = browseFiltersOpen ? 'var(--accent-primary)' : 'var(--bg-tertiary)';
+            btn.style.color = browseFiltersOpen ? 'white' : 'var(--text-primary)';
+        }
+
+        function setBrowseFilterTab(tabId) {
+            // Update tab buttons
+            document.querySelectorAll('.browse-filter-tab').forEach(tab => {
+                if (tab.dataset.tab === tabId) {
+                    tab.style.background = 'var(--accent-primary)';
+                    tab.style.color = 'white';
+                } else {
+                    tab.style.background = 'transparent';
+                    tab.style.color = 'var(--text-secondary)';
+                }
+            });
+            // Update tab content
+            document.querySelectorAll('.browse-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            const activeContent = document.getElementById('browseTab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+            if (activeContent) activeContent.style.display = 'block';
+        }
+
+        function toggleBrowseColor(color) {
+            const idx = browseSelectedColors.indexOf(color);
+            if (idx > -1) {
+                browseSelectedColors.splice(idx, 1);
+            } else {
+                browseSelectedColors.push(color);
+            }
+            updateBrowseColorButtons();
+            buildBrowseQuery();
+        }
+
+        function toggleBrowseIdentity(color) {
+            const idx = browseSelectedIdentity.indexOf(color);
+            if (idx > -1) {
+                browseSelectedIdentity.splice(idx, 1);
+            } else {
+                browseSelectedIdentity.push(color);
+            }
+            updateBrowseIdentityButtons();
+            buildBrowseQuery();
+        }
+
+        function updateBrowseColorButtons() {
+            document.querySelectorAll('.browse-color-btn').forEach(btn => {
+                const color = btn.dataset.color;
+                if (browseSelectedColors.includes(color)) {
+                    btn.style.border = '2px solid var(--accent-blue)';
+                    btn.style.transform = 'scale(1.05)';
+                } else {
+                    btn.style.border = '2px solid transparent';
+                    btn.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        function updateBrowseIdentityButtons() {
+            document.querySelectorAll('.browse-identity-btn').forEach(btn => {
+                const color = btn.dataset.id;
+                if (browseSelectedIdentity.includes(color)) {
+                    btn.style.border = '2px solid var(--accent-gold)';
+                    btn.style.opacity = '1';
+                    btn.style.transform = 'scale(1.05)';
+                } else {
+                    btn.style.border = '2px solid transparent';
+                    btn.style.opacity = '0.6';
+                    btn.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        function buildBrowseQuery() {
+            let parts = [];
+            if (browseSelectedColors.length > 0) {
+                parts.push('c:' + browseSelectedColors.join(''));
+            }
+            if (browseSelectedIdentity.length > 0) {
+                parts.push('id<=' + browseSelectedIdentity.join(''));
+            }
+            const query = parts.join(' ');
+            document.getElementById('browseCardSearch').value = query;
+            updateBrowseQueryDisplay();
+        }
+
+        function addBrowseFilter(filter) {
+            const input = document.getElementById('browseCardSearch');
+            const current = input.value.trim();
+            input.value = current ? current + ' ' + filter : filter;
+            updateBrowseQueryDisplay();
+        }
+
+        function updateBrowseQueryDisplay() {
+            const query = document.getElementById('browseCardSearch').value;
+            const display = document.getElementById('browseQueryDisplay');
+            const code = document.getElementById('browseQueryCode');
+            const clearBtn = document.getElementById('browseClearBtnAction');
+            if (query.trim()) {
+                display.style.display = 'block';
+                code.textContent = query;
+                clearBtn.style.display = 'inline-flex';
+            } else {
+                display.style.display = 'none';
+                clearBtn.style.display = 'none';
+            }
+        }
+
+        function clearBrowseSearch() {
+            document.getElementById('browseCardSearch').value = '';
+            browseSelectedColors = [];
+            browseSelectedIdentity = [];
+            updateBrowseColorButtons();
+            updateBrowseIdentityButtons();
+            updateBrowseQueryDisplay();
+        }
 
         function updateAdvQuery() {
             const type = document.getElementById('advType').value;
