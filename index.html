@@ -2484,7 +2484,32 @@
             searchPriority:(q,o={})=>API.req('/cards/search?q='+encodeURIComponent(q)+'&'+new URLSearchParams(o),{priority:true}),
             card:(id,pri=false)=>API.req('/cards/'+id,{priority:pri}),
             sets:()=>API.req('/sets'),
-            autocomplete:(q)=>API.req('/cards/autocomplete?q='+encodeURIComponent(q),{priority:true,cacheTTL:60000})
+            autocomplete:(q)=>API.req('/cards/autocomplete?q='+encodeURIComponent(q),{priority:true,cacheTTL:60000}),
+            // Batch fetch up to 75 cards in one request using collection endpoint
+            async cardsBatch(ids){
+                if(!ids.length)return[];
+                const cacheKey='/cards/collection:'+ids.slice(0,10).join(',');
+                const cached=APICache.get(cacheKey);
+                if(cached)return cached;
+                const w=this.minDelay-(Date.now()-this.last);
+                if(w>0)await new Promise(r=>setTimeout(r,w));
+                this.last=Date.now();
+                this.status('active');
+                try{
+                    const resp=await fetch(this.base+'/cards/collection',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify({identifiers:ids.slice(0,75).map(id=>({id}))})
+                    });
+                    if(!resp.ok)throw new Error('HTTP '+resp.status);
+                    const data=await resp.json();
+                    this.status('ready');
+                    // Cache individual cards
+                    (data.data||[]).forEach(c=>APICache.set('/cards/'+c.id,c));
+                    APICache.set(cacheKey,data.data||[]);
+                    return data.data||[];
+                }catch(e){this.status('error');return[];}
+            }
         };
 
         const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,loadingMode:'balanced',bgEffect:'none'},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,listSelectMode:false,selectedListCards:new Set(),
@@ -2796,7 +2821,7 @@
                 listDropdown=`<div class="add-to-list-dropdown"><button class="btn btn-secondary" onclick="toggleListDropdown(event)">📋 Add to List</button><div class="add-to-list-menu" id="addToListMenu">${listItems}${createNewItem}${inlineCreator}</div></div>`;
             }
             // Portfolio button - opens modal to add with quantity/price, or removes if already in
-            const portfolioBtn = currentUser ? `<button class="btn ${inPortfolio?'btn-secondary':'btn-gold'}" onclick="closeModal('cardModal');${inPortfolio?`removeFromPortfolio('${c.id}');showToast('Removed from portfolio','info')`:`addCardToPortfolioFromModal('${c.id}')`};">${inPortfolio?'✓ In Portfolio':'💼 Portfolio'}</button>` : '';
+            const portfolioBtn = currentUser ? `<button class="btn ${inPortfolio?'btn-secondary':'btn-gold'}" onclick="${inPortfolio?`removeFromPortfolio('${c.id}');this.textContent='💼 Portfolio';this.className='btn btn-gold';showToast('Removed from portfolio','info')`:`addCardToPortfolioFromModal('${c.id}')`};">${inPortfolio?'✓ In Portfolio':'💼 Portfolio'}</button>` : '';
             // Price chart with time toggle
             const chartHtml = `<div class="price-chart-container">
                 <div class="price-chart-title">Price History</div>
@@ -2812,7 +2837,7 @@
             const extLinks=`<div class="external-links"><a href="${getMTGStocksUrl(c.name)}" target="_blank" class="ext-link">📈 MTGStocks</a><a href="${getTCGPlayerUrl(c.name)}" target="_blank" class="ext-link">🛒 TCGPlayer</a><a href="${getCardKingdomUrl(c.name)}" target="_blank" class="ext-link">👑 Card Kingdom</a><a href="${getEDHRECUrl(c.name)}" target="_blank" class="ext-link">📊 EDHREC</a></div>`;
             // Printings placeholder
             const printingsHtml = `<div id="printingsContainer"></div>`;
-            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div><div style="position:relative;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);transition:opacity 0.15s;" id="mainCardImage">${flipBtn}</div>${hasMultipleFaces ? `<div style="text-align:center;margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem;" id="faceIndicator">${c.card_faces[0].name} (1/2)</div>` : ''}${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="closeModal('cardModal');openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
+            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div><div style="position:relative;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);transition:opacity 0.15s;" id="mainCardImage">${flipBtn}</div>${hasMultipleFaces ? `<div style="text-align:center;margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem;" id="faceIndicator">${c.card_faces[0].name} (1/2)</div>` : ''}${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
             // Store current card for add-to-list
             State.currentDetailCard=c;openModal('cardModal');
             // Load and draw price chart
@@ -3903,14 +3928,15 @@
                 grid.innerHTML = '<p style="color:var(--text-secondary);">No cards in this list yet.</p>';
                 return;
             }
-            // Fetch full card data from Scryfall for display
-            const cardEls = [];
-            for (const card of cards.slice(0, 50)) {
-                try {
-                    const c = await API.card(card.scryfallId || card.id);
-                    cardEls.push(listCardEl(c, card.docId));
-                } catch(e) {}
-            }
+            // Batch fetch all cards in one request for speed
+            const cardsToFetch = cards.slice(0, 50);
+            const cardIds = cardsToFetch.map(c => c.scryfallId || c.id).filter(Boolean);
+            const fetchedCards = await API.cardsBatch(cardIds);
+            // Map fetched cards back to docIds
+            const cardEls = cardsToFetch.map(card => {
+                const fetched = fetchedCards.find(c => c.id === (card.scryfallId || card.id));
+                return fetched ? listCardEl(fetched, card.docId) : null;
+            }).filter(Boolean);
             grid.innerHTML = cardEls.join('');
         }
 
@@ -4038,13 +4064,14 @@
                 grid.innerHTML = '<p style="color:var(--text-secondary);">No cards in this list yet.</p>';
                 return;
             }
-            const cardEls = [];
-            for (const card of cards.slice(0, 50)) {
-                try {
-                    const c = await API.card(card.scryfallId || card.id);
-                    cardEls.push(listCardEl(c, card.docId));
-                } catch(e) {}
-            }
+            // Batch fetch all cards in one request for speed
+            const cardsToFetch = cards.slice(0, 50);
+            const cardIds = cardsToFetch.map(c => c.scryfallId || c.id).filter(Boolean);
+            const fetchedCards = await API.cardsBatch(cardIds);
+            const cardEls = cardsToFetch.map(card => {
+                const fetched = fetchedCards.find(c => c.id === (card.scryfallId || card.id));
+                return fetched ? listCardEl(fetched, card.docId) : null;
+            }).filter(Boolean);
             grid.innerHTML = cardEls.join('');
         }
 
