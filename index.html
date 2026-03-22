@@ -2700,9 +2700,25 @@
         function getPrice(c){const p=c.prices||{};if(p.usd&&parseFloat(p.usd)>0)return{val:'$'+p.usd,num:parseFloat(p.usd),type:''};if(p.usd_foil&&parseFloat(p.usd_foil)>0)return{val:'$'+p.usd_foil,num:parseFloat(p.usd_foil),type:'foil'};if(p.usd_etched&&parseFloat(p.usd_etched)>0)return{val:'$'+p.usd_etched,num:parseFloat(p.usd_etched),type:'etched'};if(p.eur&&parseFloat(p.eur)>0)return{val:'€'+p.eur,num:parseFloat(p.eur),type:'EUR'};return{val:'N/A',num:0,type:''};}
         function isInWatchlist(id){return State.watchlist.some(c=>c.id===id);}
 
-        // Search
+        // Search - uses autocomplete for speed, shows names first then fetches full data
         const searchInput=document.getElementById('cardSearch'),searchResults=document.getElementById('searchResults');
-        const handleSearch=debounce(async q=>{if(q.length<2){searchResults.classList.remove('active');return;}try{const d=await API.searchPriority(q,{unique:'cards'});if(d.data?.length){searchResults.innerHTML=d.data.slice(0,12).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item" onclick="event.stopPropagation();openCardDetail('${c.id}')"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img"><div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div class="search-result-actions"><button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="${inWL?'Remove from':'Add to'} Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Create Alert">🔔</button></div></div>`;}).join('');searchResults.classList.add('active');}else{searchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';searchResults.classList.add('active');}}catch(e){}},200);
+        const handleSearch=debounce(async q=>{
+            if(q.length<2){searchResults.classList.remove('active');return;}
+            // Show loading immediately
+            searchResults.innerHTML='<div class="search-result-item" style="justify-content:center;"><span style="opacity:0.6;">Searching...</span></div>';
+            searchResults.classList.add('active');
+            try{
+                // Use autocomplete first for speed (returns names only)
+                const ac=await API.autocomplete(q);
+                if(!ac.data?.length){
+                    searchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';
+                    return;
+                }
+                // Show autocomplete names immediately, then fetch full data
+                const names=ac.data.slice(0,8);
+                searchResults.innerHTML=names.map(name=>`<div class="search-result-item" style="cursor:pointer;" onclick="searchAndOpenCard('${name.replace(/'/g,"\\'")}')"><div class="search-result-info"><h4>${name}</h4><p style="color:var(--text-muted);font-size:0.8rem;">Click to view details</p></div></div>`).join('');
+            }catch(e){searchResults.classList.remove('active');}
+        },150);
         searchInput.addEventListener('input',e=>{
             handleSearch(e.target.value);
             // Show/hide clear button
@@ -2721,10 +2737,35 @@
         }
         document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.classList.remove('active');});
 
+        // Quick search by name and open card
+        async function searchAndOpenCard(name){
+            searchResults.classList.remove('active');
+            searchInput.value=name;
+            // Search for the exact card and open it
+            try{
+                const d=await API.searchPriority('!"'+name+'"',{unique:'cards'});
+                if(d.data?.length){openCardDetail(d.data[0].id);}
+            }catch(e){showToast('Card not found','error');}
+        }
+
         // Watchlist page search
         const watchlistSearchInput=document.getElementById('watchlistSearch'),watchlistSearchResults=document.getElementById('watchlistSearchResults');
         const watchlistClearBtn=document.getElementById('watchlistClearBtn');
-        const handleWatchlistSearch=debounce(async q=>{if(q.length<2){watchlistSearchResults.classList.remove('active');return;}try{const d=await API.searchPriority(q,{unique:'cards'});if(d.data?.length){watchlistSearchResults.innerHTML=d.data.slice(0,12).map(c=>{const pr=getPrice(c);const inWL=isInWatchlist(c.id);return`<div class="search-result-item" onclick="event.stopPropagation();quickWatchFromWatchlistSearch('${c.id}')"><img src="${c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small||''}" class="search-result-img"><div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name} • ${c.rarity}</p></div><div class="search-result-price">${pr.val}</div><div style="font-size:1.5rem;">${inWL?'✓':'➕'}</div></div>`;}).join('');watchlistSearchResults.classList.add('active');}else{watchlistSearchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';watchlistSearchResults.classList.add('active');}}catch(e){}},200);
+        const handleWatchlistSearch=debounce(async q=>{
+            if(q.length<2){watchlistSearchResults.classList.remove('active');return;}
+            // Show loading
+            watchlistSearchResults.innerHTML='<div class="search-result-item" style="justify-content:center;"><span style="opacity:0.6;">Searching...</span></div>';
+            watchlistSearchResults.classList.add('active');
+            try{
+                // Use autocomplete for speed
+                const ac=await API.autocomplete(q);
+                if(!ac.data?.length){
+                    watchlistSearchResults.innerHTML='<div class="search-result-item"><p>No cards found</p></div>';
+                    return;
+                }
+                watchlistSearchResults.innerHTML=ac.data.slice(0,8).map(name=>`<div class="search-result-item" style="cursor:pointer;" onclick="quickWatchByName('${name.replace(/'/g,"\\'")}')"><div class="search-result-info"><h4>${name}</h4></div><div style="font-size:1.5rem;">➕</div></div>`).join('');
+            }catch(e){watchlistSearchResults.classList.remove('active');}
+        },150);
         watchlistSearchInput.addEventListener('input',e=>{
             handleWatchlistSearch(e.target.value);
             if(watchlistClearBtn)watchlistClearBtn.classList.toggle('visible',e.target.value.length>0);
@@ -2758,7 +2799,7 @@
                     browseSearchResults.classList.remove('active');
                 }
             }catch(e){browseSearchResults.classList.remove('active');}
-        },200);
+        },150);
         const browseClearBtn=document.getElementById('browseClearBtn');
         browseSearchInput?.addEventListener('input',e=>{
             handleBrowseSearch(e.target.value);
@@ -2775,6 +2816,23 @@
         }
         document.addEventListener('click',e=>{if(browseSearchInput && browseSearchResults && !browseSearchInput.contains(e.target)&&!browseSearchResults.contains(e.target))browseSearchResults.classList.remove('active');});
         function selectBrowseSuggestion(name){browseSearchInput.value=name;browseSearchResults.classList.remove('active');if(browseClearBtn)browseClearBtn.classList.add('visible');performAdvancedSearch();}
+
+        async function quickWatchByName(name){
+            watchlistSearchResults.classList.remove('active');
+            watchlistSearchInput.value='';
+            try{
+                const d=await API.searchPriority('!"'+name+'"',{unique:'cards'});
+                if(d.data?.length){
+                    const c=d.data[0];
+                    if(!isInWatchlist(c.id)){
+                        const pr=getPrice(c);
+                        State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});
+                        showToast('Added to watchlist!','success');
+                    }else{showToast('Already in watchlist','info');}
+                    State.save();updateStats();renderWatchlist();
+                }
+            }catch(e){showToast('Failed','error');}
+        }
 
         async function quickWatchFromWatchlistSearch(id){
             if(!isInWatchlist(id)){
@@ -4699,21 +4757,31 @@
         const portfolioSearchResults = document.getElementById('portfolioSearchResults');
         const handlePortfolioSearch = debounce(async q => {
             if (q.length < 2) { portfolioSearchResults.innerHTML = ''; return; }
+            portfolioSearchResults.innerHTML = '<div style="padding:0.5rem;opacity:0.6;">Searching...</div>';
             try {
-                const d = await API.searchPriority(q, { unique: 'cards' });
-                if (d.data?.length) {
-                    portfolioSearchResults.innerHTML = d.data.slice(0, 5).map(c => {
-                        const pr = getPrice(c);
-                        return `<div class="search-result-item" onclick="selectPortfolioCard('${c.id}')">
-                            <img src="${c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || ''}" class="search-result-img">
-                            <div class="search-result-info"><h4>${c.name}</h4><p>${c.set_name}</p></div>
-                            <div class="search-result-price">${pr.val}</div>
-                        </div>`;
-                    }).join('');
+                // Use autocomplete for speed
+                const ac = await API.autocomplete(q);
+                if (ac.data?.length) {
+                    portfolioSearchResults.innerHTML = ac.data.slice(0, 5).map(name =>
+                        `<div class="search-result-item" style="cursor:pointer;" onclick="selectPortfolioCardByName('${name.replace(/'/g,"\\'")}')">
+                            <div class="search-result-info"><h4>${name}</h4></div>
+                        </div>`
+                    ).join('');
+                } else {
+                    portfolioSearchResults.innerHTML = '<div style="padding:0.5rem;opacity:0.6;">No results</div>';
                 }
             } catch(e) {}
-        }, 300);
+        }, 150);
         if (portfolioSearchInput) portfolioSearchInput.addEventListener('input', e => handlePortfolioSearch(e.target.value));
+
+        async function selectPortfolioCardByName(name) {
+            portfolioSearchResults.innerHTML = '';
+            portfolioSearchInput.value = name;
+            try {
+                const d = await API.searchPriority('!"'+name+'"', { unique: 'cards' });
+                if (d.data?.length) { await selectPortfolioCard(d.data[0].id); }
+            } catch(e) { showToast('Card not found', 'error'); }
+        }
 
         async function selectPortfolioCard(id) {
             portfolioSearchResults.innerHTML = '';
