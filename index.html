@@ -3968,7 +3968,21 @@
             if (!currentUser || !db) return [];
             try {
                 const snapshot = await db.collection('users').doc(currentUser.uid).collection('lists').get();
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Fetch actual card counts from subcollections in parallel
+                const lists = await Promise.all(snapshot.docs.map(async doc => {
+                    const data = doc.data();
+                    try {
+                        const cardsSnap = await db.collection('users').doc(currentUser.uid)
+                            .collection('lists').doc(doc.id).collection('cards').get();
+                        data.cardCount = cardsSnap.size;
+                        // Keep stored count in sync
+                        if ((doc.data().cardCount || 0) !== cardsSnap.size) {
+                            doc.ref.update({ cardCount: cardsSnap.size }).catch(() => {});
+                        }
+                    } catch(e) {}
+                    return { id: doc.id, ...data };
+                }));
+                return lists;
             } catch(e) { console.error('Failed to load lists:', e); return []; }
         }
 
@@ -4201,14 +4215,22 @@
         }
 
         function listCardEl(c, docId) {
-            const img = c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.normal || '';
-            const selectCheckbox = State.listSelectMode ? `
-                <div class="list-card-checkbox" style="position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;border:2px solid white;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;cursor:pointer;z-index:5;"></div>
-            ` : '';
-            return `<div class="card-item" data-card-doc-id="${docId}" onclick="${State.listSelectMode ? `toggleListCardSelection('${docId}')` : `openCardDetail('${c.id}')`}" style="cursor:pointer;position:relative;">
-                ${selectCheckbox}
-                <img src="${img}" alt="${c.name}" loading="lazy">
-            </div>`;
+            if (State.listSelectMode) {
+                // Select mode: compact card with checkbox overlay
+                const img = c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.normal || '';
+                const pr = getPrice(c);
+                const isSelected = State.selectedListCards?.has(docId);
+                return `<div class="mtg-card" data-card-doc-id="${docId}" onclick="toggleListCardSelection('${docId}')" style="cursor:pointer;position:relative;">
+                    <div class="mtg-card-img-container">
+                        <img src="${img}" class="mtg-card-img" loading="lazy">
+                        <div style="position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:50%;border:2px solid white;background:${isSelected ? 'var(--accent-primary)' : 'rgba(0,0,0,0.55)'};display:flex;align-items:center;justify-content:center;color:white;font-size:14px;z-index:5;">${isSelected ? '✓' : ''}</div>
+                    </div>
+                    <div class="mtg-card-info"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-prices"><span class="mtg-card-price">${pr.val}</span></div></div>
+                </div>`;
+            }
+            // Normal mode: full card with price/actions — wrap cardEl output with docId data attr
+            const el = cardEl(c, c.rarity);
+            return el.replace('<div class="mtg-card">', `<div class="mtg-card" data-card-doc-id="${docId}">`);
         }
 
         function openNewListModal() {
