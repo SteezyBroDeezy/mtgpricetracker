@@ -2800,10 +2800,14 @@
         async function searchAndOpenCard(name){
             searchResults.classList.remove('active');
             searchInput.value=name;
-            // Search for the exact card and open it
             try{
                 const d=await API.searchPriority('!"'+name+'"',{unique:'cards'});
-                if(d.data?.length){openCardDetail(d.data[0].id);}
+                if(d.data?.length){openCardDetail(d.data[0].id);return;}
+                // Fallback: try as flavor name
+                const fd=await fetch(`https://api.scryfall.com/cards/search?q=fn%3A%22${encodeURIComponent(name)}%22&unique=cards`);
+                const fj=await fd.json();
+                if(fj.data?.length){openCardDetail(fj.data[0].id);}
+                else showToast('Card not found','error');
             }catch(e){showToast('Card not found','error');}
         }
 
@@ -2954,7 +2958,7 @@
             const extLinks=`<div class="external-links"><a href="${getMTGStocksUrl(c.name)}" target="_blank" class="ext-link">📈 MTGStocks</a><a href="${getTCGPlayerUrl(c.name)}" target="_blank" class="ext-link">🛒 TCGPlayer</a><a href="${getCardKingdomUrl(c.name)}" target="_blank" class="ext-link">👑 Card Kingdom</a><a href="${getEDHRECUrl(c.name)}" target="_blank" class="ext-link">📊 EDHREC</a></div>`;
             // Printings placeholder
             const printingsHtml = `<div id="printingsContainer"></div>`;
-            document.getElementById('cardModalTitle').textContent=c.name;document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div><div style="position:relative;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);transition:opacity 0.15s;" id="mainCardImage">${flipBtn}</div>${hasMultipleFaces ? `<div style="text-align:center;margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem;" id="faceIndicator">${c.card_faces[0].name} (1/2)</div>` : ''}${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
+            document.getElementById('cardModalTitle').innerHTML = c.name + (c.flavor_name ? ` <span style="font-family:var(--font-body);font-size:0.7em;color:var(--accent-blue);font-weight:400;display:block;margin-top:0.1em;">Also known as: ${c.flavor_name}</span>` : '');document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div><div style="position:relative;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);transition:opacity 0.15s;" id="mainCardImage">${flipBtn}</div>${hasMultipleFaces ? `<div style="text-align:center;margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem;" id="faceIndicator">${c.card_faces[0].name} (1/2)</div>` : ''}${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
             // Store current card for add-to-list
             State.currentDetailCard=c;openModal('cardModal');
             // Load and draw price chart
@@ -3595,6 +3599,17 @@
                     document.getElementById('advResultsTitle').textContent = '🔍 Results for: ' + query + ' (' + (data.total_cards || data.data.length) + ' cards)';
                     loadMoreBtn.style.display = data.has_more ? 'inline-flex' : 'none';
                 } else {
+                    // Try flavor name search as fallback
+                    try {
+                        const fd = await fetch(`https://api.scryfall.com/cards/search?q=fn%3A${encodeURIComponent(query)}&order=usd&dir=desc`);
+                        const fj = await fd.json();
+                        if (fj.data && fj.data.length) {
+                            grid.innerHTML = fj.data.map(c => cardEl(c, c.rarity)).join('');
+                            document.getElementById('advResultsTitle').textContent = `🎭 Flavor name results for: "${query}" (${fj.total_cards || fj.data.length} cards)`;
+                            loadMoreBtn.style.display = fj.has_more ? 'inline-flex' : 'none';
+                            return;
+                        }
+                    } catch(_) {}
                     grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);"><div style="font-size:3rem;margin-bottom:1rem;">🔍</div><p>No cards found for "' + query + '"</p><p style="font-size:0.85rem;margin-top:0.5rem;">Try different search terms or check the syntax help</p></div>';
                     loadMoreBtn.style.display = 'none';
                 }
