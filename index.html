@@ -215,8 +215,9 @@
             .stat-value { font-size: 1.4rem; }
 
             /* Mobile modal */
-            .modal-overlay { padding: 0.5rem; }
-            .modal { max-height: 90vh; overflow-y: auto; width: 100%; max-width: 100%; }
+            .modal-overlay { padding: 0.5rem; backdrop-filter: none; -webkit-backdrop-filter: none; }
+            .modal-overlay.active { overflow-y: auto; }
+            .modal { max-height: 85vh; overflow-y: auto; width: 100%; max-width: 100%; margin-bottom: env(keyboard-inset-height, 0px); }
             .modal-body { padding: 1rem; }
             .modal-body > div { grid-template-columns: 1fr !important; }
             .modal-body img { max-width: 200px; margin: 0 auto; display: block; }
@@ -477,7 +478,7 @@
         .settings-label { font-weight: 500; }
         .settings-label small { display: block; color: var(--text-secondary); font-size: 0.8rem; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; -webkit-overflow-scrolling: touch; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--bg-secondary); border-radius: var(--radius-lg); max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; animation: modalSlide 0.3s ease; border: 1px solid var(--bg-tertiary); }
         .modal.wide { max-width: 750px; }
@@ -604,22 +605,26 @@
         /* Last Updated */
         .last-updated { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; }
 
-        /* Add to List Dropdown - Enhanced for Mobile */
-        .add-to-list-dropdown { position: relative; display: inline-block; }
-        .add-to-list-menu { position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--accent-primary); border-radius: var(--radius-md); min-width: 220px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-        .add-to-list-menu.active { display: block; animation: slideIn 0.2s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .add-to-list-item { padding: 0.85rem 1rem; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; align-items: center; gap: 0.5rem; }
+        /* Add to List - Full Overlay Modal */
+        .list-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 9000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        .list-overlay.active { opacity: 1; pointer-events: all; }
+        .list-overlay-panel { background: var(--bg-secondary); border: 1px solid var(--accent-primary); border-radius: var(--radius-lg); width: 90%; max-width: 380px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(157,78,221,0.35), 0 20px 60px rgba(0,0,0,0.7); transform: translateY(16px); transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); overflow: hidden; }
+        .list-overlay.active .list-overlay-panel { transform: translateY(0); }
+        .list-overlay-header { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--bg-tertiary); }
+        .list-overlay-title { font-family: var(--font-display); font-size: 1rem; color: var(--accent-gold); }
+        .list-overlay-close { background: none; border: none; color: var(--text-secondary); font-size: 1.3rem; cursor: pointer; line-height: 1; padding: 0; transition: color var(--transition-fast); }
+        .list-overlay-close:hover { color: var(--text-primary); }
+        .list-overlay-lists { flex: 1; overflow-y: auto; }
+        .add-to-list-item { padding: 0.9rem 1.25rem; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid var(--bg-tertiary); display: flex; align-items: center; gap: 0.6rem; transition: background var(--transition-fast); }
         .add-to-list-item:hover { background: var(--bg-tertiary); }
         .add-to-list-item:last-child { border-bottom: none; }
-        .add-to-list-item.create-new { color: var(--accent-gold); font-weight: 600; border-top: 2px solid var(--accent-primary); }
-        .add-to-list-item.create-new:hover { background: color-mix(in srgb, var(--accent-gold) 10%, var(--bg-card)); }
-        .add-to-list-input { width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--accent-primary); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 0.9rem; margin: 0.5rem 0; }
-        .add-to-list-input:focus { outline: none; border-color: var(--accent-gold); }
-        @media (max-width: 768px) {
-            .add-to-list-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 320px; max-height: 70vh; }
-            .add-to-list-item { padding: 1rem 1.25rem; font-size: 1rem; min-height: 50px; }
-        }
+        .add-to-list-item.create-new { color: var(--accent-gold); font-weight: 600; background: rgba(157,78,221,0.06); }
+        .add-to-list-item.create-new:hover { background: rgba(157,78,221,0.14); }
+        .list-overlay-create { padding: 1rem 1.25rem; border-top: 1px solid var(--bg-tertiary); background: var(--bg-card); display: none; }
+        .list-overlay-create.visible { display: block; }
+        .add-to-list-input { width: 100%; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--accent-primary); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 0.95rem; box-sizing: border-box; }
+        .add-to-list-input:focus { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(255,215,0,0.15); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Price Movers Section */
         .movers-section { margin-bottom: 2rem; transition: opacity 0.4s ease; }
@@ -2185,10 +2190,10 @@
             <div class="modal-header"><h3 class="modal-title" id="authModalTitle">Sign In</h3><button class="modal-close" onclick="closeModal('authModal')">✕</button></div>
             <div class="modal-body">
                 <div class="auth-notice"><span>💀</span><span>Same account as <strong>MTG Deck Skeleton</strong> & <strong>Skull Games</strong>!</span></div>
-                <form id="authForm">
-                    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="authEmail" required></div>
-                    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="authPassword" required></div>
-                    <div id="authError" style="color:var(--accent-red);margin-bottom:1rem;display:none;"></div>
+                <form id="authForm" novalidate onsubmit="return false;">
+                    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="authEmail" autocomplete="email" inputmode="email" placeholder="your@email.com"></div>
+                    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="authPassword" autocomplete="current-password" placeholder="Password"></div>
+                    <div id="authError" style="color:var(--accent-red);margin-bottom:1rem;display:none;padding:0.75rem;background:rgba(255,71,87,0.1);border-radius:var(--radius-sm);border:1px solid var(--accent-red);"></div>
                 </form>
             </div>
             <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('authModal')">Cancel</button><button class="btn btn-primary" id="authSubmitBtn" onclick="handleAuth()">Sign In</button></div>
@@ -2690,7 +2695,36 @@
         // Auth
         function openAuthModal(mode='login'){document.getElementById('authModalTitle').textContent=mode==='login'?'Sign In':'Create Account';document.getElementById('authSubmitBtn').textContent=mode==='login'?'Sign In':'Sign Up';document.getElementById('authToggleText').textContent=mode==='login'?"Don't have an account?":'Already have an account?';document.getElementById('authForm').dataset.mode=mode;document.getElementById('authError').style.display='none';openModal('authModal');}
         function toggleAuthMode(e){e.preventDefault();openAuthModal(document.getElementById('authForm').dataset.mode==='login'?'signup':'login');}
-        async function handleAuth(){const email=document.getElementById('authEmail').value,pass=document.getElementById('authPassword').value,mode=document.getElementById('authForm').dataset.mode,err=document.getElementById('authError');if(!auth){err.textContent='Firebase not configured';err.style.display='block';return;}try{if(mode==='login')await auth.signInWithEmailAndPassword(email,pass);else await auth.createUserWithEmailAndPassword(email,pass);closeModal('authModal');showToast('Signed in!','success');}catch(e){err.textContent=e.message;err.style.display='block';}}
+        async function handleAuth(){
+            const email=document.getElementById('authEmail').value.trim();
+            const pass=document.getElementById('authPassword').value;
+            const mode=document.getElementById('authForm').dataset.mode;
+            const err=document.getElementById('authError');
+            const btn=document.getElementById('authSubmitBtn');
+            // Basic validation
+            if(!email||!pass){err.textContent='Please enter your email and password.';err.style.display='block';err.scrollIntoView({behavior:'smooth',block:'nearest'});return;}
+            if(!auth){err.textContent='Firebase not configured';err.style.display='block';return;}
+            // Show loading state, prevent double-tap
+            const origText=btn.textContent;
+            btn.disabled=true;
+            btn.textContent='Signing in...';
+            err.style.display='none';
+            try{
+                if(mode==='login') await auth.signInWithEmailAndPassword(email,pass);
+                else await auth.createUserWithEmailAndPassword(email,pass);
+                closeModal('authModal');
+                showToast('Signed in!','success');
+            }catch(e){
+                // Map Firebase error codes to friendly messages
+                const msgs={'auth/invalid-email':'Invalid email address.','auth/user-not-found':'No account found with this email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Incorrect email or password.','auth/too-many-requests':'Too many attempts. Please try again later.','auth/network-request-failed':'Network error. Check your connection and try again.'};
+                err.textContent=msgs[e.code]||e.message;
+                err.style.display='block';
+                err.scrollIntoView({behavior:'smooth',block:'nearest'});
+            }finally{
+                btn.disabled=false;
+                btn.textContent=origText;
+            }
+        }
         async function handlePasswordReset(e){e.preventDefault();const email=document.getElementById('authEmail').value;if(!email){showToast('Enter email','warning');return;}try{await auth.sendPasswordResetEmail(email);showToast('Reset email sent!','success');}catch(e){showToast(e.message,'error');}}
         function handleSignOut(){if(auth)auth.signOut();currentUser=null;updateAuthUI();showToast('Signed out','info');}
         function updateAuthUI(){
