@@ -478,7 +478,7 @@
         .settings-label { font-weight: 500; }
         .settings-label small { display: block; color: var(--text-secondary); font-size: 0.8rem; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; -webkit-overflow-scrolling: touch; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 1rem; -webkit-overflow-scrolling: touch; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--bg-secondary); border-radius: var(--radius-lg); max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; animation: modalSlide 0.3s ease; border: 1px solid var(--bg-tertiary); }
         .modal.wide { max-width: 750px; }
@@ -537,7 +537,7 @@
         .api-status-dot.warning { background: var(--accent-orange); }
         .api-status-dot.error { background: var(--accent-red); }
 
-        .toast-container { position: fixed; top: 80px; right: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 3000; }
+        .toast-container { position: fixed; top: 80px; right: 1rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 6000; }
         .toast { padding: 1rem; background: var(--bg-card); border-radius: var(--radius-md); border-left: 4px solid var(--accent-primary); display: flex; align-items: center; gap: 0.75rem; min-width: 280px; animation: toastSlide 0.3s ease; backdrop-filter: blur(10px); }
         @keyframes toastSlide { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
         .toast.success { border-color: var(--accent-green); }
@@ -1258,6 +1258,27 @@
                 </div>
             </div>
 
+            <!-- Unique Card Count Bar -->
+            <div id="uniqueCardBar" style="display:flex;align-items:center;justify-content:center;gap:1.5rem;padding:0.6rem 1rem;margin-bottom:0.75rem;background:var(--bg-card);border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.05);flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span style="font-size:1.1rem;">🃏</span>
+                    <span style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Unique Cards</span>
+                    <span style="font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:var(--accent-gold);" id="statUniqueCards">—</span>
+                </div>
+                <div style="width:1px;height:20px;background:var(--bg-tertiary);"></div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span style="font-size:1.1rem;">📚</span>
+                    <span style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Total Sets</span>
+                    <span style="font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:var(--accent-primary);" id="statTotalSets">—</span>
+                </div>
+                <div style="width:1px;height:20px;background:var(--bg-tertiary);"></div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span style="font-size:1.1rem;">🆕</span>
+                    <span style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Latest Set</span>
+                    <span style="font-size:0.85rem;font-weight:600;color:var(--text-primary);" id="statLatestSet">—</span>
+                </div>
+            </div>
+
             <!-- Releases Banner - Compact Row -->
             <div class="releases-banner" id="releasesBanner" style="display:none;margin-bottom:0.75rem;">
                 <div id="releasesBannerContent" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;"></div>
@@ -1284,7 +1305,7 @@
                     <h2 class="section-title">🔄 Notable Reprints — Latest Sets</h2>
                     <button class="btn btn-sm" onclick="openReprintsFullView()">View All Reprints →</button>
                 </div>
-                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">Valuable reprints found in the most recent releases</p>
+                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">All reprints from the most recent releases, sorted by value</p>
                 <div id="reprintsDashGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem;">
                     <div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>
                 </div>
@@ -2508,6 +2529,12 @@
                     <button class="sets-browser-back" onclick="closeReprintsBrowser()">← Back</button>
                     <h2>🔄 Reprints by Set</h2>
                 </div>
+                <div style="display:flex;gap:0.5rem;align-items:center;margin-left:auto;">
+                    <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--text-secondary);cursor:pointer;white-space:nowrap;" title="Include Secret Lairs, Commander decks, Spellbooks, promos, and other small releases">
+                        <input type="checkbox" id="reprintsIncludeSmall" onchange="toggleReprintsSmallSets(this.checked)" style="accent-color:var(--accent-primary);">
+                        Include small sets
+                    </label>
+                </div>
             </div>
             <div style="display:flex;gap:0.5rem;padding:0 1.5rem 1rem;flex-wrap:wrap;overflow-x:auto;" id="reprintsSetTabs"></div>
         </div>
@@ -3366,7 +3393,7 @@
         const rsData={};
         async function loadRSCards(code,limit){
             const grid=document.getElementById('rsCards_'+code);if(!grid)return;
-            try{const d=await API.search('set:'+code+' usd>0',{order:'usd',dir:'desc'});
+            try{const d=await API.search('set:'+code+' (usd>0 or usd_foil>0)',{order:'usd',dir:'desc'});
                 if(d.data?.length){rsData[code]=d;grid.innerHTML=d.data.slice(0,limit).map(c=>cardEl(c)).join('');
                 const btn=document.getElementById('rsMore_'+code);if(btn&&d.data.length>5)btn.style.display='inline-flex';
             }else{grid.innerHTML='<p style="color:var(--text-muted);font-size:0.8rem;">No priced cards</p>';}}catch(e){grid.innerHTML='';}
@@ -4085,7 +4112,7 @@
         async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}}catch(e){grid.innerHTML='<p>No cards</p>';}}
 
         // Trending
-        async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');grid.innerHTML='<div class="loading-spinner"></div>';let q='usd>0.5';if(f==='standard')q='f:standard';else if(f==='modern')q='f:modern usd>1';else if(f==='commander')q='f:commander is:popular';try{const d=await API.search(q,{order:'usd',dir:'desc'});State.trendingData=d;if(d.data){const badges=['spike','hot','drop',''];grid.innerHTML=d.data.slice(0,16).map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');document.getElementById('loadMoreBtn').style.display=d.has_more?'inline-flex':'none';}}catch(e){grid.innerHTML='<p>Failed</p>';}}
+        async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');grid.innerHTML='<div class="loading-spinner"></div>';let q='(usd>0.5 or usd_foil>0.5)';if(f==='standard')q='f:standard (usd>0 or usd_foil>0)';else if(f==='modern')q='f:modern (usd>1 or usd_foil>1)';else if(f==='commander')q='f:commander is:popular';try{const d=await API.search(q,{order:'usd',dir:'desc'});State.trendingData=d;if(d.data){const badges=['spike','hot','drop',''];grid.innerHTML=d.data.slice(0,16).map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');document.getElementById('loadMoreBtn').style.display=d.has_more?'inline-flex':'none';}}catch(e){grid.innerHTML='<p>Failed</p>';}}
         async function loadMoreTrending(){const grid=document.getElementById('trendingGrid');const btn=document.getElementById('loadMoreBtn');btn.textContent='Loading...';btn.disabled=true;if(State.trendingData?.next_page){try{const resp=await fetch(State.trendingData.next_page);const d=await resp.json();State.trendingData=d;const badges=['spike','hot','drop',''];grid.innerHTML+=d.data.map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}}btn.textContent='Load More';btn.disabled=false;}
 
         // Helper to check if card is double-faced
@@ -4128,7 +4155,7 @@
             const isDFC = isDoubleFaced(c);
             // Use real price change if available, otherwise check cached history
             let chg=priceChange;let showChange=true;
-            if(chg===null){const hist=State.priceHistory[c.id];if(hist&&hist.length>=2){const oldest=hist[0].usd;const current=pr.num;if(oldest&&current)chg=((current-oldest)/oldest*100).toFixed(1);else showChange=false;}else showChange=false;}
+            if(chg===null){const hist=State.priceHistory[c.id];if(hist&&hist.length>=2){const oldest=hist[0].usd||hist[0].usd_foil||hist[0].usd_etched;const current=pr.num;if(oldest&&current)chg=((current-oldest)/oldest*100).toFixed(1);else showChange=false;}else showChange=false;}
             const cls=chg>=0?'positive':'negative';const inWL=isInWatchlist(c.id);let bc=badge;if(['mythic','rare','uncommon','common'].includes(badge))bc=badge;
             const changeHtml=showChange&&chg!==null?`<span class="mtg-card-change ${cls}">${chg>=0?'+':''}${chg}%</span>`:'';
             const flipBtn = isDFC ? `<button class="quick-btn" onclick="toggleGridCardFlip('${c.id}',event)" title="Flip card" style="background:var(--bg-tertiary);font-size:0.8rem;">🔄</button>` : '';
@@ -4630,11 +4657,12 @@
             const prices = {
                 usd: parseFloat(card.prices?.usd) || null,
                 usd_foil: parseFloat(card.prices?.usd_foil) || null,
+                usd_etched: parseFloat(card.prices?.usd_etched) || null,
                 eur: parseFloat(card.prices?.eur) || null,
                 name: card.name,
                 set: card.set
             };
-            if (!prices.usd && !prices.usd_foil) return; // No price data
+            if (!prices.usd && !prices.usd_foil && !prices.usd_etched) return; // No price data at all
             try {
                 await db.collection('priceHistory').doc(card.id).collection('snapshots').doc(today).set(prices);
                 await db.collection('priceHistory').doc(card.id).set({ name: card.name, set: card.set, lastUpdated: today }, { merge: true });
@@ -4661,7 +4689,7 @@
 
         function calculatePriceChange(history, currentPrice) {
             if (!history || !history.length) return null;
-            const oldest = history[0].usd;
+            const oldest = history[0].usd || history[0].usd_foil || history[0].usd_etched;
             if (!oldest || !currentPrice) return null;
             return ((currentPrice - oldest) / oldest * 100).toFixed(1);
         }
@@ -4914,12 +4942,12 @@
             const allMovers = State.priceMovers.allMovers;
 
             const categoryQueries = {
-                mythic: { query: 'r:mythic usd>0', gainersId: 'mythicGainersContent', losersId: 'mythicLosersContent', section: 'mythicMoversSection' },
-                rare: { query: 'r:rare usd>0.50', gainersId: 'rareGainersContent', losersId: 'rareLosersContent', section: 'rareMoversSection' },
-                commander: { query: 'f:commander is:staple usd>0', gainersId: 'commanderGainersContent', losersId: 'commanderLosersContent', section: 'commanderMoversSection' },
-                modern: { query: 'f:modern usd>0.50', gainersId: 'modernGainersContent', losersId: 'modernLosersContent', section: 'modernMoversSection' },
-                pioneer: { query: 'f:pioneer usd>0.50', gainersId: 'pioneerGainersContent', losersId: 'pioneerLosersContent', section: 'pioneerMoversSection' },
-                creature: { query: 't:creature usd>0.50', gainersId: 'creatureGainersContent', losersId: 'creatureLosersContent', section: 'creatureMoversSection' }
+                mythic: { query: 'r:mythic (usd>0 or usd_foil>0)', gainersId: 'mythicGainersContent', losersId: 'mythicLosersContent', section: 'mythicMoversSection' },
+                rare: { query: 'r:rare (usd>0.50 or usd_foil>0.50)', gainersId: 'rareGainersContent', losersId: 'rareLosersContent', section: 'rareMoversSection' },
+                commander: { query: 'f:commander is:staple (usd>0 or usd_foil>0)', gainersId: 'commanderGainersContent', losersId: 'commanderLosersContent', section: 'commanderMoversSection' },
+                modern: { query: 'f:modern (usd>0.50 or usd_foil>0.50)', gainersId: 'modernGainersContent', losersId: 'modernLosersContent', section: 'modernMoversSection' },
+                pioneer: { query: 'f:pioneer (usd>0.50 or usd_foil>0.50)', gainersId: 'pioneerGainersContent', losersId: 'pioneerLosersContent', section: 'pioneerMoversSection' },
+                creature: { query: 't:creature (usd>0.50 or usd_foil>0.50)', gainersId: 'creatureGainersContent', losersId: 'creatureLosersContent', section: 'creatureMoversSection' }
             };
 
             for (const [cat, config] of Object.entries(categoryQueries)) {
@@ -4958,7 +4986,7 @@
             for (const setCode of State.trackedSets.slice(0, 5)) {
                 try {
                     const cards = await API.search(`set:${setCode}`, { order: 'usd', dir: 'desc' });
-                    const totalValue = cards.data?.reduce((sum, c) => sum + (parseFloat(c.prices?.usd) || 0), 0) || 0;
+                    const totalValue = cards.data?.reduce((sum, c) => sum + (parseFloat(c.prices?.usd) || parseFloat(c.prices?.usd_foil) || parseFloat(c.prices?.usd_etched) || 0), 0) || 0;
                     const topCard = cards.data?.[0];
                     const set = State.sets.find(s => s.code === setCode);
                     summaries.push({
@@ -4968,7 +4996,7 @@
                         totalValue: totalValue.toFixed(2),
                         cardCount: cards.total_cards || 0,
                         topCard: topCard?.name || 'N/A',
-                        topPrice: topCard?.prices?.usd || '0'
+                        topPrice: topCard?.prices?.usd || topCard?.prices?.usd_foil || topCard?.prices?.usd_etched || '0'
                     });
                 } catch(e) {}
             }
@@ -5208,7 +5236,8 @@
             document.querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t.dataset.format === format));
             const grid = document.getElementById('staplesGrid');
             grid.innerHTML = '<div class="loading-spinner"></div>';
-            const query = formatStaplesQueries[format] + ` usd>${State.currentStaplesTier}`;
+            const tier = State.currentStaplesTier;
+            const query = formatStaplesQueries[format] + ` (usd>${tier} or usd_foil>${tier})`;
             try {
                 const d = await API.search(query, { order: 'usd', dir: 'desc' });
                 State.staplesData = d;
@@ -5242,6 +5271,32 @@
 
         // ====== CATEGORY SECTIONS REGISTRY ======
         // Each section group has a title, categories with queries, and rotation metadata
+
+        // Query enhancer: ensures price filters catch foil-only cards too
+        // Transforms "usd>X" → "(usd>X or usd_foil>X)" and range queries accordingly
+        function enhancePriceQuery(q) {
+            // Extract all usd price conditions from the query
+            const usdConditions = [];
+            const otherParts = [];
+            // Split query by spaces, group usd conditions
+            const tokens = q.split(/\s+/);
+            tokens.forEach(t => {
+                if (/^usd[><=!]/.test(t) && !t.startsWith('usd_')) {
+                    usdConditions.push(t);
+                } else {
+                    otherParts.push(t);
+                }
+            });
+            if (!usdConditions.length) return q;
+            // Create foil equivalents
+            const foilConditions = usdConditions.map(c => c.replace(/^usd/, 'usd_foil'));
+            // Build enhanced query: (original usd filters) OR (foil equivalents)
+            const usdPart = usdConditions.join(' ');
+            const foilPart = foilConditions.join(' ');
+            const otherStr = otherParts.join(' ');
+            return `${otherStr} (${usdPart} or ${foilPart})`.trim();
+        }
+
         const categorySections = {
             // === ALWAYS-ON: Show every visit ===
             priceTiers: { title: '🔥 Budget Picks by Price', subtitle: 'Hot cards at every price point', alwaysOn: true, cats: {
@@ -5564,7 +5619,7 @@
             if (!container) return;
             const card = document.getElementById(config.id.replace('Content','') + 'Card');
             try {
-                const d = await API.search(config.query, { order: 'usd', dir: 'desc' });
+                const d = await API.search(enhancePriceQuery(config.query), { order: 'usd', dir: 'desc' });
                 if (d.data?.length) {
                     categoryCardData[cat] = { cards: d.data.slice(0, 50), expanded: false, config };
                     renderCategoryCards(cat, container, false);
@@ -5667,7 +5722,7 @@
             if (recentSec) recentSec.style.display = 'none';
             if (moversSec) moversSec.style.display = 'none';
             view.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            view.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             const cached = categoryCardData[cat];
             const config = categoryMoverQueries[cat];
@@ -5676,7 +5731,7 @@
                 grid.innerHTML = cached.cards.map(c => cardEl(c, c.rarity)).join('');
             } else if (config) {
                 try {
-                    const d = await API.search(config.query, { order: 'usd', dir: 'desc' });
+                    const d = await API.search(enhancePriceQuery(config.query), { order: 'usd', dir: 'desc' });
                     if (d.data && d.data.length) {
                         categoryFullViewData = d.data;
                         grid.innerHTML = d.data.map(c => cardEl(c, c.rarity)).join('');
@@ -6048,17 +6103,75 @@
         }, { rootMargin: '200px' }); // Start loading 200px before visible
 
 
+        // ====== UNIQUE CARD COUNTER ======
+        async function loadUniqueCardCount() {
+            try {
+                // Single lightweight call — we only need total_cards from the response header
+                const d = await API.req('/cards/search?q=game%3Apaper&unique=cards&page=1', { cacheTTL: 3600000 }); // Cache 1hr
+                const total = d.total_cards || 0;
+                const el = document.getElementById('statUniqueCards');
+                if (el && total > 0) {
+                    // Animate the counter
+                    animateCounter(el, total);
+                }
+            } catch(e) { console.log('Unique card count failed:', e); }
+
+            // Also populate total sets count and latest set
+            try {
+                if (!allScryfallSets) {
+                    const d = await API.sets();
+                    allScryfallSets = d.data || [];
+                }
+                const allSets = allScryfallSets.filter(s => !s.digital && s.card_count > 0);
+                const totalSetsEl = document.getElementById('statTotalSets');
+                if (totalSetsEl) animateCounter(totalSetsEl, allSets.length);
+
+                // Find latest released set
+                const now = new Date().toISOString().split('T')[0];
+                const released = allSets.filter(s => s.released_at && s.released_at <= now)
+                    .sort((a, b) => b.released_at.localeCompare(a.released_at));
+                const latestEl = document.getElementById('statLatestSet');
+                if (latestEl && released.length) {
+                    latestEl.textContent = released[0].name;
+                    latestEl.title = `Released ${released[0].released_at} • ${released[0].card_count} cards`;
+                }
+            } catch(e) {}
+        }
+
+        function animateCounter(el, target) {
+            const duration = 1200;
+            const start = performance.now();
+            const from = 0;
+            function tick(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                // Ease out
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(from + (target - from) * eased);
+                el.textContent = current.toLocaleString();
+                if (progress < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        }
+
+
         // ====== REPRINTS SECTION ======
         // Cache for reprints data per set code
         const reprintsCache = {};
         // All sets from Scryfall (full list for family grouping)
         let allScryfallSets = null;
-        // Set families: { familyKey: { name, icon, codes: [setCode, ...], releasedAt } }
-        let setFamilies = null;
+        // Set families caches: big (50+ cards) and all (any size)
+        let setFamiliesBig = null;
+        let setFamiliesAll = null;
+        // Whether to include small sets in the reprints browser
+        let reprintsIncludeSmall = false;
 
         // Fetch ALL sets and build family groups
-        async function buildSetFamilies() {
-            if (setFamilies) return setFamilies;
+        async function buildSetFamilies(includeSmall = false) {
+            // Return cached if available
+            if (includeSmall && setFamiliesAll) return setFamiliesAll;
+            if (!includeSmall && setFamiliesBig) return setFamiliesBig;
+
             try {
                 if (!allScryfallSets) {
                     const d = await API.sets();
@@ -6075,10 +6188,9 @@
 
                 // Group sets into families using parent_set_code
                 const families = {};
-                const validTypes = ['expansion','core','masters','draft_innovation','commander','supplemental','starter','token','promo','box','arsenal','funny','memorabilia','spellbook','from_the_vault','premium_deck','duel_deck','planechase','archenemy'];
 
                 allScryfallSets.forEach(s => {
-                    // Skip digital-only and tiny sets
+                    // Skip digital-only and empty sets
                     if (s.digital || s.card_count < 1) return;
 
                     const parentCode = s.parent_set_code || s.code;
@@ -6091,7 +6203,8 @@
                             icon: parentSet ? parentSet.icon_svg_uri : s.icon_svg_uri,
                             codes: [],
                             releasedAt: parentSet ? parentSet.released_at : s.released_at,
-                            totalCards: 0
+                            totalCards: 0,
+                            setType: parentSet ? parentSet.set_type : s.set_type
                         };
                     }
 
@@ -6107,12 +6220,14 @@
                     }
                 });
 
-                // Only keep families that have at least one "real" set (50+ cards total)
-                setFamilies = Object.values(families)
-                    .filter(f => f.totalCards >= 50)
+                const allFamilies = Object.values(families)
                     .sort((a, b) => (b.releasedAt || '').localeCompare(a.releasedAt || ''));
 
-                return setFamilies;
+                // Cache both versions
+                setFamiliesAll = allFamilies.filter(f => f.totalCards >= 1);
+                setFamiliesBig = allFamilies.filter(f => f.totalCards >= 50);
+
+                return includeSmall ? setFamiliesAll : setFamiliesBig;
             } catch(e) {
                 console.error('Failed to build set families:', e);
                 return [];
@@ -6120,26 +6235,44 @@
         }
 
         // Get the latest N set families (released, not future)
-        async function getLatestFamilies(count = 5) {
-            const families = await buildSetFamilies();
+        async function getLatestFamilies(count = 5, includeSmall = false) {
+            const families = await buildSetFamilies(includeSmall);
             const now = new Date().toISOString().split('T')[0];
             return families.filter(f => f.releasedAt && f.releasedAt <= now).slice(0, count);
+        }
+
+        // Toggle small sets in reprints browser
+        async function toggleReprintsSmallSets(checked) {
+            reprintsIncludeSmall = checked;
+            await loadReprintsFullView();
         }
 
         // Fetch reprints for a single set code
         async function fetchSetReprints(setCode) {
             if (reprintsCache[setCode]) return reprintsCache[setCode];
             try {
-                const d = await API.req('/cards/search?q=s%3A' + encodeURIComponent(setCode) + '+is%3Areprint+usd>0.50&order=usd&dir=desc&unique=cards', { priority: true });
-                const results = (d.data || []).slice(0, 20).map(c => ({
+                // Fetch ALL reprints for this set, no price filter, sorted by price desc
+                const d = await API.req('/cards/search?q=s%3A' + encodeURIComponent(setCode) + '+is%3Areprint&order=usd&dir=desc&unique=cards', { priority: true });
+                let allCards = d.data || [];
+                // Fetch additional pages if available (Scryfall pages at 175)
+                let nextPage = d.has_more ? d.next_page : null;
+                while (nextPage) {
+                    try {
+                        const pageUrl = nextPage.replace('https://api.scryfall.com', '');
+                        const nd = await API.req(pageUrl, { priority: false });
+                        allCards = allCards.concat(nd.data || []);
+                        nextPage = nd.has_more ? nd.next_page : null;
+                    } catch(e) { break; }
+                }
+                const results = allCards.map(c => ({
                     id: c.id,
                     name: c.name,
                     set: c.set,
                     setName: c.set_name,
                     image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
                     imageLarge: c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.normal || '',
-                    price: parseFloat(c.prices?.usd || 0),
-                    priceStr: c.prices?.usd ? '$' + c.prices.usd : 'N/A',
+                    price: parseFloat(c.prices?.usd || c.prices?.usd_foil || 0),
+                    priceStr: c.prices?.usd ? '$' + c.prices.usd : (c.prices?.usd_foil ? '$' + c.prices.usd_foil + ' (foil)' : 'N/A'),
                     rarity: c.rarity,
                     typeLine: c.type_line
                 }));
@@ -6245,8 +6378,9 @@
             content.innerHTML = '<div class="loading-spinner" style="margin:2rem auto;"></div>';
             tabsContainer.innerHTML = '';
 
-            // Get latest families (more for full view)
-            const families = await getLatestFamilies(15);
+            // Get latest families — more when including small sets, but cap to avoid overload
+            const count = reprintsIncludeSmall ? 30 : 15;
+            const families = await getLatestFamilies(count, reprintsIncludeSmall);
             reprintsAllFamilies = families;
 
             if (!families.length) {
@@ -6254,11 +6388,13 @@
                 return;
             }
 
-            // Build family tabs
+            // Build family tabs with size badges for small sets
             tabsContainer.innerHTML = `<button class="reprints-set-tab active" data-set="all" onclick="selectReprintsSet('all')">All Sets</button>` +
-                families.map(f =>
-                    `<button class="reprints-set-tab" data-set="${f.key}" onclick="selectReprintsSet('${f.key}')">${f.icon ? `<img src="${f.icon}" style="width:16px;height:16px;filter:brightness(0) invert(1);vertical-align:middle;margin-right:4px;">` : ''}${f.name}</button>`
-                ).join('');
+                families.map(f => {
+                    const isSmall = f.totalCards < 50;
+                    const badge = isSmall ? `<span style="font-size:0.6rem;background:var(--bg-tertiary);padding:0.1rem 0.3rem;border-radius:4px;margin-left:3px;vertical-align:middle;">SM</span>` : '';
+                    return `<button class="reprints-set-tab" data-set="${f.key}" onclick="selectReprintsSet('${f.key}')">${f.icon ? `<img src="${f.icon}" style="width:16px;height:16px;filter:brightness(0) invert(1);vertical-align:middle;margin-right:4px;">` : ''}${f.name}${badge}</button>`;
+                }).join('');
 
             reprintsActiveFamilyKey = 'all';
             await renderReprintsForFamily('all');
@@ -6290,7 +6426,7 @@
                             ${fam.icon ? `<img src="${fam.icon}" style="width:28px;height:28px;filter:brightness(0) invert(1);">` : ''}
                             <div>
                                 <h3 style="font-family:var(--font-display);font-size:1.1rem;">${fam.name}</h3>
-                                <span style="font-size:0.8rem;color:var(--text-secondary);">${reprints.length} reprint${reprints.length !== 1 ? 's' : ''} over $0.50${subSetNote}</span>
+                                <span style="font-size:0.8rem;color:var(--text-secondary);">${reprints.length} reprint${reprints.length !== 1 ? 's' : ''} ${subSetNote}</span>
                             </div>
                             <button class="btn btn-sm" onclick="selectReprintsSet('${fam.key}')" style="margin-left:auto;">View All →</button>
                         </div>
@@ -6329,7 +6465,7 @@
                         ${fam.icon ? `<img src="${fam.icon}" style="width:36px;height:36px;filter:brightness(0) invert(1);">` : ''}
                         <div>
                             <h3 style="font-family:var(--font-display);font-size:1.25rem;">${fam.name}</h3>
-                            <span style="font-size:0.85rem;color:var(--text-secondary);">${reprints.length} reprint${reprints.length !== 1 ? 's' : ''} valued over $0.50${fam.codes.length > 1 ? ' across ' + fam.codes.length + ' sets' : ''}</span>
+                            <span style="font-size:0.85rem;color:var(--text-secondary);">${reprints.length} reprint${reprints.length !== 1 ? 's' : ''} ${fam.codes.length > 1 ? ' across ' + fam.codes.length + ' sets' : ''}</span>
                         </div>
                     </div>
                     ${subSetInfo}
@@ -6530,6 +6666,9 @@
             updateCTAVisibility();
 
             const mode = State.settings.loadingMode || 'balanced';
+
+            // Always load the unique card counter (lightweight, one API call)
+            loadUniqueCardCount();
 
             if (isMobile) {
                 // Mobile: always lean
