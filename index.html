@@ -6285,16 +6285,74 @@
         }
 
         // Fetch reprints for an entire family (all sub-set codes combined)
+        // Cache: card name -> true/false (is a true cross-family reprint)
+        const trueReprintCache = {};
+
+        // Verify which cards are TRUE cross-family reprints (exist in sets outside this family)
+        async function verifyTrueReprints(cards, familyCodes) {
+            if (!cards.length) return [];
+
+            const verified = [];
+            const toCheck = [];
+
+            // First, use cache
+            for (const card of cards) {
+                if (trueReprintCache[card.name + '|' + familyCodes[0]] === true) {
+                    verified.push(card);
+                } else if (trueReprintCache[card.name + '|' + familyCodes[0]] === false) {
+                    // Known false — skip
+                } else {
+                    toCheck.push(card);
+                }
+            }
+
+            if (!toCheck.length) return verified;
+
+            // Build family exclusion filter
+            const excludeStr = familyCodes.map(c => '-s:' + c).join(' ');
+
+            // Batch check: group 6 card names per query to keep URL length reasonable
+            for (let i = 0; i < toCheck.length; i += 6) {
+                const batch = toCheck.slice(i, i + 6);
+                const nameQueries = batch.map(c => '!"' + c.name.replace(/['"]/g, '') + '"');
+                const fullQuery = '(' + nameQueries.join(' or ') + ') ' + excludeStr;
+                try {
+                    const d = await API.req('/cards/search?q=' + encodeURIComponent(fullQuery) + '&unique=cards&page=1', { cacheTTL: 3600000 });
+                    const foundNames = new Set((d.data || []).map(c => c.name));
+                    batch.forEach(card => {
+                        const key = card.name + '|' + familyCodes[0];
+                        if (foundNames.has(card.name)) {
+                            trueReprintCache[key] = true;
+                            verified.push(card);
+                        } else {
+                            trueReprintCache[key] = false;
+                        }
+                    });
+                } catch(e) {
+                    // Search returned no results — none of these batch cards are true reprints
+                    batch.forEach(card => {
+                        trueReprintCache[card.name + '|' + familyCodes[0]] = false;
+                    });
+                }
+            }
+
+            return verified;
+        }
+
         async function fetchFamilyReprints(family) {
             const allReprints = [];
             const fetches = await Promise.all(family.codes.map(code => fetchSetReprints(code)));
             fetches.forEach(arr => allReprints.push(...arr));
-            // Deduplicate by card name (keep highest price version) and sort by price
+            // Deduplicate by card name (keep highest price version)
             const seen = {};
             allReprints.forEach(c => {
                 if (!seen[c.name] || c.price > seen[c.name].price) seen[c.name] = c;
             });
-            return Object.values(seen).sort((a, b) => b.price - a.price);
+            const deduped = Object.values(seen).sort((a, b) => b.price - a.price);
+
+            // Verify these are TRUE cross-family reprints (not just promo variants from same product)
+            const trueReprints = await verifyTrueReprints(deduped, family.codes);
+            return trueReprints.sort((a, b) => b.price - a.price);
         }
 
         // Render a single reprint card element
