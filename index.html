@@ -1026,8 +1026,21 @@
     <main class="main-content">
         <!-- Dashboard -->
         <div class="page active" id="dashboardPage">
+            <!-- Compact Info Bar - Above Search -->
+            <div id="compactInfoBar" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.5rem 0.75rem;margin-bottom:0.5rem;font-size:0.85rem;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                    <span>🃏</span>
+                    <span style="color:var(--text-secondary);">Unique Cards:</span>
+                    <span style="font-weight:700;color:var(--accent-gold);" id="statUniqueCards">—</span>
+                </div>
+                <div id="nextSetCompact" style="display:flex;align-items:center;gap:0.4rem;">
+                    <span>📅</span>
+                    <span style="color:var(--text-secondary);">Next:</span>
+                    <span style="font-weight:600;color:var(--text-primary);" id="statNextSetName">—</span>
+                </div>
+            </div>
             <!-- Search Bar - MTG Card Search Style -->
-            <div class="dashboard-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1.25rem;margin-bottom:1rem;border:2px solid var(--accent-primary);box-shadow:0 0 20px rgba(139,92,246,0.15);">
+            <div class="dashboard-search-panel" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1rem;margin-bottom:0.75rem;border:1px solid var(--bg-tertiary);">
                 <!-- Search Input with Button Inside -->
                 <div style="position:relative;">
                     <input type="text" class="search-input" id="cardSearch" placeholder="Search cards..." style="width:100%;padding:0.875rem 5rem 0.875rem 1rem;font-size:1rem;border:2px solid var(--accent-primary);border-radius:var(--radius-md);background:var(--bg-secondary);">
@@ -1258,46 +1271,15 @@
                 </div>
             </div>
 
-            <!-- Unique Card Count Bar -->
-            <div id="uniqueCardBar" style="display:flex;align-items:center;justify-content:center;gap:1.5rem;padding:0.6rem 1rem;margin-bottom:0.75rem;background:var(--bg-card);border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.05);flex-wrap:wrap;">
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <span style="font-size:1.1rem;">🃏</span>
-                    <span style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Unique Cards</span>
-                    <span style="font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:var(--accent-gold);" id="statUniqueCards">—</span>
-                </div>
-                <div style="width:1px;height:20px;background:var(--bg-tertiary);"></div>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <span style="font-size:1.1rem;">📚</span>
-                    <span style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Total Sets</span>
-                    <span style="font-family:var(--font-mono);font-size:1.05rem;font-weight:700;color:var(--accent-primary);" id="statTotalSets">—</span>
-                </div>
-                <div style="width:1px;height:20px;background:var(--bg-tertiary);"></div>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <span style="font-size:1.1rem;">🆕</span>
-                    <span style="font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Latest Set</span>
-                    <span style="font-size:0.85rem;font-weight:600;color:var(--text-primary);" id="statLatestSet">—</span>
-                </div>
-            </div>
+            <!-- Stats removed - moved above search -->
 
             <!-- Releases Banner - Compact Row -->
             <div class="releases-banner" id="releasesBanner" style="display:none;margin-bottom:0.75rem;">
                 <div id="releasesBannerContent" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;"></div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-label">Watchlist</div><div class="stat-value" id="statTracked">0</div></div>
-                <div class="stat-card"><div class="stat-label">Active Alerts</div><div class="stat-value" id="statAlerts">0</div></div>
-                <div class="stat-card"><div class="stat-label">Portfolio Value</div><div class="stat-value gold" id="statPortfolio">$0</div></div>
-                <div class="stat-card"><div class="stat-label">Tracked Sets</div><div class="stat-value" id="statTrackedSets">0</div></div>
-            </div>
+            <!-- Stats grid removed -->
 
-            <!-- Watchlist Preview -->
-            <div class="watchlist-preview" id="watchlistPreview" style="display:none;">
-                <div class="watchlist-preview-header">
-                    <span class="watchlist-preview-title">👁️ Your Watchlist</span>
-                    <button class="btn btn-sm" onclick="switchPage('watchlist')">View All</button>
-                </div>
-                <div class="watchlist-preview-cards" id="watchlistPreviewCards"></div>
-            </div>
+            <!-- Watchlist preview removed - use Watch tab -->
 
             <!-- Reprints from Latest Sets - Dashboard Preview (near top for visibility) -->
             <section class="category-movers-section desktop-only" id="reprintsDashSection" style="display:none;">
@@ -1313,22 +1295,22 @@
 
             <!-- Mobile Dashboard - Collapsible Sections -->
             <div id="mobileDashboard" class="mobile-only" style="display:none;">
-                <!-- Watchlist Preview - Always Expanded -->
+                <!-- Secret Lair Tracker -->
                 <div class="mobile-section">
                     <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
-                        <h3>👁️ Your Watchlist <span class="mobile-section-badge" id="mobileWatchlistCount">0</span></h3>
+                        <h3>🎴 Secret Lair Drops</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
-                    <div class="mobile-section-content expanded" id="mobileWatchlistContent">
-                        <div id="mobileWatchlistGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;"></div>
-                        <button class="btn btn-primary" onclick="switchPage('watchlist')" style="width:100%;margin-top:0.75rem;font-size:0.85rem;">👁️ View Full Watchlist</button>
+                    <div class="mobile-section-content expanded" id="mobileSecretLairContent">
+                        <div id="mobileSecretLairGrid" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+                        <a href="https://secretlair.wizards.com" target="_blank" rel="noopener" class="btn btn-secondary" style="width:100%;margin-top:0.5rem;font-size:0.8rem;text-align:center;display:block;">View All Secret Lairs →</a>
                     </div>
                 </div>
 
                 <!-- Upcoming Releases - Always Visible -->
                 <div class="mobile-section">
                     <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
-                        <h3>📅 Upcoming Releases</h3>
+                        <h3>📅 Upcoming Sets</h3>
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="mobile-section-content expanded" id="mobileReleasesContent">
@@ -1384,16 +1366,7 @@
                     </div>
                 </div>
 
-                <!-- Latest Sets -->
-                <div class="mobile-section">
-                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
-                        <h3>🆕 Latest Sets</h3>
-                        <span class="toggle-icon">▼</span>
-                    </div>
-                    <div class="mobile-section-content expanded" id="mobileLatestSets">
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;" id="mobileLatestSetsGrid"></div>
-                    </div>
-                </div>
+                <!-- Latest Sets section removed -->
 
                 <!-- All Mover Categories -->
                 <div class="mobile-section">
@@ -1700,44 +1673,7 @@
             </section>
 
 
-            <section id="trendingSection">
-                <div class="section-header">
-                    <h2 class="section-title">🔥 Trending Now</h2>
-                    <div class="section-tabs">
-                        <button class="section-tab active" data-filter="all">All</button>
-                        <button class="section-tab" data-filter="standard">Standard</button>
-                        <button class="section-tab" data-filter="modern">Modern</button>
-                        <button class="section-tab" data-filter="commander">EDH</button>
-                    </div>
-                </div>
-                <div class="card-grid" id="trendingGrid"></div>
-                <div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-secondary" id="loadMoreBtn" onclick="loadMoreTrending()" style="display:none;">Load More</button></div>
-            </section>
-            
-
-            <!-- Format Staples Section -->
-            <section id="staplesSection">
-                <div class="section-header">
-                    <h2 class="section-title">🏆 Format Staples</h2>
-                    <div class="price-tier-selector">
-                        <button class="tier-btn active" data-tier="0.5" onclick="setStaplesTier(0.5)">$0.50+</button>
-                        <button class="tier-btn" data-tier="1" onclick="setStaplesTier(1)">$1+</button>
-                        <button class="tier-btn" data-tier="5" onclick="setStaplesTier(5)">$5+</button>
-                        <button class="tier-btn" data-tier="10" onclick="setStaplesTier(10)">$10+</button>
-                        <button class="tier-btn" data-tier="25" onclick="setStaplesTier(25)">$25+</button>
-                    </div>
-                </div>
-                <div class="format-tabs" id="formatTabs">
-                    <button class="format-tab active" data-format="commander" onclick="loadFormatStaples('commander')">Commander</button>
-                    <button class="format-tab" data-format="modern" onclick="loadFormatStaples('modern')">Modern</button>
-                    <button class="format-tab" data-format="standard" onclick="loadFormatStaples('standard')">Standard</button>
-                    <button class="format-tab" data-format="pioneer" onclick="loadFormatStaples('pioneer')">Pioneer</button>
-                    <button class="format-tab" data-format="legacy" onclick="loadFormatStaples('legacy')">Legacy</button>
-                    <button class="format-tab" data-format="pauper" onclick="loadFormatStaples('pauper')">Pauper</button>
-                </div>
-                <div class="card-grid" id="staplesGrid"></div>
-                <div style="text-align:center;margin-top:1.5rem;"><button class="btn btn-secondary" id="staplesLoadMore" onclick="loadMoreStaples()" style="display:none;">Load More</button></div>
-            </section>
+            <!-- Trending Now and Format Staples sections removed -->
         </div>
 
         <!-- Browse Sets -->
@@ -4111,9 +4047,9 @@
 
         async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}}catch(e){grid.innerHTML='<p>No cards</p>';}}
 
-        // Trending
-        async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');grid.innerHTML='<div class="loading-spinner"></div>';let q='(usd>0.5 or usd_foil>0.5)';if(f==='standard')q='f:standard (usd>0 or usd_foil>0)';else if(f==='modern')q='f:modern (usd>1 or usd_foil>1)';else if(f==='commander')q='f:commander is:popular';try{const d=await API.search(q,{order:'usd',dir:'desc'});State.trendingData=d;if(d.data){const badges=['spike','hot','drop',''];grid.innerHTML=d.data.slice(0,16).map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');document.getElementById('loadMoreBtn').style.display=d.has_more?'inline-flex':'none';}}catch(e){grid.innerHTML='<p>Failed</p>';}}
-        async function loadMoreTrending(){const grid=document.getElementById('trendingGrid');const btn=document.getElementById('loadMoreBtn');btn.textContent='Loading...';btn.disabled=true;if(State.trendingData?.next_page){try{const resp=await fetch(State.trendingData.next_page);const d=await resp.json();State.trendingData=d;const badges=['spike','hot','drop',''];grid.innerHTML+=d.data.map(c=>cardEl(c,badges[Math.floor(Math.random()*badges.length)])).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}}btn.textContent='Load More';btn.disabled=false;}
+        // Trending - section removed but keeping function stub for compatibility
+        async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');if(!grid)return;}
+        async function loadMoreTrending(){}
 
         // Helper to check if card is double-faced
         function isDoubleFaced(c) {
@@ -4558,6 +4494,17 @@
                 inlineEl.innerHTML = '<img src="'+next.icon_svg_uri+'" style="width:20px;height:20px;"><strong>'+next.name+'</strong> <span style="color:var(--accent-gold);font-family:var(--font-mono);">'+days+'d</span>';
                 inlineEl.onclick = function(){ switchPage('browse'); openSetView(next.code); };
             }
+            // Update compact info bar next set
+            const nextSetNameEl = document.getElementById('statNextSetName');
+            if (nextSetNameEl && upcoming.length) {
+                const next = upcoming[0];
+                const days = Math.ceil((new Date(next.released_at) - new Date()) / (1000 * 60 * 60 * 24));
+                nextSetNameEl.innerHTML = next.name + ' <span style="color:var(--accent-gold);">(' + days + 'd)</span>';
+            }
+            // Render mobile releases
+            renderMobileReleases(State.upcomingReleases);
+            // Render Secret Lair section
+            renderSecretLairSection();
             return State.upcomingReleases;
         }
 
@@ -4886,6 +4833,35 @@
             `).join('');
         }
 
+        function renderSecretLairSection() {
+            const grid = document.getElementById('mobileSecretLairGrid');
+            if (!grid) return;
+            // Find Secret Lair sets from State.sets
+            const today = new Date().toISOString().split('T')[0];
+            const secretLairs = State.sets
+                .filter(s => s.set_type === 'box' || s.set_type === 'spellbook' || (s.name && s.name.toLowerCase().includes('secret lair')))
+                .sort((a, b) => (b.released_at || '').localeCompare(a.released_at || ''))
+                .slice(0, 5);
+            if (!secretLairs.length) {
+                grid.innerHTML = '<div style="color:var(--text-secondary);font-size:0.85rem;text-align:center;padding:1rem;">No Secret Lair data available.<br>Check <a href="https://secretlair.wizards.com" target="_blank" style="color:var(--accent-gold);">secretlair.wizards.com</a> for latest drops.</div>';
+                return;
+            }
+            grid.innerHTML = secretLairs.map(s => {
+                const releaseDate = s.released_at ? new Date(s.released_at) : null;
+                const isUpcoming = releaseDate && releaseDate > new Date();
+                const daysAway = releaseDate ? Math.ceil((releaseDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
+                const dateStr = releaseDate ? releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD';
+                return `
+                <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);cursor:pointer;" onclick="openSetView('${s.code}')">
+                    ${s.icon_svg_uri ? `<img src="${s.icon_svg_uri}" alt="" style="width:28px;height:28px;object-fit:contain;filter:brightness(0) invert(1);">` : '<span style="font-size:1.2rem;">🎴</span>'}
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
+                        <div style="font-size:0.7rem;color:${isUpcoming ? 'var(--accent-gold)' : 'var(--text-secondary)'};">${isUpcoming && daysAway ? 'In ' + daysAway + ' days' : dateStr}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function renderMobileLatestSets() {
             const grid = document.getElementById('mobileLatestSetsGrid');
             if (!grid) return;
@@ -5021,7 +4997,8 @@
                     <div class="tracked-set-value">$${s.totalValue}</div>
                 </div>
             `).join('');
-            document.getElementById('statTrackedSets').textContent = State.trackedSets.length;
+            const trackedSetsEl = document.getElementById('statTrackedSets');
+            if (trackedSetsEl) trackedSetsEl.textContent = State.trackedSets.length;
         }
 
         // ====== PORTFOLIO TRACKER ======
@@ -5053,7 +5030,8 @@
                 </div>
                 <div class="portfolio-grid">${State.portfolio.map(renderPortfolioCard).join('')}</div>
             `;
-            document.getElementById('statPortfolio').textContent = '$' + totalValue.toFixed(0);
+            const portfolioEl = document.getElementById('statPortfolio');
+            if (portfolioEl) portfolioEl.textContent = '$' + totalValue.toFixed(0);
         }
 
         function renderPortfolioCard(p) {
@@ -5231,43 +5209,13 @@
             pauper: 'f:pauper is:staple'
         };
 
+        // Format Staples - section removed but keeping function stubs for compatibility
         async function loadFormatStaples(format) {
-            State.currentStaplesFormat = format;
-            document.querySelectorAll('.format-tab').forEach(t => t.classList.toggle('active', t.dataset.format === format));
             const grid = document.getElementById('staplesGrid');
-            grid.innerHTML = '<div class="loading-spinner"></div>';
-            const tier = State.currentStaplesTier;
-            const query = formatStaplesQueries[format] + ` (usd>${tier} or usd_foil>${tier})`;
-            try {
-                const d = await API.search(query, { order: 'usd', dir: 'desc' });
-                State.staplesData = d;
-                if (d.data) grid.innerHTML = d.data.slice(0, 16).map(c => cardEl(c)).join('');
-                document.getElementById('staplesLoadMore').style.display = d.has_more ? 'inline-flex' : 'none';
-            } catch(e) { grid.innerHTML = '<p style="color:var(--text-secondary);">No staples found for this format.</p>'; }
+            if (!grid) return;
         }
-
-        function setStaplesTier(tier) {
-            State.currentStaplesTier = tier;
-            document.querySelectorAll('.tier-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.tier) === tier));
-            loadFormatStaples(State.currentStaplesFormat);
-        }
-
-        async function loadMoreStaples() {
-            const btn = document.getElementById('staplesLoadMore');
-            btn.textContent = 'Loading...';
-            btn.disabled = true;
-            if (State.staplesData?.next_page) {
-                try {
-                    const resp = await fetch(State.staplesData.next_page);
-                    const d = await resp.json();
-                    State.staplesData = d;
-                    document.getElementById('staplesGrid').innerHTML += d.data.map(c => cardEl(c)).join('');
-                    btn.style.display = d.has_more ? 'inline-flex' : 'none';
-                } catch(e) {}
-            }
-            btn.textContent = 'Load More';
-            btn.disabled = false;
-        }
+        function setStaplesTier(tier) {}
+        async function loadMoreStaples() {}
 
         // ====== CATEGORY SECTIONS REGISTRY ======
         // Each section group has a title, categories with queries, and rotation metadata
@@ -6069,15 +6017,17 @@
         }
 
         function updateStats(){
-            document.getElementById('statTracked').textContent=State.watchlist.length;
-            document.getElementById('statAlerts').textContent=State.alerts.filter(a=>a.enabled).length;
+            const statTracked = document.getElementById('statTracked');
+            const statAlerts = document.getElementById('statAlerts');
+            const statPortfolio = document.getElementById('statPortfolio');
+            const statTrackedSets = document.getElementById('statTrackedSets');
+            if (statTracked) statTracked.textContent = State.watchlist.length;
+            if (statAlerts) statAlerts.textContent = State.alerts.filter(a=>a.enabled).length;
             // Calculate portfolio value
             let portfolioValue = 0;
             State.portfolio.forEach(p => portfolioValue += (p.currentPrice || p.addedPrice || 0) * p.quantity);
-            document.getElementById('statPortfolio').textContent = '$' + portfolioValue.toFixed(0);
-            document.getElementById('statTrackedSets').textContent = State.trackedSets.length;
-            // Update watchlist preview on dashboard
-            renderWatchlistPreview();
+            if (statPortfolio) statPortfolio.textContent = '$' + portfolioValue.toFixed(0);
+            if (statTrackedSets) statTrackedSets.textContent = State.trackedSets.length;
         }
 
         // Tab filters
