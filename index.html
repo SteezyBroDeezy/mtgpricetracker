@@ -2849,7 +2849,7 @@
         function getPrice(c){const p=c.prices||{};if(p.usd&&parseFloat(p.usd)>0)return{val:'$'+p.usd,num:parseFloat(p.usd),type:''};if(p.usd_foil&&parseFloat(p.usd_foil)>0)return{val:'$'+p.usd_foil,num:parseFloat(p.usd_foil),type:'foil'};if(p.usd_etched&&parseFloat(p.usd_etched)>0)return{val:'$'+p.usd_etched,num:parseFloat(p.usd_etched),type:'etched'};if(p.eur&&parseFloat(p.eur)>0)return{val:'€'+p.eur,num:parseFloat(p.eur),type:'EUR'};return{val:'N/A',num:0,type:''};}
         function isInWatchlist(id){return State.watchlist.some(c=>c.id===id);}
 
-        // Search - uses autocomplete for speed, shows names first then fetches full data
+        // Search - uses autocomplete for speed, plus searches for flavor names (Secret Lair/Universe Beyond)
         const searchInput=document.getElementById('cardSearch'),searchResults=document.getElementById('searchResults');
         const handleSearch=debounce(async q=>{
             if(q.length<2){searchResults.classList.remove('active');return;}
@@ -2857,12 +2857,15 @@
             searchResults.classList.add('active');
             try{
                 // Run card name autocomplete AND flavor name search simultaneously
+                // Use prefer:unierse to find Universe Beyond/Secret Lair cards with flavor names
                 const [acResult, fnResult] = await Promise.allSettled([
                     API.autocomplete(q),
-                    fetch('https://api.scryfall.com/cards/search?q=fn%3A'+encodeURIComponent(q)+'&unique=cards&order=name').then(r=>r.ok?r.json():{data:[]})
+                    fetch('https://api.scryfall.com/cards/search?q=prefer%3Auniverse+'+encodeURIComponent(q)+'&unique=cards&order=name').then(r=>r.ok?r.json():{data:[]}).catch(()=>({data:[]}))
                 ]);
                 const nameList = acResult.status==='fulfilled' ? (acResult.value?.data||[]) : [];
-                const fnCards  = fnResult.status==='fulfilled'  ? (fnResult.value?.data||[]) : [];
+                const fnResult2  = fnResult.status==='fulfilled'  ? (fnResult.value?.data||[]) : [];
+                // Filter fnResult to only show cards that have a flavor_name matching the query
+                const fnCards = fnResult2.filter(c => c.flavor_name && c.flavor_name.toLowerCase().includes(q.toLowerCase()));
                 if(!nameList.length && !fnCards.length){
                     searchResults.innerHTML='<div class="search-result-item" style="padding:1rem;"><p style="color:var(--text-muted);">No cards found</p></div>';
                     return;
@@ -2874,11 +2877,11 @@
                         <div class="search-result-info"><h4>${name}</h4></div>
                     </div>`
                 ).join('');
-                // Flavor name (reprint alt name) results
+                // Flavor name (reprint alt name) results - Secret Lair, Universe Beyond, etc.
                 if(fnCards.length){
-                    if(nameList.length) html+=`<div style="padding:0.35rem 1rem;font-size:0.73rem;color:var(--accent-blue);background:rgba(0,217,255,0.06);border-top:1px solid var(--bg-tertiary);letter-spacing:0.04em;text-transform:uppercase;">🎭 Reprint alt names</div>`;
+                    if(nameList.length) html+=`<div style="padding:0.35rem 1rem;font-size:0.73rem;color:var(--accent-blue);background:rgba(0,217,255,0.06);border-top:1px solid var(--bg-tertiary);letter-spacing:0.04em;text-transform:uppercase;">🎭 Secret Lair / Universe Beyond</div>`;
                     html += fnCards.slice(0,4).map(c=>{
-                        const alt=c.flavor_name||q;
+                        const alt=c.flavor_name||c.name;
                         return `<div class="search-result-item" style="cursor:pointer;" onclick="openCardDetailByFlavorId('${c.id}','${c.name.replace(/'/g,"\\'")}')">
                             <div class="search-result-info">
                                 <h4>${alt}</h4>
