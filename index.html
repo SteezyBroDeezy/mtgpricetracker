@@ -963,7 +963,6 @@
         }
         #reprintsBrowserModal.active { display: flex; }
         @media (max-width: 768px) {
-            #reprintsDashGrid { grid-template-columns: repeat(2, 1fr) !important; }
             .reprints-full-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
@@ -1297,14 +1296,16 @@
                 </div>
             </section>
 
-            <!-- Reprints from Latest Sets - Dashboard Preview (near top for visibility) -->
+            <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
             <section class="category-movers-section desktop-only" id="reprintsDashSection" style="display:none;">
                 <div class="section-header">
-                    <h2 class="section-title">🔄 Notable Reprints — Latest Sets</h2>
-                    <button class="btn btn-sm" onclick="openReprintsFullView()">View All Reprints →</button>
+                    <h2 class="section-title">🔄 Reprints — Latest Sets</h2>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">Reprints from recent releases, sorted by value</p>
+                        <button class="btn btn-sm" onclick="openReprintsFullView()">View All with Images →</button>
+                    </div>
                 </div>
-                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">All reprints from the most recent releases, sorted by value</p>
-                <div id="reprintsDashGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem;">
+                <div class="category-movers-grid" id="reprintsDashGrid">
                     <div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>
                 </div>
             </section>
@@ -1345,8 +1346,8 @@
                         <span class="toggle-icon">▼</span>
                     </div>
                     <div class="mobile-section-content expanded" id="mobileReprintsContent">
-                        <div id="mobileReprintsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;"></div>
-                        <button class="btn btn-primary" onclick="openReprintsFullView()" style="width:100%;margin-top:0.75rem;font-size:0.85rem;">🔄 View All Reprints</button>
+                        <div id="mobileReprintsGrid" style="display:flex;flex-direction:column;gap:0.4rem;"></div>
+                        <button class="btn btn-primary" onclick="openReprintsFullView()" style="width:100%;margin-top:0.75rem;font-size:0.85rem;">🔄 View All with Images</button>
                     </div>
                 </div>
 
@@ -6501,46 +6502,63 @@
             </div>`;
         }
 
-        // Load reprints dashboard preview — shows 5 top reprints across latest set families
+        // Store reprints data for expand/collapse
+        const reprintsCategoryData = {};
+
+        // Load reprints dashboard preview — compact category format grouped by set
         async function loadReprintsDashboard() {
             const section = document.getElementById('reprintsDashSection');
             const grid = document.getElementById('reprintsDashGrid');
             if (!section || !grid) return;
 
             try {
-                const families = await getLatestFamilies(5);
+                const families = await getLatestFamilies(6);
                 if (!families.length) { section.style.display = 'none'; return; }
 
                 // Fetch reprints from each family in parallel
                 const allResults = await Promise.all(families.map(f => fetchFamilyReprints(f)));
 
-                // Collect top reprints — one per family where possible
-                const topCards = [];
-                for (let i = 0; i < allResults.length && topCards.length < 5; i++) {
-                    if (allResults[i].length > 0) {
-                        topCards.push(allResults[i][0]);
-                    }
-                }
-                // Fill remaining from highest value across all
-                if (topCards.length < 5) {
-                    const remaining = allResults.flat()
-                        .filter(c => !topCards.some(tc => tc.id === c.id))
-                        .sort((a, b) => b.price - a.price);
-                    for (const c of remaining) {
-                        if (topCards.length >= 5) break;
-                        topCards.push(c);
-                    }
+                // Build category cards for each set that has reprints
+                let html = '';
+                for (let i = 0; i < families.length; i++) {
+                    const family = families[i];
+                    const reprints = allResults[i];
+                    if (!reprints || reprints.length === 0) continue;
+
+                    const catKey = 'reprints_' + family.key;
+                    reprintsCategoryData[catKey] = { cards: reprints, expanded: false, family };
+
+                    html += `<div class="category-mover-card" id="${catKey}Card">
+                        <div class="category-mover-header" onclick="openReprintsFullView('${family.key}')" title="View all reprints with images">
+                            <span>🔄</span> ${family.name}
+                            <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                        </div>
+                        <div class="category-mover-content" id="${catKey}Content"></div>
+                    </div>`;
                 }
 
-                if (!topCards.length) { section.style.display = 'none'; return; }
+                if (!html) { section.style.display = 'none'; return; }
 
                 section.style.display = 'block';
-                grid.innerHTML = topCards.map(c => renderReprintCard(c, 'small')).join('');
+                grid.innerHTML = html;
 
-                // Also populate mobile grid
+                // Render each category's cards
+                for (const catKey of Object.keys(reprintsCategoryData)) {
+                    renderReprintsCategoryCards(catKey);
+                }
+
+                // Also populate mobile grid with top reprints
                 const mobileGrid = document.getElementById('mobileReprintsGrid');
                 if (mobileGrid) {
-                    mobileGrid.innerHTML = topCards.slice(0, 4).map(c => renderReprintCard(c, 'small')).join('');
+                    const topCards = allResults.flat()
+                        .sort((a, b) => b.price - a.price)
+                        .slice(0, 4);
+                    mobileGrid.innerHTML = topCards.map(c => `
+                        <div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);">
+                            <span class="category-mover-name" style="font-size:0.8rem;">${c.name}</span>
+                            <span class="category-mover-price" style="font-size:0.8rem;">$${c.price.toFixed(2)}</span>
+                        </div>
+                    `).join('');
                 }
             } catch(e) {
                 console.error('Failed to load reprints dashboard:', e);
@@ -6548,11 +6566,51 @@
             }
         }
 
+        // Render reprints category cards (compact format)
+        function renderReprintsCategoryCards(catKey) {
+            const data = reprintsCategoryData[catKey];
+            if (!data) return;
+            const container = document.getElementById(catKey + 'Content');
+            if (!container) return;
+
+            const cards = data.expanded ? data.cards : data.cards.slice(0, 5);
+            const totalCards = data.cards.length;
+
+            let html = cards.map(c => {
+                const priceStr = c.price ? `$${c.price.toFixed(2)}` : 'N/A';
+                return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')">
+                    <span class="category-mover-name">${c.name}</span>
+                    <span class="category-mover-price">${priceStr}</span>
+                </div>`;
+            }).join('');
+
+            // Add Show More/Less button if there are more than 5 cards
+            if (totalCards > 5) {
+                const btnText = data.expanded ? 'Show Less' : `Show More (${totalCards} total)`;
+                const icon = data.expanded ? '▲' : '▼';
+                html += `<div class="category-show-more" onclick="toggleReprintsCategoryExpand('${catKey}')">
+                    <span>${icon}</span> ${btnText}
+                </div>`;
+            }
+
+            container.innerHTML = html;
+            container.classList.toggle('expanded', data.expanded);
+        }
+
+        function toggleReprintsCategoryExpand(catKey) {
+            const data = reprintsCategoryData[catKey];
+            if (!data) return;
+            data.expanded = !data.expanded;
+            renderReprintsCategoryCards(catKey);
+        }
+
         // ====== REPRINTS FULL VIEW ======
         let reprintsAllFamilies = [];
         let reprintsActiveFamilyKey = '';
+        let reprintsPreSelectFamily = '';
 
-        function openReprintsFullView() {
+        function openReprintsFullView(preSelectFamily = '') {
+            reprintsPreSelectFamily = preSelectFamily || '';
             document.getElementById('reprintsBrowserModal').classList.add('active');
             document.body.style.overflow = 'hidden';
             loadReprintsFullView();
@@ -6580,16 +6638,23 @@
                 return;
             }
 
+            // Determine which family to show first
+            const initialFamily = reprintsPreSelectFamily && families.some(f => f.key === reprintsPreSelectFamily)
+                ? reprintsPreSelectFamily
+                : 'all';
+
             // Build family tabs with size badges for small sets
-            tabsContainer.innerHTML = `<button class="reprints-set-tab active" data-set="all" onclick="selectReprintsSet('all')">All Sets</button>` +
+            tabsContainer.innerHTML = `<button class="reprints-set-tab${initialFamily === 'all' ? ' active' : ''}" data-set="all" onclick="selectReprintsSet('all')">All Sets</button>` +
                 families.map(f => {
                     const isSmall = f.totalCards < 50;
                     const badge = isSmall ? `<span style="font-size:0.6rem;background:var(--bg-tertiary);padding:0.1rem 0.3rem;border-radius:4px;margin-left:3px;vertical-align:middle;">SM</span>` : '';
-                    return `<button class="reprints-set-tab" data-set="${f.key}" onclick="selectReprintsSet('${f.key}')">${f.icon ? `<img src="${f.icon}" style="width:16px;height:16px;filter:brightness(0) invert(1);vertical-align:middle;margin-right:4px;">` : ''}${f.name}${badge}</button>`;
+                    const isActive = f.key === initialFamily ? ' active' : '';
+                    return `<button class="reprints-set-tab${isActive}" data-set="${f.key}" onclick="selectReprintsSet('${f.key}')">${f.icon ? `<img src="${f.icon}" style="width:16px;height:16px;filter:brightness(0) invert(1);vertical-align:middle;margin-right:4px;">` : ''}${f.name}${badge}</button>`;
                 }).join('');
 
-            reprintsActiveFamilyKey = 'all';
-            await renderReprintsForFamily('all');
+            reprintsActiveFamilyKey = initialFamily;
+            reprintsPreSelectFamily = ''; // Clear for next time
+            await renderReprintsForFamily(initialFamily);
         }
 
         async function selectReprintsSet(familyKey) {
