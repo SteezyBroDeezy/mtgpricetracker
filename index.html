@@ -2245,6 +2245,21 @@
                     <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">🔒 Sign in to save your background preference across devices.</p>
                 </div>
                 <div class="settings-section">
+                    <h3 class="settings-section-title"><span>☁️</span> Cloud Sync</h3>
+                    <div class="settings-row">
+                        <div class="settings-label">Merge & Sync<small>Combines local + cloud data (recommended)</small></div>
+                        <button class="btn btn-primary" onclick="handleFullSync()">☁️ Sync Now</button>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">Force Pull from Cloud<small>Replace local with cloud data (use if mobile is out of sync)</small></div>
+                        <button class="btn btn-secondary" onclick="handlePullFromCloud()">⬇️ Pull from Cloud</button>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">Sync Status</div>
+                        <span id="settingsSyncStatus" style="color:var(--text-secondary);font-size:0.9rem;">Not synced</span>
+                    </div>
+                </div>
+                <div class="settings-section">
                     <h3 class="settings-section-title"><span>🔄</span> Data</h3>
                     <div class="settings-row">
                         <div class="settings-label">Refresh Data<small>Clear cached sets and reload from Scryfall</small></div>
@@ -2731,7 +2746,7 @@
                     return{success:false,error:e.message};
                 }
             },
-            // Pull latest from Firebase
+            // Pull latest from Firebase (overwrites local)
             async pullFromCloud(){
                 if(!currentUser||!db){showToast('Please sign in','warning');return{success:false};}
                 try{
@@ -2755,6 +2770,61 @@
                     return{success:true};
                 }catch(e){
                     console.error('Pull failed:',e);
+                    if(e.code==='resource-exhausted'){showToast('Firebase quota exceeded','warning');}
+                    return{success:false,error:e.message};
+                }
+            },
+            // Full sync: pull from cloud, MERGE with local, push back
+            async fullSync(){
+                if(!currentUser||!db){showToast('Please sign in','warning');return{success:false};}
+                try{
+                    // Step 1: Get cloud data
+                    const doc=await db.collection('priceOracleUsers').doc(currentUser.uid).get();
+                    const cloudData=doc.exists?doc.data():{};
+
+                    // Step 2: Merge watchlists (combine unique cards)
+                    const cloudWatchlist=cloudData.watchlist||[];
+                    const localWatchlist=this.watchlist||[];
+                    const watchlistMap=new Map();
+                    for(const c of cloudWatchlist){watchlistMap.set(c.id,c);}
+                    for(const c of localWatchlist){watchlistMap.set(c.id,c);} // Local wins for duplicates
+                    this.watchlist=Array.from(watchlistMap.values());
+
+                    // Step 3: Merge alerts (combine unique)
+                    const cloudAlerts=cloudData.alerts||[];
+                    const localAlerts=this.alerts||[];
+                    const alertsMap=new Map();
+                    for(const a of cloudAlerts){alertsMap.set(a.id,a);}
+                    for(const a of localAlerts){alertsMap.set(a.id,a);}
+                    this.alerts=Array.from(alertsMap.values());
+
+                    // Step 4: Merge portfolio
+                    const cloudPortfolio=cloudData.portfolio||[];
+                    const localPortfolio=this.portfolio||[];
+                    const portfolioMap=new Map();
+                    for(const p of cloudPortfolio){portfolioMap.set(p.id,p);}
+                    for(const p of localPortfolio){portfolioMap.set(p.id,p);}
+                    this.portfolio=Array.from(portfolioMap.values());
+
+                    // Step 5: Merge tracked sets/categories (combine unique)
+                    const cloudTrackedSets=cloudData.trackedSets||[];
+                    const cloudTrackedCats=cloudData.trackedCategories||[];
+                    this.trackedSets=[...new Set([...cloudTrackedSets,...(this.trackedSets||[])])];
+                    this.trackedCategories=[...new Set([...cloudTrackedCats,...(this.trackedCategories||[])])];
+
+                    // Step 6: Push merged data back to cloud
+                    const merged={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
+                    await db.collection('priceOracleUsers').doc(currentUser.uid).set(merged,{merge:true});
+
+                    // Step 7: Save locally
+                    localStorage.setItem('mtg_oracle_v4',JSON.stringify(merged));
+                    this._pendingSync=false;
+                    this._lastSyncTime=Date.now();
+                    localStorage.setItem('mtg_oracle_lastSync',this._lastSyncTime.toString());
+                    updateSyncUI();
+                    return{success:true,merged:{watchlist:this.watchlist.length,alerts:this.alerts.length,portfolio:this.portfolio.length}};
+                }catch(e){
+                    console.error('Full sync failed:',e);
                     if(e.code==='resource-exhausted'){showToast('Firebase quota exceeded','warning');}
                     return{success:false,error:e.message};
                 }
@@ -2794,7 +2864,7 @@
         function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
         function saveSetting(k,v){State.settings[k]=v;State.save();}
         let previousPage = 'dashboard';
-        function switchPage(p){if(p!=='settings')previousPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();}
+        function switchPage(p){if(p!=='settings')previousPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
         function goBackFromSettings(){switchPage(previousPage);}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
         function openModal(id){document.getElementById(id).classList.add('active');}
@@ -2859,11 +2929,76 @@
         // Handle sync button click
         async function handleSync(){
             const btn=document.getElementById('syncBtn');
-            if(btn){btn.disabled=true;btn.innerHTML='<span class="sync-icon spinning">↻</span> Syncing Lists...';}
-            const result=await State.manualSync();
+            if(btn){btn.disabled=true;btn.innerHTML='<span class="sync-icon spinning">↻</span> Syncing...';}
+            // Use fullSync to MERGE local + cloud data (not just push)
+            const result=await State.fullSync();
             if(btn){btn.disabled=false;}
-            if(result.success){showToast('Synced to cloud!','success');}
+            if(result.success){
+                const m=result.merged;
+                showToast(`Synced! ${m.watchlist} watchlist, ${m.alerts} alerts`,'success');
+                // Refresh UI with merged data
+                renderWatchlist();
+                renderAlerts();
+                updateStats();
+            }
             updateSyncUI();
+            updateSettingsSyncStatus();
+        }
+
+        // Settings page sync handlers
+        async function handleFullSync(){
+            if(!currentUser){showToast('Please sign in first','warning');return;}
+            showToast('Syncing...','info');
+            const result=await State.fullSync();
+            if(result.success){
+                const m=result.merged;
+                showToast(`Synced! ${m.watchlist} watchlist, ${m.alerts} alerts, ${m.portfolio} portfolio`,'success');
+                renderWatchlist();
+                renderAlerts();
+                updateStats();
+            }else{
+                showToast('Sync failed: '+(result.error||'Unknown error'),'error');
+            }
+            updateSyncUI();
+            updateSettingsSyncStatus();
+        }
+
+        async function handlePullFromCloud(){
+            if(!currentUser){showToast('Please sign in first','warning');return;}
+            if(!confirm('This will replace ALL local data with cloud data. Continue?'))return;
+            showToast('Pulling from cloud...','info');
+            const result=await State.pullFromCloud();
+            if(result.success){
+                showToast(`Pulled from cloud! ${State.watchlist.length} watchlist items`,'success');
+                renderWatchlist();
+                renderAlerts();
+                updateStats();
+            }else{
+                showToast('Pull failed','error');
+            }
+            updateSyncUI();
+            updateSettingsSyncStatus();
+        }
+
+        function updateSettingsSyncStatus(){
+            const el=document.getElementById('settingsSyncStatus');
+            if(!el)return;
+            const lastSync=State.getLastSyncTime();
+            if(!currentUser){
+                el.textContent='Sign in to sync';
+                el.style.color='var(--text-secondary)';
+            }else if(State.hasPendingChanges()){
+                el.textContent='Changes pending - tap Sync Now';
+                el.style.color='var(--accent-gold)';
+            }else if(lastSync){
+                const mins=Math.floor((Date.now()-lastSync)/60000);
+                const timeStr=mins<1?'Just now':mins<60?mins+' min ago':Math.floor(mins/60)+' hr ago';
+                el.textContent='Last synced: '+timeStr+' ('+State.watchlist.length+' watchlist)';
+                el.style.color='var(--accent-green)';
+            }else{
+                el.textContent='Never synced';
+                el.style.color='var(--text-secondary)';
+            }
         }
 
         // Price helper
