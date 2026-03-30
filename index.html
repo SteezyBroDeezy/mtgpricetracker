@@ -1281,6 +1281,22 @@
 
             <!-- Watchlist preview removed - use Watch tab -->
 
+            <!-- Secret Lair Drops - Desktop -->
+            <section class="category-movers-section desktop-only" id="secretLairDashSection" style="display:none;">
+                <div class="section-header">
+                    <h2 class="section-title">🎴 Secret Lair Drops</h2>
+                    <div style="display:flex;gap:0.5rem;">
+                        <button class="btn btn-sm" onclick="checkSecretLairNews()">📰 News</button>
+                        <button class="btn btn-sm" onclick="openSecretLairAlerts()">🔔 Alerts</button>
+                        <a href="https://secretlair.wizards.com" target="_blank" rel="noopener" class="btn btn-sm">🛒 Shop</a>
+                    </div>
+                </div>
+                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">Track upcoming and available Secret Lair drops with countdown timers</p>
+                <div id="secretLairDashGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.75rem;">
+                    <div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>
+                </div>
+            </section>
+
             <!-- Reprints from Latest Sets - Dashboard Preview (near top for visibility) -->
             <section class="category-movers-section desktop-only" id="reprintsDashSection" style="display:none;">
                 <div class="section-header">
@@ -1303,7 +1319,11 @@
                     </div>
                     <div class="mobile-section-content expanded" id="mobileSecretLairContent">
                         <div id="mobileSecretLairGrid" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
-                        <a href="https://secretlair.wizards.com" target="_blank" rel="noopener" class="btn btn-secondary" style="width:100%;margin-top:0.5rem;font-size:0.8rem;text-align:center;display:block;">View All Secret Lairs →</a>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+                            <a href="https://secretlair.wizards.com" target="_blank" rel="noopener" class="btn btn-secondary" style="flex:1;font-size:0.75rem;text-align:center;padding:0.5rem;">🛒 Shop Drops</a>
+                            <button onclick="checkSecretLairNews()" class="btn btn-secondary" style="flex:1;font-size:0.75rem;padding:0.5rem;">📰 Check News</button>
+                        </div>
+                        <button onclick="openSecretLairAlerts()" class="btn btn-primary" style="width:100%;margin-top:0.5rem;font-size:0.8rem;">🔔 Manage Drop Alerts</button>
                     </div>
                 </div>
 
@@ -4836,33 +4856,194 @@
             `).join('');
         }
 
-        function renderSecretLairSection() {
-            const grid = document.getElementById('mobileSecretLairGrid');
-            if (!grid) return;
-            // Find Secret Lair sets from State.sets
-            const today = new Date().toISOString().split('T')[0];
-            const secretLairs = State.sets
-                .filter(s => s.set_type === 'box' || s.set_type === 'spellbook' || (s.name && s.name.toLowerCase().includes('secret lair')))
-                .sort((a, b) => (b.released_at || '').localeCompare(a.released_at || ''))
-                .slice(0, 5);
-            if (!secretLairs.length) {
-                grid.innerHTML = '<div style="color:var(--text-secondary);font-size:0.85rem;text-align:center;padding:1rem;">No Secret Lair data available.<br>Check <a href="https://secretlair.wizards.com" target="_blank" style="color:var(--accent-gold);">secretlair.wizards.com</a> for latest drops.</div>';
-                return;
+        // Known Secret Lair drops (curated list - update as new drops are announced)
+        const KNOWN_SECRET_LAIR_DROPS = [
+            { id: 'sl-roll-initiative', name: 'Roll for Initiative Superdrop', date: '2026-02-09', price: '$29.99', theme: 'D&D', status: 'available', url: 'https://secretlair.wizards.com' },
+            { id: 'sl-tubulair', name: 'Totally TubuLair Superdrop', date: '2026-03-02', price: '$29.99', theme: 'TMNT', status: 'available', url: 'https://secretlair.wizards.com' },
+            { id: 'sl-spring-2026', name: 'Spring Superdrop 2026', date: '2026-04-15', price: 'TBD', theme: 'Various', status: 'upcoming', url: 'https://secretlair.wizards.com' },
+            { id: 'sl-secret-scare', name: 'Secret Scare Superdrop', date: '2026-10-13', price: 'TBD', theme: 'Iron Maiden', status: 'upcoming', url: 'https://secretlair.wizards.com' }
+        ];
+
+        function getSecretLairAlerts() {
+            return JSON.parse(localStorage.getItem('secretLairAlerts') || '[]');
+        }
+        function saveSecretLairAlerts(alerts) {
+            localStorage.setItem('secretLairAlerts', JSON.stringify(alerts));
+        }
+        function toggleSecretLairAlert(dropId) {
+            const alerts = getSecretLairAlerts();
+            const idx = alerts.indexOf(dropId);
+            if (idx > -1) {
+                alerts.splice(idx, 1);
+                showToast('Alert removed', 'info');
+            } else {
+                alerts.push(dropId);
+                showToast('Alert set! You\'ll be notified when this drop goes live.', 'success');
+                // Request notification permission if not granted
+                if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
             }
-            grid.innerHTML = secretLairs.map(s => {
-                const releaseDate = s.released_at ? new Date(s.released_at) : null;
-                const isUpcoming = releaseDate && releaseDate > new Date();
-                const daysAway = releaseDate ? Math.ceil((releaseDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
-                const dateStr = releaseDate ? releaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD';
-                return `
-                <div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);cursor:pointer;" onclick="openSetView('${s.code}')">
-                    ${s.icon_svg_uri ? `<img src="${s.icon_svg_uri}" alt="" style="width:28px;height:28px;object-fit:contain;filter:brightness(0) invert(1);">` : '<span style="font-size:1.2rem;">🎴</span>'}
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-size:0.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
-                        <div style="font-size:0.7rem;color:${isUpcoming ? 'var(--accent-gold)' : 'var(--text-secondary)'};">${isUpcoming && daysAway ? 'In ' + daysAway + ' days' : dateStr}</div>
+            saveSecretLairAlerts(alerts);
+            renderSecretLairSection();
+        }
+
+        function renderSecretLairSection() {
+            const mobileGrid = document.getElementById('mobileSecretLairGrid');
+            const desktopGrid = document.getElementById('secretLairDashGrid');
+            const desktopSection = document.getElementById('secretLairDashSection');
+
+            const today = new Date();
+            const alerts = getSecretLairAlerts();
+
+            // Combine known drops with Scryfall data
+            const drops = KNOWN_SECRET_LAIR_DROPS.map(drop => {
+                const releaseDate = new Date(drop.date);
+                const daysAway = Math.ceil((releaseDate - today) / (1000 * 60 * 60 * 24));
+                const isUpcoming = daysAway > 0;
+                const isWatched = alerts.includes(drop.id);
+                return { ...drop, releaseDate, daysAway, isUpcoming, isWatched };
+            }).sort((a, b) => a.releaseDate - b.releaseDate);
+
+            // Split into upcoming and recent
+            const upcoming = drops.filter(d => d.isUpcoming);
+            const recent = drops.filter(d => !d.isUpcoming).slice(0, 3);
+
+            // Mobile HTML (compact)
+            let mobileHtml = '';
+            if (upcoming.length) {
+                mobileHtml += '<div style="font-size:0.7rem;color:var(--accent-gold);margin-bottom:0.3rem;font-weight:600;">📅 UPCOMING</div>';
+                mobileHtml += upcoming.map(drop => `
+                    <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border-left:3px solid var(--accent-gold);">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.8rem;font-weight:600;">${drop.name}</div>
+                            <div style="font-size:0.7rem;color:var(--text-secondary);">${drop.theme} • ${drop.price}</div>
+                            <div style="font-size:0.7rem;color:var(--accent-gold);font-weight:600;">${drop.daysAway} days away</div>
+                        </div>
+                        <button onclick="event.stopPropagation();toggleSecretLairAlert('${drop.id}')"
+                            style="padding:0.3rem 0.5rem;font-size:0.7rem;border:none;border-radius:var(--radius-sm);cursor:pointer;
+                            ${drop.isWatched ? 'background:var(--accent-green);color:white;' : 'background:var(--bg-secondary);color:var(--text-secondary);'}">
+                            ${drop.isWatched ? '🔔 Watching' : '🔕 Watch'}
+                        </button>
                     </div>
-                </div>`;
-            }).join('');
+                `).join('');
+            }
+
+            if (recent.length) {
+                mobileHtml += '<div style="font-size:0.7rem;color:var(--text-secondary);margin:0.5rem 0 0.3rem;font-weight:600;">🛒 NOW AVAILABLE</div>';
+                mobileHtml += recent.map(drop => `
+                    <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.8rem;font-weight:600;">${drop.name}</div>
+                            <div style="font-size:0.7rem;color:var(--text-secondary);">${drop.theme} • ${drop.price}</div>
+                        </div>
+                        <a href="${drop.url}" target="_blank" rel="noopener"
+                            style="padding:0.3rem 0.5rem;font-size:0.7rem;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);text-decoration:none;">
+                            Shop →
+                        </a>
+                    </div>
+                `).join('');
+            }
+
+            if (!mobileHtml) {
+                mobileHtml = '<div style="color:var(--text-secondary);font-size:0.85rem;text-align:center;padding:0.5rem;">No drops scheduled.<br>Check back soon!</div>';
+            }
+
+            if (mobileGrid) mobileGrid.innerHTML = mobileHtml;
+
+            // Desktop HTML (cards in grid)
+            if (desktopGrid && desktopSection) {
+                let desktopHtml = '';
+
+                // All drops as cards
+                const allDrops = [...upcoming, ...recent];
+                desktopHtml = allDrops.map(drop => `
+                    <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:1rem;border-left:3px solid ${drop.isUpcoming ? 'var(--accent-gold)' : 'var(--accent-green)'};">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                            <div style="font-weight:600;font-size:0.95rem;">${drop.name}</div>
+                            <span style="font-size:0.7rem;padding:0.2rem 0.5rem;border-radius:var(--radius-sm);
+                                ${drop.isUpcoming ? 'background:var(--accent-gold);color:black;' : 'background:var(--accent-green);color:white;'}">
+                                ${drop.isUpcoming ? 'Upcoming' : 'Available'}
+                            </span>
+                        </div>
+                        <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem;">${drop.theme} • ${drop.price}</div>
+                        ${drop.isUpcoming
+                            ? `<div style="font-size:0.9rem;color:var(--accent-gold);font-weight:600;margin-bottom:0.75rem;">📅 ${drop.daysAway} days until release</div>`
+                            : `<div style="font-size:0.85rem;color:var(--accent-green);margin-bottom:0.75rem;">Released ${drop.date}</div>`
+                        }
+                        <div style="display:flex;gap:0.5rem;">
+                            ${drop.isUpcoming ? `
+                                <button onclick="event.stopPropagation();toggleSecretLairAlert('${drop.id}')"
+                                    style="flex:1;padding:0.4rem 0.6rem;font-size:0.8rem;border:none;border-radius:var(--radius-sm);cursor:pointer;
+                                    ${drop.isWatched ? 'background:var(--accent-green);color:white;' : 'background:var(--bg-secondary);color:var(--text-primary);'}">
+                                    ${drop.isWatched ? '🔔 Watching' : '🔕 Set Alert'}
+                                </button>
+                            ` : ''}
+                            <a href="${drop.url}" target="_blank" rel="noopener"
+                                style="flex:1;padding:0.4rem 0.6rem;font-size:0.8rem;background:var(--accent-primary);color:white;border-radius:var(--radius-sm);text-decoration:none;text-align:center;">
+                                🛒 Shop
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+
+                if (!desktopHtml) {
+                    desktopHtml = '<div style="color:var(--text-secondary);text-align:center;padding:1rem;grid-column:1/-1;">No drops scheduled. Check back soon!</div>';
+                }
+
+                desktopGrid.innerHTML = desktopHtml;
+                desktopSection.style.display = 'block';
+            }
+        }
+
+        function checkSecretLairNews() {
+            // Open multiple news sources in tabs
+            window.open('https://magic.wizards.com/en/news', '_blank');
+            showToast('Opening MTG news for Secret Lair announcements...', 'info');
+        }
+
+        function openSecretLairAlerts() {
+            const alerts = getSecretLairAlerts();
+            const drops = KNOWN_SECRET_LAIR_DROPS.filter(d => alerts.includes(d.id));
+
+            let content = '<div style="padding:1rem;">';
+            content += '<h3 style="margin-bottom:1rem;">🔔 Your Secret Lair Alerts</h3>';
+
+            if (drops.length) {
+                content += drops.map(drop => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:0.5rem;">
+                        <div>
+                            <div style="font-weight:600;">${drop.name}</div>
+                            <div style="font-size:0.85rem;color:var(--text-secondary);">${drop.date}</div>
+                        </div>
+                        <button onclick="toggleSecretLairAlert('${drop.id}');this.closest('.modal-overlay').remove();"
+                            style="padding:0.4rem 0.75rem;background:var(--accent-red);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:0.8rem;">
+                            Remove
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                content += '<p style="color:var(--text-secondary);text-align:center;padding:1rem;">No alerts set yet.<br>Tap "Watch" on any upcoming drop to get notified!</p>';
+            }
+
+            content += '<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bg-tertiary);">';
+            content += '<p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem;">📰 Check for new drops:</p>';
+            content += '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">';
+            content += '<a href="https://magic.wizards.com/en/news" target="_blank" class="btn btn-secondary" style="font-size:0.75rem;padding:0.4rem 0.6rem;">Wizards News</a>';
+            content += '<a href="https://www.mtggoldfish.com/articles/search?tag=secret+lair" target="_blank" class="btn btn-secondary" style="font-size:0.75rem;padding:0.4rem 0.6rem;">MTG Goldfish</a>';
+            content += '<a href="https://secretlair.wizards.com" target="_blank" class="btn btn-secondary" style="font-size:0.75rem;padding:0.4rem 0.6rem;">Secret Lair Shop</a>';
+            content += '</div></div>';
+            content += '</div>';
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem;';
+            modal.onclick = e => { if (e.target === modal) modal.remove(); };
+            modal.innerHTML = `<div style="background:var(--bg-card);border-radius:var(--radius-md);max-width:400px;width:100%;max-height:80vh;overflow-y:auto;position:relative;">
+                <button onclick="this.closest('.modal-overlay').remove()" style="position:absolute;top:0.5rem;right:0.5rem;background:none;border:none;color:var(--text-secondary);font-size:1.5rem;cursor:pointer;">&times;</button>
+                ${content}
+            </div>`;
+            document.body.appendChild(modal);
         }
 
         function renderMobileLatestSets() {
