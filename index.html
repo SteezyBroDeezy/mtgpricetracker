@@ -510,6 +510,45 @@
         .color-checkbox:hover { transform: scale(1.1); }
         .color-checkbox.selected { border-color: var(--accent-gold); box-shadow: 0 0 10px var(--accent-gold); }
         .color-checkbox.selected::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* Set Picker for Alerts */
+        .set-pick-item { display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.75rem;cursor:pointer;transition:background 0.15s;border-bottom:1px solid var(--bg-tertiary); }
+        .set-pick-item:last-child { border-bottom:none; }
+        .set-pick-item:hover { background:var(--bg-tertiary); }
+        .set-pick-item.selected { background:rgba(157,78,221,0.12); }
+        .set-pick-item img { width:24px;height:24px;filter:brightness(0) invert(1);flex-shrink:0; }
+        .set-pick-info { flex:1;min-width:0; }
+        .set-pick-name { font-size:0.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .set-pick-meta { font-size:0.7rem;color:var(--text-muted);display:flex;gap:0.5rem;align-items:center; }
+        .set-pick-code { font-family:var(--font-mono);text-transform:uppercase;font-size:0.65rem;color:var(--accent-primary); }
+        .set-pick-check { width:20px;height:20px;border:2px solid var(--bg-tertiary);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;font-size:0.7rem; }
+        .set-pick-item.selected .set-pick-check { background:var(--accent-primary);border-color:var(--accent-primary);color:white; }
+        .set-pick-commander { margin-left:1.5rem;font-size:0.78rem;color:var(--text-secondary);padding:0.4rem 0.75rem;border-bottom:1px solid var(--bg-tertiary);display:flex;align-items:center;gap:0.5rem;cursor:pointer; }
+        .set-pick-commander:hover { background:var(--bg-tertiary); }
+        .set-pick-commander.selected { background:rgba(157,78,221,0.1); }
+        .set-pick-commander .set-pick-check { width:16px;height:16px;font-size:0.6rem; }
+        .alert-set-chip { display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.6rem;background:var(--accent-primary);border-radius:12px;font-size:0.75rem;color:white;font-weight:500; }
+        .alert-set-chip img { width:14px;height:14px;filter:brightness(0) invert(1); }
+        .alert-set-chip .chip-x { cursor:pointer;opacity:0.7;font-size:0.85rem;margin-left:0.15rem; }
+        .alert-set-chip .chip-x:hover { opacity:1; }
+        .set-pick-group-label { padding:0.5rem 0.75rem;font-size:0.7rem;color:var(--accent-gold);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;background:rgba(255,215,0,0.05);border-bottom:1px solid var(--bg-tertiary);position:sticky;top:0;z-index:1; }
+
+        /* Spoiler Tracker */
+        .spoiler-set-card { background:var(--bg-card);border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.05);overflow:hidden;transition:var(--transition-smooth); }
+        .spoiler-set-card:hover { border-color:var(--accent-primary); }
+        .spoiler-set-header { display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;cursor:pointer; }
+        .spoiler-set-header img { width:28px;height:28px;filter:brightness(0) invert(1); }
+        .spoiler-set-name { font-weight:600;font-size:0.95rem;flex:1; }
+        .spoiler-set-meta { display:flex;gap:0.75rem;align-items:center;font-size:0.75rem; }
+        .spoiler-badge { padding:0.15rem 0.5rem;border-radius:10px;font-size:0.7rem;font-weight:700; }
+        .spoiler-badge.new { background:rgba(0,255,136,0.15);color:var(--accent-green); }
+        .spoiler-badge.reprint { background:rgba(157,78,221,0.15);color:var(--accent-secondary); }
+        .spoiler-badge.upcoming { background:rgba(255,215,0,0.15);color:var(--accent-gold); }
+        .spoiler-cards-preview { padding:0 1rem 0.75rem;display:flex;gap:0.4rem;overflow-x:auto; }
+        .spoiler-card-thumb { width:60px;height:84px;border-radius:4px;object-fit:cover;cursor:pointer;transition:transform 0.15s;flex-shrink:0; }
+        .spoiler-card-thumb:hover { transform:scale(1.08); }
+        .spoiler-progress { height:3px;background:var(--bg-tertiary);border-radius:2px;margin:0 1rem 0.75rem;overflow:hidden; }
+        .spoiler-progress-bar { height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent-primary),var(--accent-gold));transition:width 0.5s ease; }
         .color-checkbox.W { background: linear-gradient(135deg, #f9faf4, #f0e68c); color: #333; }
         .color-checkbox.U { background: linear-gradient(135deg, #0e4c92, #1e90ff); color: white; }
         .color-checkbox.B { background: linear-gradient(135deg, #150b00, #2a2a2a); color: #ccc; }
@@ -1296,6 +1335,22 @@
                 </div>
             </section>
 
+            <!-- Spoiler Tracker - Desktop -->
+            <section class="category-movers-section desktop-only" id="spoilerDashSection" style="display:none;">
+                <div class="section-header">
+                    <h2 class="section-title">🔍 Spoiler Tracker</h2>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <span id="spoilerLastCheck" style="font-size:0.7rem;color:var(--text-muted);"></span>
+                        <button class="btn btn-sm" onclick="checkSpoilers(true)">🔄 Check Now</button>
+                        <button class="btn btn-sm" onclick="openAlertModal();document.getElementById('alertType').value='new_spoiler';updateAlertUI();">🔔 Alert</button>
+                    </div>
+                </div>
+                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">New cards and reprints spoiled for upcoming sets — auto-checks Scryfall each visit</p>
+                <div id="spoilerDashGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0.75rem;">
+                    <div style="padding:1rem;color:var(--text-muted);font-size:0.85rem;">Checking for spoilers...</div>
+                </div>
+            </section>
+
             <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
             <section class="category-movers-section desktop-only" id="reprintsDashSection" style="display:none;">
                 <div class="section-header">
@@ -1336,6 +1391,18 @@
                     </div>
                     <div class="mobile-section-content expanded" id="mobileReleasesContent">
                         <div id="mobileReleasesGrid" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Spoiler Tracker - Mobile -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>🔍 Spoiler Tracker</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded" id="mobileSpoilerContent">
+                        <div id="mobileSpoilerGrid" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+                        <button class="btn btn-secondary" onclick="checkSpoilers(true)" style="width:100%;margin-top:0.5rem;font-size:0.8rem;">🔄 Check for New Spoilers</button>
                     </div>
                 </div>
 
@@ -2340,6 +2407,11 @@
                                         <option value="spike">Sudden price spike (>25%)</option>
                                         <option value="crash">Sudden price crash (>25%)</option>
                                     </optgroup>
+                                    <optgroup label="Spoiler & Set Tracking">
+                                        <option value="new_spoiler">New card spoiled for set</option>
+                                        <option value="spoiled_reprint">Reprint spoiled for set</option>
+                                        <option value="set_release_reprints">On release — track all reprints</option>
+                                    </optgroup>
                                 </select>
                             </div>
                             <div class="form-group" id="thresholdGroup">
@@ -2381,9 +2453,29 @@
                             <input type="hidden" id="alertCardId">
                         </div>
                         
-                        <div id="setGroup" class="form-group" style="display:none;">
-                            <label class="form-label">Set Code(s)</label>
-                            <input type="text" class="form-input" id="alertSets" placeholder="MKM, OTJ, MH3 (comma separated)">
+                        <div id="setGroup" style="display:none;">
+                            <div class="form-group">
+                                <label class="form-label">Select Set(s)</label>
+                                <div id="alertSelectedSets" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.5rem;min-height:0;"></div>
+                                <input type="text" class="form-input" id="alertSetSearch" placeholder="Search sets..." oninput="filterAlertSets()" autocomplete="off" style="margin-bottom:0.5rem;">
+                                <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap;">
+                                    <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:var(--text-secondary);cursor:pointer;">
+                                        <input type="checkbox" id="alertSetBigOnly" checked onchange="filterAlertSets()" style="accent-color:var(--accent-primary);"> 100+ cards only
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:var(--text-secondary);cursor:pointer;">
+                                        <input type="checkbox" id="alertSetReprintsOnly" onchange="filterAlertSets()" style="accent-color:var(--accent-gold);"> Has reprints
+                                    </label>
+                                </div>
+                                <div id="alertSetList" style="max-height:240px;overflow-y:auto;border:1px solid var(--bg-tertiary);border-radius:var(--radius-sm);background:var(--bg-secondary);"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">What to track in selected set(s)</label>
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item"><input type="checkbox" id="alertSetTrackReprints" checked> Reprint prices</label>
+                                    <label class="checkbox-item"><input type="checkbox" id="alertSetTrackAll"> All card prices</label>
+                                    <label class="checkbox-item"><input type="checkbox" id="alertSetTrackMythics"> Mythics only</label>
+                                </div>
+                            </div>
                         </div>
                         
                         <div id="customFiltersGroup" style="display:none;">
@@ -4257,13 +4349,485 @@
             return`<div class="mtg-card" data-card-id="${c.id}"><div class="mtg-card-img-container" onclick="openCardDetail('${c.id}')"><img src="${img}" class="mtg-card-img" loading="lazy">${badge?`<span class="mtg-card-badge badge-${bc}">${badge}</span>`:''}<div class="mtg-card-quick">${flipBtn}<button class="quick-btn watch ${inWL?'active':''}" onclick="event.stopPropagation();quickWatch('${c.id}')" title="Watchlist">${inWL?'✓':'👁'}</button><button class="quick-btn alert" onclick="event.stopPropagation();openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}')" title="Alert">🔔</button></div></div><div class="mtg-card-info" onclick="openCardDetail('${c.id}')"><div class="mtg-card-name">${c.name}</div><div class="mtg-card-set">${c.set_name}${pr.type?` <span style="color:var(--accent-blue);font-size:0.65rem;">${pr.type}</span>`:''}</div><div class="mtg-card-prices"><span class="mtg-card-price">${pr.val}</span>${changeHtml}</div></div></div>`;}
 
         // Alerts
-        function openAlertModal(cardId=null,cardName=null){document.getElementById('alertForm').reset();document.getElementById('alertModalTitle').textContent=cardId?'Alert: '+cardName:'Create Alert Rule';if(cardId){document.getElementById('alertScope').value='specific';document.getElementById('alertCardId').value=cardId;document.getElementById('alertCardName').value=cardName;}updateAlertUI();updateScopeUI();openModal('alertModal');}
-        function updateAlertUI(){const t=document.getElementById('alertType').value;const thG=document.getElementById('thresholdGroup'),tfG=document.getElementById('timeframeGroup');if(t.includes('steady')){tfG.style.display='block';document.getElementById('thresholdLabel').textContent='Min % Change';document.getElementById('alertThreshold').placeholder='5';}else if(t==='reprint'||t==='spike'||t==='crash'){thG.style.display='none';tfG.style.display='none';}else{thG.style.display='block';tfG.style.display='none';document.getElementById('thresholdLabel').textContent=t.includes('pct')?'Percentage':'Price ($)';document.getElementById('alertThreshold').placeholder=t.includes('pct')?'20':'10.00';}}
-        function updateScopeUI(){const s=document.getElementById('alertScope').value;document.getElementById('specificCardGroup').style.display=s==='specific'?'block':'none';document.getElementById('setGroup').style.display=s==='set'?'block':'none';document.getElementById('customFiltersGroup').style.display=s==='custom'?'block':'none';}
-        function saveAlert(){const name=document.getElementById('alertName').value;if(!name){showToast('Enter rule name','warning');return;}const type=document.getElementById('alertType').value;const threshold=parseFloat(document.getElementById('alertThreshold').value)||0;const timeframe=document.getElementById('alertTimeframe').value;const scope=document.getElementById('alertScope').value;let filters={};if(scope==='specific'){filters.cardId=document.getElementById('alertCardId').value;filters.cardName=document.getElementById('alertCardName').value;}else if(scope==='set'){filters.sets=document.getElementById('alertSets').value.split(',').map(s=>s.trim().toLowerCase());}else if(scope==='custom'){filters.rarities=Array.from(document.querySelectorAll('#rarityChecks input:checked')).map(i=>i.value);filters.colors=Array.from(document.querySelectorAll('.color-checkbox.selected')).map(i=>i.dataset.color);filters.types=Array.from(document.querySelectorAll('#typeChecks input:checked')).map(i=>i.value);filters.exclude=Array.from(document.querySelectorAll('#excludeChecks input:checked')).map(i=>i.value);filters.minPrice=parseFloat(document.getElementById('alertMinPrice').value)||0;filters.maxPrice=parseFloat(document.getElementById('alertMaxPrice').value)||null;filters.format=document.getElementById('alertFormat').value;}State.alerts.push({id:Date.now().toString(),name,type,threshold,timeframe,scope,filters,enabled:true,created:new Date().toISOString()});State.save();closeModal('alertModal');showToast('Alert rule created!','success');renderAlerts();updateStats();}
-        function renderAlerts(){const types={price_above:'Above $',price_below:'Below $',pct_up:'Up %',pct_down:'Down %',steady_up:'Steady ↑',steady_down:'Steady ↓',reprint:'Reprint',spike:'Spike',crash:'Crash'};const g=document.getElementById('alertsGrid');g.innerHTML=State.alerts.map(a=>{let conditions=[`<span class="alert-condition">${types[a.type]||a.type}${a.threshold||''}</span>`];if(a.scope==='watchlist')conditions.push('<span class="alert-condition">Watchlist</span>');else if(a.scope==='specific')conditions.push(`<span class="alert-condition">${a.filters?.cardName||'Card'}</span>`);else if(a.scope==='set')conditions.push(`<span class="alert-condition">Sets: ${a.filters?.sets?.join(', ')}</span>`);else if(a.scope==='custom'){if(a.filters?.rarities?.length)conditions.push(`<span class="alert-condition">${a.filters.rarities.join(', ')}</span>`);if(a.filters?.format)conditions.push(`<span class="alert-condition">${a.filters.format}</span>`);}if(a.timeframe)conditions.push(`<span class="alert-condition">${a.timeframe}d</span>`);return`<div class="alert-card"><div class="alert-header"><div class="alert-title">${a.name}</div><label class="alert-toggle"><input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAlert('${a.id}')"><span class="alert-toggle-slider"></span></label></div><div class="alert-conditions">${conditions.join('')}</div><div><button class="alert-btn alert-btn-delete" onclick="deleteAlert('${a.id}')">Delete</button></div></div>`;}).join('')+`<div class="alert-card new-alert-card" onclick="openAlertModal()"><div class="new-alert-icon">➕</div><div class="new-alert-text">New Rule</div></div>`;}
+        const alertSelectedSetCodes = [];
+        let alertSetCache = null; // { families: [...], flat: [...] }
+
+        function openAlertModal(cardId=null,cardName=null){
+            document.getElementById('alertForm').reset();
+            document.getElementById('alertModalTitle').textContent=cardId?'Alert: '+cardName:'Create Alert Rule';
+            alertSelectedSetCodes.length = 0;
+            renderAlertSelectedChips();
+            if(cardId){document.getElementById('alertScope').value='specific';document.getElementById('alertCardId').value=cardId;document.getElementById('alertCardName').value=cardName;}
+            updateAlertUI();updateScopeUI();openModal('alertModal');
+        }
+        function updateAlertUI(){const t=document.getElementById('alertType').value;const thG=document.getElementById('thresholdGroup'),tfG=document.getElementById('timeframeGroup');const spoilerTypes=['new_spoiler','spoiled_reprint','set_release_reprints'];if(t.includes('steady')){tfG.style.display='block';thG.style.display='block';document.getElementById('thresholdLabel').textContent='Min % Change';document.getElementById('alertThreshold').placeholder='5';}else if(t==='reprint'||t==='spike'||t==='crash'||spoilerTypes.includes(t)){thG.style.display='none';tfG.style.display='none';if(spoilerTypes.includes(t)){document.getElementById('alertScope').value='set';updateScopeUI();}}else{thG.style.display='block';tfG.style.display='none';document.getElementById('thresholdLabel').textContent=t.includes('pct')?'Percentage':'Price ($)';document.getElementById('alertThreshold').placeholder=t.includes('pct')?'20':'10.00';}}
+        function updateScopeUI(){
+            const s=document.getElementById('alertScope').value;
+            document.getElementById('specificCardGroup').style.display=s==='specific'?'block':'none';
+            document.getElementById('setGroup').style.display=s==='set'?'block':'none';
+            document.getElementById('customFiltersGroup').style.display=s==='custom'?'block':'none';
+            if(s==='set') loadAlertSetList();
+        }
+
+        // ====== SET PICKER FOR ALERTS ======
+        async function loadAlertSetList() {
+            const listEl = document.getElementById('alertSetList');
+            if (!listEl) return;
+            if (alertSetCache) { renderAlertSetList(); return; }
+            listEl.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--text-muted);font-size:0.8rem;">Loading sets...</div>';
+            try {
+                let allSets;
+                if (allScryfallSets && allScryfallSets.length) {
+                    allSets = allScryfallSets;
+                } else {
+                    const d = await API.sets();
+                    allSets = d.data || [];
+                    allScryfallSets = allSets;
+                }
+                // Build family-grouped list
+                const byCode = {};
+                allSets.forEach(s => byCode[s.code] = s);
+                const families = {};
+                const validTypes = ['expansion','core','masters','draft_innovation','commander','funny'];
+                allSets.forEach(s => {
+                    if (s.digital) return;
+                    // Allow future sets even with 0 cards (they're announced but not spoiled yet)
+                    const today = new Date().toISOString().split('T')[0];
+                    const isFuture = s.released_at && s.released_at > today;
+                    if (!isFuture && s.card_count < 1) return;
+                    if (!validTypes.includes(s.set_type)) return;
+                    const parentCode = s.parent_set_code || s.code;
+                    const parentSet = byCode[parentCode];
+                    if (!families[parentCode]) {
+                        families[parentCode] = {
+                            code: parentCode,
+                            name: parentSet ? parentSet.name : s.name,
+                            icon: parentSet ? parentSet.icon_svg_uri : s.icon_svg_uri,
+                            released: parentSet ? parentSet.released_at : s.released_at,
+                            cardCount: parentSet ? (parentSet.card_count||0) : 0,
+                            setType: parentSet ? parentSet.set_type : s.set_type,
+                            children: [] // commander/supplemental sub-sets
+                        };
+                    }
+                    if (s.code !== parentCode) {
+                        families[parentCode].children.push({
+                            code: s.code,
+                            name: s.name,
+                            icon: s.icon_svg_uri,
+                            cardCount: s.card_count||0,
+                            setType: s.set_type
+                        });
+                        families[parentCode].cardCount += (s.card_count||0);
+                    }
+                });
+                // Sort by release date desc
+                const familyList = Object.values(families).sort((a,b) => (b.released||'').localeCompare(a.released||''));
+                alertSetCache = { families: familyList };
+                renderAlertSetList();
+            } catch(e) {
+                listEl.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--accent-red);font-size:0.8rem;">Failed to load sets</div>';
+            }
+        }
+
+        function renderAlertSetList() {
+            const listEl = document.getElementById('alertSetList');
+            if (!listEl || !alertSetCache) return;
+            const search = (document.getElementById('alertSetSearch')?.value || '').toLowerCase().trim();
+            const bigOnly = document.getElementById('alertSetBigOnly')?.checked;
+            const today = new Date().toISOString().split('T')[0];
+            const alertType = document.getElementById('alertType')?.value || '';
+            const isSpoilerType = ['new_spoiler','spoiled_reprint','set_release_reprints'].includes(alertType);
+            let families = alertSetCache.families;
+
+            // Filter
+            if (bigOnly) families = families.filter(f => f.cardCount >= 100 || (f.released && f.released > today));
+            if (search) families = families.filter(f =>
+                f.name.toLowerCase().includes(search) ||
+                f.code.toLowerCase().includes(search) ||
+                f.children.some(c => c.name.toLowerCase().includes(search) || c.code.toLowerCase().includes(search))
+            );
+
+            // Split into upcoming and released
+            const upcoming = families.filter(f => f.released && f.released > today);
+            const released = families.filter(f => !f.released || f.released <= today);
+
+            let html = '';
+
+            // Show upcoming sets first (always, but especially for spoiler alerts)
+            if (upcoming.length) {
+                html += `<div class="set-pick-group-label" style="background:rgba(255,215,0,0.1);color:var(--accent-gold);">📅 Upcoming / Unreleased</div>`;
+                upcoming.forEach(f => {
+                    html += renderSetPickItem(f, today);
+                });
+            }
+
+            // Then released sets grouped by year
+            if (!isSpoilerType || !upcoming.length || search) {
+                let lastYear = '';
+                (isSpoilerType ? released.slice(0, 20) : released.slice(0, 60)).forEach(f => {
+                    const year = f.released ? f.released.slice(0,4) : 'Unknown';
+                    if (year !== lastYear) {
+                        lastYear = year;
+                        html += `<div class="set-pick-group-label">${year}</div>`;
+                    }
+                    html += renderSetPickItem(f, today);
+                });
+            }
+
+            if (!html) html = '<div style="padding:1rem;text-align:center;color:var(--text-muted);font-size:0.8rem;">No sets match your search</div>';
+            listEl.innerHTML = html;
+        }
+
+        function renderSetPickItem(f, today) {
+            const isSelected = alertSelectedSetCodes.includes(f.code);
+            const isFuture = f.released && f.released > today;
+            const hasCommander = f.children.some(c => c.setType === 'commander' || c.name.toLowerCase().includes('commander'));
+            const bigOnly = document.getElementById('alertSetBigOnly')?.checked;
+            const daysUntil = isFuture ? Math.ceil((new Date(f.released) - new Date()) / 86400000) : 0;
+            const spoilerData = JSON.parse(localStorage.getItem('spoilerCounts') || '{}');
+            const spoilerInfo = spoilerData[f.code];
+
+            let html = `<div class="set-pick-item${isSelected?' selected':''}" onclick="toggleAlertSet('${f.code}')">
+                <div class="set-pick-check">${isSelected?'✓':''}</div>
+                ${f.icon ? `<img src="${f.icon}" alt="">` : ''}
+                <div class="set-pick-info">
+                    <div class="set-pick-name">${f.name}${isFuture ? ' <span style="font-size:0.65rem;background:var(--accent-gold);color:var(--bg-primary);padding:0.1rem 0.4rem;border-radius:8px;font-weight:700;">'+daysUntil+'d</span>' : ''}</div>
+                    <div class="set-pick-meta">
+                        <span class="set-pick-code">${f.code}</span>
+                        <span>${f.cardCount} cards${isFuture && spoilerInfo ? ' ('+spoilerInfo.count+' spoiled)' : ''}</span>
+                        <span>${f.released||'TBD'}</span>
+                        ${isFuture ? '<span style="color:var(--accent-gold);">Upcoming</span>' : ''}
+                    </div>
+                </div>
+            </div>`;
+
+            // Commander sub-sets
+            f.children.forEach(ch => {
+                if (bigOnly && ch.cardCount < 10 && !isFuture) return;
+                const chSelected = alertSelectedSetCodes.includes(ch.code);
+                html += `<div class="set-pick-commander${chSelected?' selected':''}" onclick="toggleAlertSet('${ch.code}')">
+                    <div class="set-pick-check">${chSelected?'✓':''}</div>
+                    <span>↳ ${ch.name}</span>
+                    <span style="margin-left:auto;font-size:0.7rem;color:var(--text-muted);">${ch.cardCount} cards</span>
+                </div>`;
+            });
+
+            // Select Both shortcut for families with commander
+            if (hasCommander && f.children.length) {
+                const allCodes = [f.code, ...f.children.map(c=>c.code)];
+                const allIn = allCodes.every(c => alertSelectedSetCodes.includes(c));
+                html += `<div class="set-pick-commander" onclick="toggleAlertSetFamily('${f.code}')" style="color:var(--accent-gold);font-size:0.72rem;font-weight:600;">
+                    <div class="set-pick-check" style="border-color:var(--accent-gold);${allIn?'background:var(--accent-gold);color:var(--bg-primary);':''}">${allIn?'✓':''}</div>
+                    <span>⚔️ Select All (Main + Commander)</span>
+                </div>`;
+            }
+
+            return html;
+        }
+
+        function filterAlertSets() { renderAlertSetList(); }
+
+        function toggleAlertSet(code) {
+            const idx = alertSelectedSetCodes.indexOf(code);
+            if (idx > -1) alertSelectedSetCodes.splice(idx, 1);
+            else alertSelectedSetCodes.push(code);
+            renderAlertSetList();
+            renderAlertSelectedChips();
+        }
+
+        function toggleAlertSetFamily(parentCode) {
+            if (!alertSetCache) return;
+            const family = alertSetCache.families.find(f => f.code === parentCode);
+            if (!family) return;
+            const allCodes = [family.code, ...family.children.map(c => c.code)];
+            const allIn = allCodes.every(c => alertSelectedSetCodes.includes(c));
+            if (allIn) {
+                // Remove all
+                allCodes.forEach(c => { const i = alertSelectedSetCodes.indexOf(c); if (i > -1) alertSelectedSetCodes.splice(i, 1); });
+            } else {
+                // Add missing
+                allCodes.forEach(c => { if (!alertSelectedSetCodes.includes(c)) alertSelectedSetCodes.push(c); });
+            }
+            renderAlertSetList();
+            renderAlertSelectedChips();
+        }
+
+        function renderAlertSelectedChips() {
+            const container = document.getElementById('alertSelectedSets');
+            if (!container) return;
+            if (!alertSelectedSetCodes.length) { container.innerHTML = ''; return; }
+            container.innerHTML = alertSelectedSetCodes.map(code => {
+                const setInfo = allScryfallSets?.find(s => s.code === code);
+                const name = setInfo ? setInfo.name : code.toUpperCase();
+                const icon = setInfo?.icon_svg_uri || '';
+                return `<span class="alert-set-chip">${icon?`<img src="${icon}">`:''}${name.length>22?name.slice(0,20)+'…':name} <span class="chip-x" onclick="event.stopPropagation();removeAlertSet('${code}')">✕</span></span>`;
+            }).join('');
+        }
+
+        function removeAlertSet(code) {
+            const idx = alertSelectedSetCodes.indexOf(code);
+            if (idx > -1) alertSelectedSetCodes.splice(idx, 1);
+            renderAlertSetList();
+            renderAlertSelectedChips();
+        }
+
+        function saveAlert(){
+            const name=document.getElementById('alertName').value;
+            if(!name){showToast('Enter rule name','warning');return;}
+            const type=document.getElementById('alertType').value;
+            const threshold=parseFloat(document.getElementById('alertThreshold').value)||0;
+            const timeframe=document.getElementById('alertTimeframe').value;
+            const scope=document.getElementById('alertScope').value;
+            let filters={};
+            if(scope==='specific'){
+                filters.cardId=document.getElementById('alertCardId').value;
+                filters.cardName=document.getElementById('alertCardName').value;
+            } else if(scope==='set'){
+                if(!alertSelectedSetCodes.length){showToast('Select at least one set','warning');return;}
+                filters.sets=[...alertSelectedSetCodes];
+                // Gather set names for display
+                filters.setNames = alertSelectedSetCodes.map(code => {
+                    const s = allScryfallSets?.find(x => x.code === code);
+                    return s ? s.name : code.toUpperCase();
+                });
+                filters.trackReprints = document.getElementById('alertSetTrackReprints')?.checked || false;
+                filters.trackAll = document.getElementById('alertSetTrackAll')?.checked || false;
+                filters.trackMythics = document.getElementById('alertSetTrackMythics')?.checked || false;
+            } else if(scope==='custom'){
+                filters.rarities=Array.from(document.querySelectorAll('#rarityChecks input:checked')).map(i=>i.value);
+                filters.colors=Array.from(document.querySelectorAll('.color-checkbox.selected')).map(i=>i.dataset.color);
+                filters.types=Array.from(document.querySelectorAll('#typeChecks input:checked')).map(i=>i.value);
+                filters.exclude=Array.from(document.querySelectorAll('#excludeChecks input:checked')).map(i=>i.value);
+                filters.minPrice=parseFloat(document.getElementById('alertMinPrice').value)||0;
+                filters.maxPrice=parseFloat(document.getElementById('alertMaxPrice').value)||null;
+                filters.format=document.getElementById('alertFormat').value;
+            }
+            State.alerts.push({id:Date.now().toString(),name,type,threshold,timeframe,scope,filters,enabled:true,created:new Date().toISOString()});
+            State.save();closeModal('alertModal');showToast('Alert rule created!','success');renderAlerts();updateStats();
+        }
+
+        function renderAlerts(){
+            const types={price_above:'Above $',price_below:'Below $',pct_up:'Up %',pct_down:'Down %',steady_up:'Steady ↑',steady_down:'Steady ↓',reprint:'Reprint',spike:'Spike',crash:'Crash',new_spoiler:'🔍 New Spoiler',spoiled_reprint:'🔄 Reprint Spoiled',set_release_reprints:'📦 Release Reprints'};
+            const g=document.getElementById('alertsGrid');
+            g.innerHTML=State.alerts.map(a=>{
+                let conditions=[`<span class="alert-condition">${types[a.type]||a.type}${a.threshold||''}</span>`];
+                if(a.scope==='watchlist') conditions.push('<span class="alert-condition">Watchlist</span>');
+                else if(a.scope==='specific') conditions.push(`<span class="alert-condition">${a.filters?.cardName||'Card'}</span>`);
+                else if(a.scope==='set'){
+                    // Show set names if available, fallback to codes
+                    const setDisplay = a.filters?.setNames?.length
+                        ? a.filters.setNames.slice(0,2).join(', ') + (a.filters.setNames.length > 2 ? ` +${a.filters.setNames.length-2} more` : '')
+                        : (a.filters?.sets?.join(', ') || 'Sets');
+                    conditions.push(`<span class="alert-condition" title="${(a.filters?.setNames||a.filters?.sets||[]).join(', ')}">${setDisplay}</span>`);
+                    if(a.filters?.trackReprints) conditions.push('<span class="alert-condition">🔄 Reprints</span>');
+                    if(a.filters?.trackMythics) conditions.push('<span class="alert-condition">🔥 Mythics</span>');
+                    if(a.filters?.trackAll) conditions.push('<span class="alert-condition">📦 All Cards</span>');
+                } else if(a.scope==='custom'){
+                    if(a.filters?.rarities?.length)conditions.push(`<span class="alert-condition">${a.filters.rarities.join(', ')}</span>`);
+                    if(a.filters?.format)conditions.push(`<span class="alert-condition">${a.filters.format}</span>`);
+                }
+                if(a.timeframe)conditions.push(`<span class="alert-condition">${a.timeframe}d</span>`);
+                return`<div class="alert-card"><div class="alert-header"><div class="alert-title">${a.name}</div><label class="alert-toggle"><input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAlert('${a.id}')"><span class="alert-toggle-slider"></span></label></div><div class="alert-conditions">${conditions.join('')}</div><div><button class="alert-btn alert-btn-delete" onclick="deleteAlert('${a.id}')">Delete</button></div></div>`;
+            }).join('')+`<div class="alert-card new-alert-card" onclick="openAlertModal()"><div class="new-alert-icon">➕</div><div class="new-alert-text">New Rule</div></div>`;
+        }
         function toggleAlert(id){const a=State.alerts.find(x=>x.id===id);if(a){a.enabled=!a.enabled;State.save();updateStats();}}
         function deleteAlert(id){State.alerts=State.alerts.filter(a=>a.id!==id);State.save();renderAlerts();updateStats();showToast('Deleted','info');}
+
+        // ====== SPOILER TRACKER ======
+        // Stores { setCode: { count, reprintCount, lastCheck, newCards:[], newReprints:[] } }
+        function getSpoilerData() {
+            try { return JSON.parse(localStorage.getItem('spoilerCounts') || '{}'); } catch(e) { return {}; }
+        }
+        function saveSpoilerData(data) {
+            localStorage.setItem('spoilerCounts', JSON.stringify(data));
+        }
+
+        async function checkSpoilers(manual = false) {
+            // Get upcoming sets from Scryfall
+            if (!allScryfallSets || !allScryfallSets.length) {
+                try { const d = await API.sets(); allScryfallSets = d.data || []; } catch(e) { return; }
+            }
+            const today = new Date().toISOString().split('T')[0];
+            const validTypes = ['expansion','core','masters','draft_innovation'];
+            // Upcoming + recently released (last 14 days) sets worth tracking
+            const twoWeeksAgo = new Date(Date.now() - 14*86400000).toISOString().split('T')[0];
+            const trackableSets = allScryfallSets.filter(s =>
+                !s.digital && validTypes.includes(s.set_type) &&
+                s.released_at && s.released_at > twoWeeksAgo &&
+                !s.parent_set_code // Only parent sets
+            ).sort((a,b) => a.released_at.localeCompare(b.released_at));
+
+            if (!trackableSets.length) {
+                renderSpoilerDashboard([], manual);
+                return;
+            }
+
+            const spoilerData = getSpoilerData();
+            const results = [];
+
+            for (const set of trackableSets.slice(0, 6)) {
+                const prev = spoilerData[set.code] || { count: 0, reprintCount: 0 };
+                const isFuture = set.released_at > today;
+                const currentCount = set.card_count || 0;
+
+                // Check reprints count via Scryfall (lightweight query — just need total)
+                let reprintCount = prev.reprintCount || 0;
+                let newReprints = [];
+                if (currentCount > 0) {
+                    try {
+                        const reprintData = await API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '+is%3Areprint&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
+                        reprintCount = reprintData.total_cards || 0;
+                        // If reprints increased, fetch the newest ones
+                        if (reprintCount > (prev.reprintCount || 0)) {
+                            newReprints = (reprintData.data || []).slice(0, 6).map(c => ({
+                                id: c.id,
+                                name: c.name,
+                                image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                                price: c.prices?.usd || c.prices?.usd_foil || null
+                            }));
+                        }
+                    } catch(e) { /* set may have no reprints yet */ }
+                }
+
+                // Fetch newest spoiled cards if count grew
+                let newCards = [];
+                if (currentCount > prev.count && currentCount > 0) {
+                    try {
+                        const spoiledData = await API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '&order=released&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
+                        newCards = (spoiledData.data || []).slice(0, 8).map(c => ({
+                            id: c.id,
+                            name: c.name,
+                            image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                            isReprint: c.reprint || false,
+                            price: c.prices?.usd || c.prices?.usd_foil || null
+                        }));
+                    } catch(e) {}
+                }
+
+                const countDelta = currentCount - prev.count;
+                const reprintDelta = reprintCount - (prev.reprintCount || 0);
+
+                results.push({
+                    code: set.code,
+                    name: set.name,
+                    icon: set.icon_svg_uri,
+                    released: set.released_at,
+                    isFuture,
+                    currentCount,
+                    prevCount: prev.count,
+                    countDelta: countDelta > 0 ? countDelta : 0,
+                    reprintCount,
+                    reprintDelta: reprintDelta > 0 ? reprintDelta : 0,
+                    newCards: newCards.length ? newCards : (prev.newCards || []),
+                    newReprints: newReprints.length ? newReprints : (prev.newReprints || []),
+                    expectedCards: set.card_count || 0
+                });
+
+                // Update stored data
+                spoilerData[set.code] = {
+                    count: currentCount,
+                    reprintCount,
+                    lastCheck: Date.now(),
+                    newCards: newCards.length ? newCards : (prev.newCards || []),
+                    newReprints: newReprints.length ? newReprints : (prev.newReprints || [])
+                };
+            }
+
+            saveSpoilerData(spoilerData);
+
+            // Fire alerts for any matched rules
+            checkSpoilerAlerts(results);
+
+            renderSpoilerDashboard(results, manual);
+        }
+
+        function checkSpoilerAlerts(results) {
+            if (!results.length) return;
+            const alerts = State.alerts.filter(a => a.enabled && ['new_spoiler','spoiled_reprint','set_release_reprints'].includes(a.type));
+            for (const alert of alerts) {
+                const setCodes = alert.filters?.sets || [];
+                for (const r of results) {
+                    if (setCodes.length && !setCodes.includes(r.code)) continue;
+                    if (alert.type === 'new_spoiler' && r.countDelta > 0) {
+                        showToast(`🔍 ${r.countDelta} new card${r.countDelta>1?'s':''} spoiled for ${r.name}!`, 'success', 5000);
+                    } else if (alert.type === 'spoiled_reprint' && r.reprintDelta > 0) {
+                        showToast(`🔄 ${r.reprintDelta} reprint${r.reprintDelta>1?'s':''} spoiled for ${r.name}!`, 'success', 5000);
+                    } else if (alert.type === 'set_release_reprints' && !r.isFuture && r.reprintCount > 0) {
+                        showToast(`📦 ${r.name} is released with ${r.reprintCount} reprints — check prices!`, 'success', 5000);
+                    }
+                }
+            }
+        }
+
+        function renderSpoilerDashboard(results, manual) {
+            const desktopGrid = document.getElementById('spoilerDashGrid');
+            const desktopSection = document.getElementById('spoilerDashSection');
+            const mobileGrid = document.getElementById('mobileSpoilerGrid');
+            const lastCheckEl = document.getElementById('spoilerLastCheck');
+
+            if (lastCheckEl) lastCheckEl.textContent = 'Checked: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+
+            if (!results.length) {
+                if (desktopSection) desktopSection.style.display = 'none';
+                if (mobileGrid) mobileGrid.innerHTML = '<div style="padding:0.5rem;color:var(--text-muted);font-size:0.8rem;">No upcoming sets to track right now.</div>';
+                return;
+            }
+
+            // Desktop rendering
+            if (desktopGrid && desktopSection) {
+                desktopSection.style.display = 'block';
+                desktopGrid.innerHTML = results.map(r => {
+                    const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd away' : 'Released';
+                    const progressPct = r.expectedCards > 0 ? Math.min(100, Math.round(r.currentCount / r.expectedCards * 100)) : 0;
+                    const thumbs = (r.newCards || []).slice(0, 6);
+
+                    return `<div class="spoiler-set-card">
+                        <div class="spoiler-set-header" onclick="switchPage('browse');openSetView('${r.code}');">
+                            ${r.icon ? `<img src="${r.icon}" alt="">` : ''}
+                            <div>
+                                <div class="spoiler-set-name">${r.name}</div>
+                                <div class="spoiler-set-meta">
+                                    <span style="color:var(--text-muted);">${r.released}</span>
+                                    <span class="spoiler-badge ${r.isFuture?'upcoming':'new'}">${daysLabel}</span>
+                                    ${r.countDelta > 0 ? `<span class="spoiler-badge new">+${r.countDelta} new</span>` : ''}
+                                    ${r.reprintDelta > 0 ? `<span class="spoiler-badge reprint">+${r.reprintDelta} reprints</span>` : ''}
+                                </div>
+                            </div>
+                            <div style="text-align:right;margin-left:auto;">
+                                <div style="font-family:var(--font-mono);font-size:1.1rem;font-weight:700;color:var(--text-primary);">${r.currentCount}</div>
+                                <div style="font-size:0.65rem;color:var(--text-muted);">cards spoiled</div>
+                                ${r.reprintCount > 0 ? `<div style="font-size:0.7rem;color:var(--accent-secondary);margin-top:0.15rem;">🔄 ${r.reprintCount} reprints</div>` : ''}
+                            </div>
+                        </div>
+                        ${r.expectedCards > 0 ? `<div class="spoiler-progress"><div class="spoiler-progress-bar" style="width:${progressPct}%"></div></div>` : ''}
+                        ${thumbs.length ? `<div class="spoiler-cards-preview">${thumbs.map(c =>
+                            `<img class="spoiler-card-thumb" src="${c.image}" alt="${c.name}" title="${c.name}${c.isReprint?' (Reprint)':''}${c.price?' — $'+c.price:''}" onclick="event.stopPropagation();openCardDetail('${c.id}')" loading="lazy">`
+                        ).join('')}</div>` : ''}
+                    </div>`;
+                }).join('');
+            }
+
+            // Mobile rendering
+            if (mobileGrid) {
+                mobileGrid.innerHTML = results.map(r => {
+                    const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd' : '✓';
+                    return `<div style="display:flex;align-items:center;gap:0.6rem;padding:0.6rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);cursor:pointer;" onclick="switchPage('browse');openSetView('${r.code}');">
+                        ${r.icon ? `<img src="${r.icon}" style="width:22px;height:22px;filter:brightness(0) invert(1);">` : ''}
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:600;font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted);display:flex;gap:0.5rem;">
+                                <span>${r.currentCount} cards</span>
+                                ${r.reprintCount > 0 ? `<span style="color:var(--accent-secondary);">🔄 ${r.reprintCount}</span>` : ''}
+                                ${r.countDelta > 0 ? `<span style="color:var(--accent-green);">+${r.countDelta} new</span>` : ''}
+                            </div>
+                        </div>
+                        <span style="font-size:0.75rem;color:var(--accent-gold);font-weight:600;font-family:var(--font-mono);">${daysLabel}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            if (manual) showToast('Spoiler check complete!', 'success');
+        }
 
         // ====== INLINE LIST CREATION ======
         function showInlineListCreator(e) {
@@ -7069,10 +7633,12 @@
                 renderMobileLatestSets();
                 Promise.all([
                     loadPriceMovers(1),
-                    loadUpcomingReleases()
+                    loadUpcomingReleases(),
+                    loadReprintsDashboard()
                 ]).then(() => {
                     updateMobileDashboard();
                     if (State.upcomingReleases) renderMobileReleases(State.upcomingReleases);
+                    checkSpoilers(); // Spoiler check after sets loaded
                 });
             } else if (mode === 'fast') {
                 // FAST: Only load trending, everything else lazy-loads on scroll
@@ -7080,8 +7646,10 @@
                 renderTrackedSetsWidget();
                 loadTrending(); // Don't await - let it fill in
                 loadUpcomingReleases(); // Banner is lightweight, always load
+                loadReprintsDashboard(); // Reprints are lightweight, load directly (display:none blocks observer)
+                checkSpoilers(); // Spoiler tracker
                 // Lazy-load everything else
-                ['staplesSection','moversSection','dynamicCategories','reprintsDashSection'].forEach(id => {
+                ['staplesSection','moversSection','dynamicCategories'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) lazyObserver.observe(el);
                 });
@@ -7099,6 +7667,7 @@
                 });
                 // Load reprints (lightweight, don't block)
                 loadReprintsDashboard();
+                checkSpoilers(); // Spoiler tracker
                 // Price movers + category movers lazy-load on scroll
                 ['moversSection','dynamicCategories'].forEach(id => {
                     const el = document.getElementById(id);
@@ -7116,6 +7685,7 @@
                 loadPriceMovers(1);
                 loadCategoryMovers();
                 loadReprintsDashboard();
+                checkSpoilers(); // Spoiler tracker
             }
         });
     </script>
