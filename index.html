@@ -2722,7 +2722,40 @@
                     this.process();
                 });
             },
-            async process(){if(this.processing||!this.queue.length)return;this.processing=true;while(this.queue.length){const{ep,res,rej,r,cacheTTL}=this.queue.shift();const w=this.minDelay-(Date.now()-this.last);if(w>0)await new Promise(r=>setTimeout(r,w));try{this.last=Date.now();this.status('active');const resp=await fetch(this.base+ep);if(resp.status===429){this.status('warning');if(r<3){await new Promise(r=>setTimeout(r,1000*(r+1)));this.queue.unshift({ep,res,rej,r:r+1,cacheTTL});continue;}rej(new Error('Rate limited'));continue;}if(!resp.ok)throw new Error('HTTP '+resp.status);this.status('ready');const data=await resp.json();APICache.set(ep,data);res(data);}catch(e){this.status('error');rej(e);}}this.processing=false;
+            async process(){
+                if(this.processing||!this.queue.length)return;
+                this.processing=true;
+                while(this.queue.length){
+                    const{ep,res,rej,r,cacheTTL}=this.queue.shift();
+                    const w=this.minDelay-(Date.now()-this.last);
+                    if(w>0)await new Promise(r=>setTimeout(r,w));
+                    try{
+                        this.last=Date.now();
+                        this.status('active');
+                        const resp=await fetch(this.base+ep);
+                        if(resp.status===429){
+                            this.status('warning');
+                            if(r<3){await new Promise(r=>setTimeout(r,1000*(r+1)));this.queue.unshift({ep,res,rej,r:r+1,cacheTTL});continue;}
+                            rej(new Error('Rate limited'));continue;
+                        }
+                        if(!resp.ok)throw new Error('HTTP '+resp.status);
+                        this.status('ready');
+                        const data=await resp.json();
+                        APICache.set(ep,data);
+                        res(data);
+                    }catch(e){
+                        // Retry network errors up to 3 times with backoff
+                        if(r<3&&(e.message.includes('Failed to fetch')||e.message.includes('NetworkError')||e.message.includes('network'))){
+                            this.status('warning');
+                            await new Promise(r=>setTimeout(r,500*(r+1)));
+                            this.queue.unshift({ep,res,rej,r:r+1,cacheTTL});
+                            continue;
+                        }
+                        this.status('error');
+                        rej(e);
+                    }
+                }
+                this.processing=false;
                 // Persist cache after queue drains
                 APICache.persist();
             },
@@ -6453,6 +6486,8 @@
             try {
                 const d = await API.search(enhancePriceQuery(config.query), { order: 'usd', dir: 'desc' });
                 if (d.data?.length) {
+                    // Pre-cache cards so clicking them doesn't need another API call
+                    d.data.forEach(c => APICache.set('/cards/' + c.id, c));
                     categoryCardData[cat] = { cards: d.data.slice(0, 50), expanded: false, config };
                     renderCategoryCards(cat, container, false);
                     if (card) card.style.display = '';
@@ -7098,6 +7133,10 @@
                         nextPage = nd.has_more ? nd.next_page : null;
                     } catch(e) { break; }
                 }
+                // Pre-cache each card so openCardDetail doesn't need to re-fetch
+                allCards.forEach(c => {
+                    APICache.set('/cards/' + c.id, c);
+                });
                 const results = allCards.map(c => ({
                     id: c.id,
                     name: c.name,
