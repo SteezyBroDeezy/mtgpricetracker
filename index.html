@@ -1156,10 +1156,13 @@
                                 <button onclick="addDashFilter('t:artifact')" class="btn btn-sm">Artifact</button>
                                 <button onclick="addDashFilter('t:land')" class="btn btn-sm">Land</button>
                                 <button onclick="addDashFilter('t:planeswalker')" class="btn btn-sm">Planeswalker</button>
+                                <button onclick="addDashFilter('t:battle')" class="btn btn-sm">Battle</button>
                                 <button onclick="addDashFilter('t:legendary')" class="btn btn-sm">Legendary</button>
+                                <button onclick="addDashFilter('t:equipment')" class="btn btn-sm">Equipment</button>
+                                <button onclick="addDashFilter('t:aura')" class="btn btn-sm">Aura</button>
                             </div>
-                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Subtypes</p>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.5rem;">Creature Subtypes (Popular)</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
                                 <button onclick="addDashFilter('t:dragon')" class="btn btn-sm">Dragon</button>
                                 <button onclick="addDashFilter('t:elf')" class="btn btn-sm">Elf</button>
                                 <button onclick="addDashFilter('t:zombie')" class="btn btn-sm">Zombie</button>
@@ -1168,6 +1171,56 @@
                                 <button onclick="addDashFilter('t:angel')" class="btn btn-sm">Angel</button>
                                 <button onclick="addDashFilter('t:demon')" class="btn btn-sm">Demon</button>
                                 <button onclick="addDashFilter('t:wizard')" class="btn btn-sm">Wizard</button>
+                                <button onclick="addDashFilter('t:vampire')" class="btn btn-sm">Vampire</button>
+                                <button onclick="addDashFilter('t:merfolk')" class="btn btn-sm">Merfolk</button>
+                                <button onclick="addDashFilter('t:warrior')" class="btn btn-sm">Warrior</button>
+                                <button onclick="addDashFilter('t:soldier')" class="btn btn-sm">Soldier</button>
+                                <button onclick="addDashFilter('t:cleric')" class="btn btn-sm">Cleric</button>
+                                <button onclick="addDashFilter('t:rogue')" class="btn btn-sm">Rogue</button>
+                                <button onclick="addDashFilter('t:knight')" class="btn btn-sm">Knight</button>
+                                <button onclick="addDashFilter('t:shaman')" class="btn btn-sm">Shaman</button>
+                                <button onclick="addDashFilter('t:beast')" class="btn btn-sm">Beast</button>
+                                <button onclick="addDashFilter('t:elemental')" class="btn btn-sm">Elemental</button>
+                                <button onclick="addDashFilter('t:spirit')" class="btn btn-sm">Spirit</button>
+                                <button onclick="addDashFilter('t:dinosaur')" class="btn btn-sm">Dinosaur</button>
+                                <button onclick="addDashFilter('t:bird')" class="btn btn-sm">Bird</button>
+                                <button onclick="addDashFilter('t:cat')" class="btn btn-sm">Cat</button>
+                                <button onclick="addDashFilter('t:dog')" class="btn btn-sm">Dog</button>
+                                <button onclick="addDashFilter('t:snake')" class="btn btn-sm">Snake</button>
+                                <button onclick="addDashFilter('t:spider')" class="btn btn-sm">Spider</button>
+                                <button onclick="addDashFilter('t:rat')" class="btn btn-sm">Rat</button>
+                                <button onclick="addDashFilter('t:turtle')" class="btn btn-sm">Turtle</button>
+                                <button onclick="addDashFilter('t:ninja')" class="btn btn-sm">Ninja</button>
+                                <button onclick="addDashFilter('t:samurai')" class="btn btn-sm">Samurai</button>
+                                <button onclick="addDashFilter('t:pirate')" class="btn btn-sm">Pirate</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.5rem;">More Subtypes</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                                <button onclick="addDashFilter('t:horror')" class="btn btn-sm">Horror</button>
+                                <button onclick="addDashFilter('t:faerie')" class="btn btn-sm">Faerie</button>
+                                <button onclick="addDashFilter('t:giant')" class="btn btn-sm">Giant</button>
+                                <button onclick="addDashFilter('t:treefolk')" class="btn btn-sm">Treefolk</button>
+                                <button onclick="addDashFilter('t:hydra')" class="btn btn-sm">Hydra</button>
+                                <button onclick="addDashFilter('t:sphinx')" class="btn btn-sm">Sphinx</button>
+                                <button onclick="addDashFilter('t:phoenix')" class="btn btn-sm">Phoenix</button>
+                                <button onclick="addDashFilter('t:drake')" class="btn btn-sm">Drake</button>
+                                <button onclick="addDashFilter('t:minotaur')" class="btn btn-sm">Minotaur</button>
+                                <button onclick="addDashFilter('t:werewolf')" class="btn btn-sm">Werewolf</button>
+                                <button onclick="addDashFilter('t:kithkin')" class="btn btn-sm">Kithkin</button>
+                                <button onclick="addDashFilter('t:dwarf')" class="btn btn-sm">Dwarf</button>
+                                <button onclick="addDashFilter('t:bear')" class="btn btn-sm">Bear</button>
+                                <button onclick="addDashFilter('t:sliver')" class="btn btn-sm">Sliver</button>
+                                <button onclick="addDashFilter('t:changeling')" class="btn btn-sm">Changeling</button>
+                                <button onclick="addDashFilter('t:avatar')" class="btn btn-sm">Avatar</button>
+                                <button onclick="addDashFilter('t:god')" class="btn btn-sm">God</button>
+                                <button onclick="addDashFilter('t:phyrexian')" class="btn btn-sm">Phyrexian</button>
+                                <button onclick="addDashFilter('t:eldrazi')" class="btn btn-sm">Eldrazi</button>
+                                <button onclick="addDashFilter('t:ally')" class="btn btn-sm">Ally</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.5rem;">Custom Subtype</p>
+                            <div style="display:flex;gap:0.5rem;align-items:center;">
+                                <input type="text" id="dashCustomSubtype" placeholder="Enter subtype..." style="flex:1;padding:0.4rem 0.6rem;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--bg-card);color:var(--text-primary);font-size:0.85rem;">
+                                <button onclick="addDashFilter('t:'+document.getElementById('dashCustomSubtype').value.toLowerCase())" class="btn btn-sm btn-primary" style="padding:0.4rem 0.75rem;">Add</button>
                             </div>
                         </div>
 
@@ -1224,6 +1277,14 @@
                                 <button onclick="addDashFilter('usd>50')" class="btn btn-sm">$50+</button>
                                 <button onclick="addDashFilter('usd>100')" class="btn btn-sm">$100+</button>
                             </div>
+                            <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.75rem;">
+                                <span style="font-size:0.8rem;color:var(--text-secondary);">Custom:</span>
+                                <span style="color:var(--text-muted);">$</span>
+                                <input type="number" id="dashPriceMin" min="0" step="0.01" placeholder="Min" style="width:60px;padding:0.3rem;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--bg-card);color:var(--text-primary);font-size:0.8rem;">
+                                <span style="color:var(--text-muted);">to $</span>
+                                <input type="number" id="dashPriceMax" min="0" step="0.01" placeholder="Max" style="width:60px;padding:0.3rem;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--bg-card);color:var(--text-primary);font-size:0.8rem;">
+                                <button onclick="applyPriceRange()" class="btn btn-sm" style="padding:0.3rem 0.5rem;">Apply</button>
+                            </div>
                             <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Format Legal</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
                                 <button onclick="addDashFilter('f:commander')" class="btn btn-sm">Commander</button>
@@ -1232,13 +1293,45 @@
                                 <button onclick="addDashFilter('f:pioneer')" class="btn btn-sm">Pioneer</button>
                                 <button onclick="addDashFilter('f:pauper')" class="btn btn-sm">Pauper</button>
                                 <button onclick="addDashFilter('f:legacy')" class="btn btn-sm">Legacy</button>
+                                <button onclick="addDashFilter('f:vintage')" class="btn btn-sm">Vintage</button>
+                                <button onclick="addDashFilter('f:historic')" class="btn btn-sm">Historic</button>
+                                <button onclick="addDashFilter('f:brawl')" class="btn btn-sm">Brawl</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">EDHREC Popularity</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('edhrec<=100')" class="btn btn-sm">Top 100</button>
+                                <button onclick="addDashFilter('edhrec<=500')" class="btn btn-sm">Top 500</button>
+                                <button onclick="addDashFilter('edhrec<=1000')" class="btn btn-sm">Top 1000</button>
                             </div>
                         </div>
 
                         <!-- Keywords Tab -->
                         <div id="dashTabKeywords" class="dash-tab-content" style="display:none;">
-                            <p style="font-weight:500;margin-bottom:0.75rem;">Oracle Tags (EDH Staples)</p>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Keyword Abilities</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                                <button onclick="addDashFilter('keyword:flying')" class="btn btn-sm">Flying</button>
+                                <button onclick="addDashFilter('keyword:trample')" class="btn btn-sm">Trample</button>
+                                <button onclick="addDashFilter('keyword:haste')" class="btn btn-sm">Haste</button>
+                                <button onclick="addDashFilter('keyword:vigilance')" class="btn btn-sm">Vigilance</button>
+                                <button onclick="addDashFilter('keyword:deathtouch')" class="btn btn-sm">Deathtouch</button>
+                                <button onclick="addDashFilter('keyword:lifelink')" class="btn btn-sm">Lifelink</button>
+                                <button onclick="addDashFilter('keyword:\"first strike\"')" class="btn btn-sm">First Strike</button>
+                                <button onclick="addDashFilter('keyword:\"double strike\"')" class="btn btn-sm">Double Strike</button>
+                                <button onclick="addDashFilter('keyword:menace')" class="btn btn-sm">Menace</button>
+                                <button onclick="addDashFilter('keyword:reach')" class="btn btn-sm">Reach</button>
+                                <button onclick="addDashFilter('keyword:flash')" class="btn btn-sm">Flash</button>
+                                <button onclick="addDashFilter('keyword:hexproof')" class="btn btn-sm">Hexproof</button>
+                                <button onclick="addDashFilter('keyword:indestructible')" class="btn btn-sm">Indestructible</button>
+                                <button onclick="addDashFilter('keyword:ward')" class="btn btn-sm">Ward</button>
+                                <button onclick="addDashFilter('keyword:defender')" class="btn btn-sm">Defender</button>
+                                <button onclick="addDashFilter('keyword:prowess')" class="btn btn-sm">Prowess</button>
+                                <button onclick="addDashFilter('keyword:convoke')" class="btn btn-sm">Convoke</button>
+                                <button onclick="addDashFilter('keyword:toxic')" class="btn btn-sm">Toxic</button>
+                                <button onclick="addDashFilter('keyword:cascade')" class="btn btn-sm">Cascade</button>
+                                <button onclick="addDashFilter('keyword:landfall')" class="btn btn-sm">Landfall</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Oracle Tags (EDH Staples)</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
                                 <button onclick="addDashFilter('otag:ramp')" class="btn btn-sm">🌱 Ramp</button>
                                 <button onclick="addDashFilter('otag:removal')" class="btn btn-sm">💀 Removal</button>
                                 <button onclick="addDashFilter('otag:draw')" class="btn btn-sm">🎴 Draw</button>
@@ -1247,9 +1340,6 @@
                                 <button onclick="addDashFilter('otag:counterspell')" class="btn btn-sm">🛡️ Counter</button>
                                 <button onclick="addDashFilter('otag:mana-rock')" class="btn btn-sm">💎 Mana Rock</button>
                                 <button onclick="addDashFilter('otag:land-ramp')" class="btn btn-sm">🏔️ Land Ramp</button>
-                            </div>
-                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">More Tags</p>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
                                 <button onclick="addDashFilter('otag:token-producer')" class="btn btn-sm">🪙 Tokens</button>
                                 <button onclick="addDashFilter('otag:recursion')" class="btn btn-sm">♻️ Recursion</button>
                                 <button onclick="addDashFilter('otag:sacrifice-outlet')" class="btn btn-sm">🩸 Sac Outlet</button>
@@ -1262,6 +1352,14 @@
                                 <button onclick="addDashFilter('is:commander')" class="btn btn-sm">👑 All Commanders</button>
                                 <button onclick="addDashFilter('is:commander is:partner')" class="btn btn-sm">🤝 Partners</button>
                                 <button onclick="addDashFilter('is:commander cmc<=3')" class="btn btn-sm">⚡ Low Cost (≤3)</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Properties</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addDashFilter('is:dfc')" class="btn btn-sm">🔄 Double-Faced</button>
+                                <button onclick="addDashFilter('is:reserved')" class="btn btn-sm">📜 Reserved List</button>
+                                <button onclick="addDashFilter('is:reprint')" class="btn btn-sm">🔁 Reprint</button>
+                                <button onclick="addDashFilter('is:spell')" class="btn btn-sm">✨ Spell (Non-Land)</button>
+                                <button onclick="addDashFilter('is:permanent')" class="btn btn-sm">🏛️ Permanent</button>
                             </div>
                         </div>
 
@@ -1846,20 +1944,78 @@
                                 <button onclick="addBrowseFilter('t:artifact')" class="btn btn-sm">Artifact</button>
                                 <button onclick="addBrowseFilter('t:land')" class="btn btn-sm">Land</button>
                                 <button onclick="addBrowseFilter('t:planeswalker')" class="btn btn-sm">Planeswalker</button>
+                                <button onclick="addBrowseFilter('t:battle')" class="btn btn-sm">Battle</button>
                                 <button onclick="addBrowseFilter('t:legendary')" class="btn btn-sm">Legendary</button>
+                                <button onclick="addBrowseFilter('t:snow')" class="btn btn-sm">Snow</button>
+                                <button onclick="addBrowseFilter('t:tribal')" class="btn btn-sm">Tribal</button>
                             </div>
-                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Creature Subtypes</p>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Popular Creature Types</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-                                <button onclick="addBrowseFilter('t:dragon')" class="btn btn-sm">🐉 Dragon</button>
-                                <button onclick="addBrowseFilter('t:elf')" class="btn btn-sm">🧝 Elf</button>
-                                <button onclick="addBrowseFilter('t:zombie')" class="btn btn-sm">🧟 Zombie</button>
-                                <button onclick="addBrowseFilter('t:goblin')" class="btn btn-sm">👺 Goblin</button>
-                                <button onclick="addBrowseFilter('t:human')" class="btn btn-sm">🧑 Human</button>
-                                <button onclick="addBrowseFilter('t:angel')" class="btn btn-sm">😇 Angel</button>
-                                <button onclick="addBrowseFilter('t:demon')" class="btn btn-sm">😈 Demon</button>
-                                <button onclick="addBrowseFilter('t:wizard')" class="btn btn-sm">🧙 Wizard</button>
-                                <button onclick="addBrowseFilter('t:vampire')" class="btn btn-sm">🧛 Vampire</button>
-                                <button onclick="addBrowseFilter('t:merfolk')" class="btn btn-sm">🧜 Merfolk</button>
+                                <button onclick="addBrowseFilter('t:dragon')" class="btn btn-sm">Dragon</button>
+                                <button onclick="addBrowseFilter('t:elf')" class="btn btn-sm">Elf</button>
+                                <button onclick="addBrowseFilter('t:zombie')" class="btn btn-sm">Zombie</button>
+                                <button onclick="addBrowseFilter('t:goblin')" class="btn btn-sm">Goblin</button>
+                                <button onclick="addBrowseFilter('t:human')" class="btn btn-sm">Human</button>
+                                <button onclick="addBrowseFilter('t:angel')" class="btn btn-sm">Angel</button>
+                                <button onclick="addBrowseFilter('t:demon')" class="btn btn-sm">Demon</button>
+                                <button onclick="addBrowseFilter('t:wizard')" class="btn btn-sm">Wizard</button>
+                                <button onclick="addBrowseFilter('t:vampire')" class="btn btn-sm">Vampire</button>
+                                <button onclick="addBrowseFilter('t:merfolk')" class="btn btn-sm">Merfolk</button>
+                                <button onclick="addBrowseFilter('t:warrior')" class="btn btn-sm">Warrior</button>
+                                <button onclick="addBrowseFilter('t:soldier')" class="btn btn-sm">Soldier</button>
+                                <button onclick="addBrowseFilter('t:cleric')" class="btn btn-sm">Cleric</button>
+                                <button onclick="addBrowseFilter('t:rogue')" class="btn btn-sm">Rogue</button>
+                                <button onclick="addBrowseFilter('t:knight')" class="btn btn-sm">Knight</button>
+                                <button onclick="addBrowseFilter('t:shaman')" class="btn btn-sm">Shaman</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">More Creature Types</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;max-height:200px;overflow-y:auto;">
+                                <button onclick="addBrowseFilter('t:beast')" class="btn btn-sm">Beast</button>
+                                <button onclick="addBrowseFilter('t:elemental')" class="btn btn-sm">Elemental</button>
+                                <button onclick="addBrowseFilter('t:spirit')" class="btn btn-sm">Spirit</button>
+                                <button onclick="addBrowseFilter('t:dinosaur')" class="btn btn-sm">Dinosaur</button>
+                                <button onclick="addBrowseFilter('t:bird')" class="btn btn-sm">Bird</button>
+                                <button onclick="addBrowseFilter('t:cat')" class="btn btn-sm">Cat</button>
+                                <button onclick="addBrowseFilter('t:dog')" class="btn btn-sm">Dog</button>
+                                <button onclick="addBrowseFilter('t:snake')" class="btn btn-sm">Snake</button>
+                                <button onclick="addBrowseFilter('t:spider')" class="btn btn-sm">Spider</button>
+                                <button onclick="addBrowseFilter('t:rat')" class="btn btn-sm">Rat</button>
+                                <button onclick="addBrowseFilter('t:turtle')" class="btn btn-sm">Turtle</button>
+                                <button onclick="addBrowseFilter('t:ninja')" class="btn btn-sm">Ninja</button>
+                                <button onclick="addBrowseFilter('t:samurai')" class="btn btn-sm">Samurai</button>
+                                <button onclick="addBrowseFilter('t:pirate')" class="btn btn-sm">Pirate</button>
+                                <button onclick="addBrowseFilter('t:horror')" class="btn btn-sm">Horror</button>
+                                <button onclick="addBrowseFilter('t:faerie')" class="btn btn-sm">Faerie</button>
+                                <button onclick="addBrowseFilter('t:giant')" class="btn btn-sm">Giant</button>
+                                <button onclick="addBrowseFilter('t:treefolk')" class="btn btn-sm">Treefolk</button>
+                                <button onclick="addBrowseFilter('t:hydra')" class="btn btn-sm">Hydra</button>
+                                <button onclick="addBrowseFilter('t:sphinx')" class="btn btn-sm">Sphinx</button>
+                                <button onclick="addBrowseFilter('t:phoenix')" class="btn btn-sm">Phoenix</button>
+                                <button onclick="addBrowseFilter('t:drake')" class="btn btn-sm">Drake</button>
+                                <button onclick="addBrowseFilter('t:minotaur')" class="btn btn-sm">Minotaur</button>
+                                <button onclick="addBrowseFilter('t:werewolf')" class="btn btn-sm">Werewolf</button>
+                                <button onclick="addBrowseFilter('t:kithkin')" class="btn btn-sm">Kithkin</button>
+                                <button onclick="addBrowseFilter('t:dwarf')" class="btn btn-sm">Dwarf</button>
+                                <button onclick="addBrowseFilter('t:bear')" class="btn btn-sm">Bear</button>
+                                <button onclick="addBrowseFilter('t:sliver')" class="btn btn-sm">Sliver</button>
+                                <button onclick="addBrowseFilter('t:changeling')" class="btn btn-sm">Changeling</button>
+                                <button onclick="addBrowseFilter('t:avatar')" class="btn btn-sm">Avatar</button>
+                                <button onclick="addBrowseFilter('t:god')" class="btn btn-sm">God</button>
+                                <button onclick="addBrowseFilter('t:phyrexian')" class="btn btn-sm">Phyrexian</button>
+                                <button onclick="addBrowseFilter('t:eldrazi')" class="btn btn-sm">Eldrazi</button>
+                                <button onclick="addBrowseFilter('t:ally')" class="btn btn-sm">Ally</button>
+                                <button onclick="addBrowseFilter('t:monk')" class="btn btn-sm">Monk</button>
+                                <button onclick="addBrowseFilter('t:artificer')" class="btn btn-sm">Artificer</button>
+                                <button onclick="addBrowseFilter('t:druid')" class="btn btn-sm">Druid</button>
+                                <button onclick="addBrowseFilter('t:assassin')" class="btn btn-sm">Assassin</button>
+                                <button onclick="addBrowseFilter('t:berserker')" class="btn btn-sm">Berserker</button>
+                                <button onclick="addBrowseFilter('t:scout')" class="btn btn-sm">Scout</button>
+                                <button onclick="addBrowseFilter('t:archer')" class="btn btn-sm">Archer</button>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:1rem;">
+                                <span style="font-size:0.85rem;color:var(--text-secondary);">Custom Type:</span>
+                                <input type="text" id="browseCustomType" style="flex:1;padding:0.4rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;" placeholder="e.g. squirrel, frog, ox...">
+                                <button onclick="const v=document.getElementById('browseCustomType').value.trim();if(v)addBrowseFilter('t:'+v.toLowerCase())" class="btn btn-sm">Add</button>
                             </div>
                         </div>
 
@@ -1907,6 +2063,25 @@
                                 <input type="number" id="browsePowVal" min="0" max="20" style="width:50px;padding:0.25rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;" placeholder="#">
                                 <button onclick="addBrowseFilter('pow'+document.getElementById('browsePowOp').value+document.getElementById('browsePowVal').value)" class="btn btn-sm">Add</button>
                             </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Toughness</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('tou>=4')" class="btn btn-sm">4+</button>
+                                <button onclick="addBrowseFilter('tou>=5')" class="btn btn-sm">5+</button>
+                                <button onclick="addBrowseFilter('tou>=7')" class="btn btn-sm">7+</button>
+                                <button onclick="addBrowseFilter('tou<=2')" class="btn btn-sm">≤2</button>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem;">
+                                <span style="font-size:0.85rem;color:var(--text-secondary);">Custom:</span>
+                                <select id="browseTouOp" style="padding:0.25rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;">
+                                    <option value="=">=</option>
+                                    <option value="<=">≤</option>
+                                    <option value=">=">≥</option>
+                                    <option value="<">&lt;</option>
+                                    <option value=">">&gt;</option>
+                                </select>
+                                <input type="number" id="browseTouVal" min="0" max="20" style="width:50px;padding:0.25rem;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);font-size:0.85rem;" placeholder="#">
+                                <button onclick="addBrowseFilter('tou'+document.getElementById('browseTouOp').value+document.getElementById('browseTouVal').value)" class="btn btn-sm">Add</button>
+                            </div>
                             <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Rarity</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
                                 <button onclick="addBrowseFilter('r:mythic')" class="btn btn-sm" style="background:linear-gradient(135deg,#d35400,#e74c3c);color:white;">Mythic</button>
@@ -1936,39 +2111,104 @@
                                 <button onclick="addBrowseFilter('f:pioneer')" class="btn btn-sm">Pioneer</button>
                                 <button onclick="addBrowseFilter('f:pauper')" class="btn btn-sm">Pauper</button>
                                 <button onclick="addBrowseFilter('f:legacy')" class="btn btn-sm">Legacy</button>
+                                <button onclick="addBrowseFilter('f:vintage')" class="btn btn-sm">Vintage</button>
+                                <button onclick="addBrowseFilter('f:historic')" class="btn btn-sm">Historic</button>
+                                <button onclick="addBrowseFilter('f:brawl')" class="btn btn-sm">Brawl</button>
+                                <button onclick="addBrowseFilter('f:oathbreaker')" class="btn btn-sm">Oathbreaker</button>
                             </div>
-                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Special</p>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">EDHREC Popularity</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-                                <button onclick="addBrowseFilter('is:reserved')" class="btn btn-sm">💰 Reserved List</button>
-                                <button onclick="addBrowseFilter('is:reprint')" class="btn btn-sm">🔄 Reprints</button>
-                                <button onclick="addBrowseFilter('is:full')" class="btn btn-sm">🖼️ Full Art</button>
-                                <button onclick="addBrowseFilter('is:extended')" class="btn btn-sm">📐 Extended Art</button>
+                                <button onclick="addBrowseFilter('edhrec<=100')" class="btn btn-sm">Top 100</button>
+                                <button onclick="addBrowseFilter('edhrec<=500')" class="btn btn-sm">Top 500</button>
+                                <button onclick="addBrowseFilter('edhrec<=1000')" class="btn btn-sm">Top 1000</button>
+                                <button onclick="addBrowseFilter('edhrec<=5000')" class="btn btn-sm">Top 5000</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Special / Art Variants</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('is:reserved')" class="btn btn-sm">Reserved List</button>
+                                <button onclick="addBrowseFilter('is:reprint')" class="btn btn-sm">Reprints</button>
+                                <button onclick="addBrowseFilter('is:full')" class="btn btn-sm">Full Art</button>
+                                <button onclick="addBrowseFilter('is:extended')" class="btn btn-sm">Extended Art</button>
+                                <button onclick="addBrowseFilter('is:showcase')" class="btn btn-sm">Showcase</button>
+                                <button onclick="addBrowseFilter('is:borderless')" class="btn btn-sm">Borderless</button>
+                                <button onclick="addBrowseFilter('is:foil')" class="btn btn-sm">Foil</button>
+                                <button onclick="addBrowseFilter('is:promo')" class="btn btn-sm">Promo</button>
+                                <button onclick="addBrowseFilter('frame:extendedart')" class="btn btn-sm">Extended Frame</button>
+                                <button onclick="addBrowseFilter('frame:showcase')" class="btn btn-sm">Showcase Frame</button>
                             </div>
                         </div>
 
                         <!-- Keywords Tab -->
                         <div id="browseTabKeywords" class="browse-tab-content" style="display:none;">
-                            <p style="font-weight:500;margin-bottom:0.75rem;">Oracle Tags (EDH Staples)</p>
+                            <p style="font-weight:500;margin-bottom:0.75rem;">Keyword Abilities</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-                                <button onclick="addBrowseFilter('otag:ramp')" class="btn btn-sm">🌱 Ramp</button>
-                                <button onclick="addBrowseFilter('otag:removal')" class="btn btn-sm">💀 Removal</button>
-                                <button onclick="addBrowseFilter('otag:draw')" class="btn btn-sm">🎴 Draw</button>
-                                <button onclick="addBrowseFilter('otag:board-wipe')" class="btn btn-sm">💥 Board Wipe</button>
-                                <button onclick="addBrowseFilter('otag:tutor')" class="btn btn-sm">🔍 Tutor</button>
-                                <button onclick="addBrowseFilter('otag:counterspell')" class="btn btn-sm">🛡️ Counter</button>
-                                <button onclick="addBrowseFilter('otag:mana-rock')" class="btn btn-sm">💎 Mana Rock</button>
-                                <button onclick="addBrowseFilter('otag:land-ramp')" class="btn btn-sm">🏔️ Land Ramp</button>
+                                <button onclick="addBrowseFilter('keyword:flying')" class="btn btn-sm">Flying</button>
+                                <button onclick="addBrowseFilter('keyword:trample')" class="btn btn-sm">Trample</button>
+                                <button onclick="addBrowseFilter('keyword:haste')" class="btn btn-sm">Haste</button>
+                                <button onclick="addBrowseFilter('keyword:vigilance')" class="btn btn-sm">Vigilance</button>
+                                <button onclick="addBrowseFilter('keyword:deathtouch')" class="btn btn-sm">Deathtouch</button>
+                                <button onclick="addBrowseFilter('keyword:lifelink')" class="btn btn-sm">Lifelink</button>
+                                <button onclick="addBrowseFilter('keyword:\"first strike\"')" class="btn btn-sm">First Strike</button>
+                                <button onclick="addBrowseFilter('keyword:\"double strike\"')" class="btn btn-sm">Double Strike</button>
+                                <button onclick="addBrowseFilter('keyword:menace')" class="btn btn-sm">Menace</button>
+                                <button onclick="addBrowseFilter('keyword:reach')" class="btn btn-sm">Reach</button>
+                                <button onclick="addBrowseFilter('keyword:flash')" class="btn btn-sm">Flash</button>
+                                <button onclick="addBrowseFilter('keyword:hexproof')" class="btn btn-sm">Hexproof</button>
+                                <button onclick="addBrowseFilter('keyword:indestructible')" class="btn btn-sm">Indestructible</button>
+                                <button onclick="addBrowseFilter('keyword:ward')" class="btn btn-sm">Ward</button>
+                                <button onclick="addBrowseFilter('keyword:defender')" class="btn btn-sm">Defender</button>
+                                <button onclick="addBrowseFilter('keyword:prowess')" class="btn btn-sm">Prowess</button>
                             </div>
-                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">More Tags</p>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">More Keywords</p>
                             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-                                <button onclick="addBrowseFilter('otag:token-producer')" class="btn btn-sm">🪙 Tokens</button>
-                                <button onclick="addBrowseFilter('otag:recursion')" class="btn btn-sm">♻️ Recursion</button>
-                                <button onclick="addBrowseFilter('otag:sacrifice-outlet')" class="btn btn-sm">🩸 Sac Outlet</button>
-                                <button onclick="addBrowseFilter('otag:life-gain')" class="btn btn-sm">❤️ Lifegain</button>
-                                <button onclick="addBrowseFilter('otag:graveyard-hate')" class="btn btn-sm">⚰️ GY Hate</button>
-                                <button onclick="addBrowseFilter('otag:evasion')" class="btn btn-sm">🦅 Evasion</button>
-                                <button onclick="addBrowseFilter('otag:flicker')" class="btn btn-sm">✨ Flicker</button>
-                                <button onclick="addBrowseFilter('otag:lord')" class="btn btn-sm">👑 Lord</button>
+                                <button onclick="addBrowseFilter('keyword:convoke')" class="btn btn-sm">Convoke</button>
+                                <button onclick="addBrowseFilter('keyword:toxic')" class="btn btn-sm">Toxic</button>
+                                <button onclick="addBrowseFilter('keyword:cascade')" class="btn btn-sm">Cascade</button>
+                                <button onclick="addBrowseFilter('keyword:landfall')" class="btn btn-sm">Landfall</button>
+                                <button onclick="addBrowseFilter('keyword:affinity')" class="btn btn-sm">Affinity</button>
+                                <button onclick="addBrowseFilter('keyword:annihilator')" class="btn btn-sm">Annihilator</button>
+                                <button onclick="addBrowseFilter('keyword:delve')" class="btn btn-sm">Delve</button>
+                                <button onclick="addBrowseFilter('keyword:dredge')" class="btn btn-sm">Dredge</button>
+                                <button onclick="addBrowseFilter('keyword:flashback')" class="btn btn-sm">Flashback</button>
+                                <button onclick="addBrowseFilter('keyword:madness')" class="btn btn-sm">Madness</button>
+                                <button onclick="addBrowseFilter('keyword:mutate')" class="btn btn-sm">Mutate</button>
+                                <button onclick="addBrowseFilter('keyword:cycling')" class="btn btn-sm">Cycling</button>
+                                <button onclick="addBrowseFilter('keyword:kicker')" class="btn btn-sm">Kicker</button>
+                                <button onclick="addBrowseFilter('keyword:equip')" class="btn btn-sm">Equip</button>
+                                <button onclick="addBrowseFilter('keyword:unearth')" class="btn btn-sm">Unearth</button>
+                                <button onclick="addBrowseFilter('keyword:storm')" class="btn btn-sm">Storm</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Card Properties</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('is:dfc')" class="btn btn-sm">Double-Faced</button>
+                                <button onclick="addBrowseFilter('is:reserved')" class="btn btn-sm">Reserved List</button>
+                                <button onclick="addBrowseFilter('is:reprint')" class="btn btn-sm">Reprint</button>
+                                <button onclick="addBrowseFilter('is:spell')" class="btn btn-sm">Spell</button>
+                                <button onclick="addBrowseFilter('is:permanent')" class="btn btn-sm">Permanent</button>
+                                <button onclick="addBrowseFilter('is:modal')" class="btn btn-sm">Modal</button>
+                                <button onclick="addBrowseFilter('is:split')" class="btn btn-sm">Split Card</button>
+                                <button onclick="addBrowseFilter('is:transform')" class="btn btn-sm">Transform</button>
+                                <button onclick="addBrowseFilter('is:flip')" class="btn btn-sm">Flip Card</button>
+                                <button onclick="addBrowseFilter('is:meld')" class="btn btn-sm">Meld</button>
+                            </div>
+                            <p style="font-weight:500;margin-top:1.25rem;margin-bottom:0.75rem;">Oracle Tags (EDH Staples)</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                <button onclick="addBrowseFilter('otag:ramp')" class="btn btn-sm">Ramp</button>
+                                <button onclick="addBrowseFilter('otag:removal')" class="btn btn-sm">Removal</button>
+                                <button onclick="addBrowseFilter('otag:draw')" class="btn btn-sm">Draw</button>
+                                <button onclick="addBrowseFilter('otag:board-wipe')" class="btn btn-sm">Board Wipe</button>
+                                <button onclick="addBrowseFilter('otag:tutor')" class="btn btn-sm">Tutor</button>
+                                <button onclick="addBrowseFilter('otag:counterspell')" class="btn btn-sm">Counter</button>
+                                <button onclick="addBrowseFilter('otag:mana-rock')" class="btn btn-sm">Mana Rock</button>
+                                <button onclick="addBrowseFilter('otag:land-ramp')" class="btn btn-sm">Land Ramp</button>
+                                <button onclick="addBrowseFilter('otag:token-producer')" class="btn btn-sm">Tokens</button>
+                                <button onclick="addBrowseFilter('otag:recursion')" class="btn btn-sm">Recursion</button>
+                                <button onclick="addBrowseFilter('otag:sacrifice-outlet')" class="btn btn-sm">Sac Outlet</button>
+                                <button onclick="addBrowseFilter('otag:life-gain')" class="btn btn-sm">Lifegain</button>
+                                <button onclick="addBrowseFilter('otag:graveyard-hate')" class="btn btn-sm">GY Hate</button>
+                                <button onclick="addBrowseFilter('otag:evasion')" class="btn btn-sm">Evasion</button>
+                                <button onclick="addBrowseFilter('otag:flicker')" class="btn btn-sm">Flicker</button>
+                                <button onclick="addBrowseFilter('otag:lord')" class="btn btn-sm">Lord</button>
                             </div>
                         </div>
 
@@ -3749,6 +3989,13 @@
             const current = input.value.trim();
             input.value = current ? current + ' ' + filter : filter;
             updateDashQueryDisplay();
+        }
+
+        function applyPriceRange() {
+            const min = document.getElementById('dashPriceMin').value;
+            const max = document.getElementById('dashPriceMax').value;
+            if (min) addDashFilter('usd>=' + min);
+            if (max) addDashFilter('usd<=' + max);
         }
 
         function updateDashQueryDisplay() {
