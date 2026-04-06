@@ -3597,6 +3597,9 @@
             State.currentFaceIndex = 0;
             const inWL=isInWatchlist(c.id);const inPortfolio=State.portfolio.some(p=>p.cardId===c.id);const p=c.prices||{};let rows='';['usd','usd_foil','usd_etched','eur','eur_foil'].forEach(k=>{if(p[k]&&parseFloat(p[k])>0){const label=k.replace('_',' ').replace('usd','USD').replace('eur','EUR');rows+=`<div style="display:flex;justify-content:space-between;padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);"><span>${label}</span><strong style="color:var(--accent-gold);">${k.includes('eur')?'€':'$'}${p[k]}</strong></div>`;}});if(!rows)rows='<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);color:var(--text-secondary);">No price data</div>';
             const flipBtn = hasMultipleFaces ? `<button class="btn btn-secondary" onclick="flipCardImage()" style="position:absolute;bottom:0.75rem;right:0.75rem;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;"><svg style="width:1rem;height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Flip</button>` : '';
+            const backFaceSmall = hasMultipleFaces ? (c.card_faces[1]?.image_uris?.small || '') : '';
+            const backFaceName = hasMultipleFaces ? (c.card_faces[1]?.name || 'Back') : '';
+            const backFacePreview = hasMultipleFaces && backFaceSmall ? `<div onclick="flipCardImage()" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;margin-bottom:0.5rem;" title="Click to flip to ${backFaceName}"><div style="position:relative;"><img src="${backFaceSmall}" style="width:60px;border-radius:6px;border:2px solid var(--border-color);transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent-primary)'" onmouseout="this.style.borderColor='var(--border-color)'" id="backFaceThumb"><div style="position:absolute;bottom:-4px;right:-4px;background:var(--accent-primary);border-radius:50%;padding:4px;"><svg style="width:10px;height:10px;color:white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div></div><span style="font-size:0.7rem;color:var(--text-secondary);margin-top:0.25rem;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="backFaceLabel">${backFaceName.split(' //')[0]}</span></div>` : '';
             // Build add-to-list dropdown with "Create New List" option
             let listDropdown='';
             if(currentUser){
@@ -3622,7 +3625,7 @@
             const extLinks=`<div class="external-links"><a href="${getMTGStocksUrl(c.name)}" target="_blank" class="ext-link">📈 MTGStocks</a><a href="${getTCGPlayerUrl(c.name)}" target="_blank" class="ext-link">🛒 TCGPlayer</a><a href="${getCardKingdomUrl(c.name)}" target="_blank" class="ext-link">👑 Card Kingdom</a><a href="${getEDHRECUrl(c.name)}" target="_blank" class="ext-link">📊 EDHREC</a></div>`;
             // Printings placeholder
             const printingsHtml = `<div id="printingsContainer"></div>`;
-            document.getElementById('cardModalTitle').innerHTML = c.name + (c.flavor_name ? ` <span style="font-family:var(--font-body);font-size:0.7em;color:var(--accent-blue);font-weight:400;display:block;margin-top:0.1em;">Also known as: ${c.flavor_name}</span>` : '');document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div><div style="position:relative;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);transition:opacity 0.15s;" id="mainCardImage">${flipBtn}</div>${hasMultipleFaces ? `<div style="text-align:center;margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem;" id="faceIndicator">${c.card_faces[0].name} (1/2)</div>` : ''}${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
+            document.getElementById('cardModalTitle').innerHTML = c.name + (c.flavor_name ? ` <span style="font-family:var(--font-body);font-size:0.7em;color:var(--accent-blue);font-weight:400;display:block;margin-top:0.1em;">Also known as: ${c.flavor_name}</span>` : '');document.getElementById('cardModalBody').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;"><div>${backFacePreview}<div style="position:relative;"><img src="${img}" style="width:100%;border-radius:var(--radius-md);transition:opacity 0.15s;" id="mainCardImage">${flipBtn}</div>${hasMultipleFaces ? `<div style="text-align:center;margin-top:0.5rem;color:var(--text-secondary);font-size:0.85rem;" id="faceIndicator">${c.card_faces[0].name} (1/2)</div>` : ''}${printingsHtml}</div><div><p style="color:var(--text-secondary);">${c.set_name} • ${c.rarity}</p><p style="margin-bottom:1rem;">${c.type_line}</p><h4>Prices</h4><div style="display:grid;gap:0.5rem;margin:0.5rem 0 1rem;">${rows}</div>${chartHtml}<div style="display:flex;gap:0.75rem;flex-wrap:wrap;"><button class="btn ${inWL?'btn-secondary':'btn-primary'}" onclick="quickWatch('${c.id}');openCardDetail('${c.id}');">${inWL?'✓ Watching':'👁️ Watch'}</button><button class="btn btn-gold" onclick="openQuickAlert('${c.id}','${c.name.replace(/'/g,"\\'")}');">🔔 Alert</button>${portfolioBtn}${listDropdown}</div>${extLinks}<div style="margin-top:1rem;"><a href="${c.scryfall_uri}" target="_blank" style="color:var(--accent-primary);">View on Scryfall →</a></div></div></div>`;
             // Store current card for add-to-list
             State.currentDetailCard=c;openModal('cardModal');
             // Load and draw price chart
@@ -3645,6 +3648,8 @@
             if (!State.currentCardFaces || State.currentCardFaces.length < 2) return;
             const img = document.getElementById('mainCardImage');
             const indicator = document.getElementById('faceIndicator');
+            const backThumb = document.getElementById('backFaceThumb');
+            const backLabel = document.getElementById('backFaceLabel');
             if (!img) return;
             img.style.opacity = '0.5';
             setTimeout(() => {
@@ -3653,6 +3658,13 @@
                 if (indicator && State.currentDetailCard?.card_faces) {
                     const face = State.currentDetailCard.card_faces[State.currentFaceIndex];
                     indicator.textContent = `${face?.name || 'Face ' + (State.currentFaceIndex + 1)} (${State.currentFaceIndex + 1}/${State.currentCardFaces.length})`;
+                }
+                // Update back face thumbnail to show the OTHER face
+                if (backThumb && backLabel && State.currentDetailCard?.card_faces) {
+                    const otherFaceIndex = (State.currentFaceIndex + 1) % State.currentCardFaces.length;
+                    const otherFace = State.currentDetailCard.card_faces[otherFaceIndex];
+                    backThumb.src = otherFace?.image_uris?.small || State.currentCardFaces[otherFaceIndex] || '';
+                    backLabel.textContent = (otherFace?.name || 'Face ' + (otherFaceIndex + 1)).split(' //')[0];
                 }
                 img.style.opacity = '1';
             }, 150);
