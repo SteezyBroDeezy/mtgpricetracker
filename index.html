@@ -4996,17 +4996,34 @@
             const spoilerData = getSpoilerData();
             const results = [];
 
+            // Build family lookup to include commander sub-sets
+            const familyLookup = {};
+            allScryfallSets.forEach(s => {
+                if (s.digital) return;
+                const parentCode = s.parent_set_code || s.code;
+                if (!familyLookup[parentCode]) familyLookup[parentCode] = [];
+                if (!familyLookup[parentCode].includes(s.code)) familyLookup[parentCode].push(s.code);
+            });
+
             for (const set of trackableSets.slice(0, 6)) {
                 const prev = spoilerData[set.code] || { count: 0, reprintCount: 0 };
                 const isFuture = set.released_at > today;
-                const currentCount = set.card_count || 0;
+                // Count cards across the full family (main set + commander decks)
+                const familyCodes = familyLookup[set.code] || [set.code];
+                const currentCount = familyCodes.reduce((sum, code) => {
+                    const s = allScryfallSets.find(x => x.code === code);
+                    return sum + (s ? s.card_count || 0 : 0);
+                }, 0);
 
-                // Check reprints count via Scryfall (lightweight query — just need total)
+                // Check reprints count across the FULL family (main + commander + extras)
                 let reprintCount = prev.reprintCount || 0;
                 let newReprints = [];
                 if (currentCount > 0) {
                     try {
-                        const reprintData = await API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '+is%3Areprint&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
+                        const setQuery = familyCodes.length > 1
+                            ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
+                            : 's:' + set.code;
+                        const reprintData = await API.req('/cards/search?q=' + encodeURIComponent(setQuery + ' is:reprint') + '&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
                         reprintCount = reprintData.total_cards || 0;
                         // If reprints increased, fetch the newest ones
                         if (reprintCount > (prev.reprintCount || 0)) {
@@ -5244,15 +5261,46 @@
             section.style.display = 'block';
             grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>';
 
+            // Build family lookup so we can find commander sub-sets
+            let familyLookup = {};
+            try {
+                if (!allScryfallSets || !allScryfallSets.length) {
+                    const d = await API.sets();
+                    allScryfallSets = d.data || [];
+                }
+                // Map parent code -> all child codes (including parent itself)
+                allScryfallSets.forEach(s => {
+                    if (s.digital) return;
+                    const parentCode = s.parent_set_code || s.code;
+                    if (!familyLookup[parentCode]) familyLookup[parentCode] = [];
+                    if (!familyLookup[parentCode].includes(s.code)) familyLookup[parentCode].push(s.code);
+                });
+            } catch(e) {}
+
             let html = '';
             for (const r of setsWithReprints.slice(0, 6)) {
                 try {
-                    // Fetch reprints for this set sorted by price
-                    const d = await API.req('/cards/search?q=s%3A' + encodeURIComponent(r.code) + '+is%3Areprint+usd%3E0&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
+                    // Get ALL set codes in this family (main set + commander + extras)
+                    const familyCodes = familyLookup[r.code] || [r.code];
+                    // Build Scryfall query: (s:code1 or s:code2 or ...) is:reprint usd>0
+                    const setQuery = familyCodes.length > 1
+                        ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
+                        : 's:' + r.code;
+                    const fullQuery = encodeURIComponent(setQuery + ' is:reprint usd>0');
+
+                    const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
                     if (d.data?.length) {
-                        const reprints = d.data.slice(0, 6);
+                        // Deduplicate by name (keep highest price)
+                        const seen = {};
+                        d.data.forEach(c => {
+                            if (!seen[c.name] || parseFloat(c.prices?.usd||0) > parseFloat(seen[c.name].prices?.usd||0)) seen[c.name] = c;
+                        });
+                        const deduped = Object.values(seen).sort((a,b) => parseFloat(b.prices?.usd||0) - parseFloat(a.prices?.usd||0));
+                        const reprints = deduped.slice(0, 8);
                         reprints.forEach(c => APICache.set('/cards/' + c.id, c));
                         const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd until release' : 'Just Released';
+                        const cmdCount = familyCodes.length > 1 ? familyCodes.length - 1 : 0;
+                        const familyNote = cmdCount > 0 ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
                         const cardRows = reprints.map(c => {
                             const pr = getPrice(c);
                             return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
@@ -5263,13 +5311,13 @@
                         const totalReprints = d.total_cards || reprints.length;
                         html += `<div class="category-mover-card" style="display:block;border-color:rgba(0,255,136,0.2);">
                             <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
-                                <span>💰</span> ${r.name}
+                                <span>💰</span> ${r.name}${familyNote}
                                 <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${daysLabel}</span>
                                 <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
                             </div>
-                            <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed</div>
+                            <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed across all products</div>
                             <div class="category-mover-content">${cardRows}</div>
-                            ${totalReprints > 6 ? `<div class="category-show-more" onclick="openReprintsFullView('${r.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
+                            ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${r.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
                         </div>`;
                     }
                 } catch(e) { if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', r.code, e); }
