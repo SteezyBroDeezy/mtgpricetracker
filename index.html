@@ -2957,8 +2957,8 @@
                 const cached=APICache.get(ep);
                 if(cached)return cached;
                 return new Promise((res,rej)=>{
-                    if(priority){this.queue.unshift({ep,res,rej,r:0,cacheTTL});}
-                    else{this.queue.push({ep,res,rej,r:0,cacheTTL});}
+                    if(priority){this.queue.unshift({ep,res,rej,r:0,cacheTTL,priority:true});}
+                    else{this.queue.push({ep,res,rej,r:0,cacheTTL,priority:false});}
                     this.process();
                 });
             },
@@ -2999,12 +2999,21 @@
                 // Persist cache after queue drains
                 APICache.persist();
             },
+            // Flush all non-priority items from the queue (called on page switch)
+            cancelNonPriority(){
+                const kept=[];
+                for(const item of this.queue){
+                    if(item.priority){kept.push(item);}
+                    else{try{item.rej(new Error('Cancelled'));}catch(e){}}
+                }
+                this.queue=kept;
+            },
             status(s){const d=document.getElementById('apiStatusDot'),t=document.getElementById('apiStatusText');if(!d||!t)return;d.className='api-status-dot '+(s==='warning'?'warning':s==='error'?'error':'');t.textContent='Scryfall: '+(s==='active'?'Fetching...':s==='warning'?'Rate limited':s==='error'?'Error':'Ready');},
             // User search = priority, skips ahead of background loads
             search:(q,o={})=>API.req('/cards/search?q='+encodeURIComponent(q)+'&'+new URLSearchParams(o)),
             searchPriority:(q,o={})=>API.req('/cards/search?q='+encodeURIComponent(q)+'&'+new URLSearchParams(o),{priority:true}),
             card:(id,pri=false)=>API.req('/cards/'+id,{priority:pri}),
-            sets:()=>API.req('/sets'),
+            sets:()=>API.req('/sets',{cacheTTL:3600000}),
             autocomplete:(q)=>API.req('/cards/autocomplete?q='+encodeURIComponent(q),{priority:true,cacheTTL:60000}),
             // Batch fetch up to 75 cards in one request using collection endpoint
             async cardsBatch(ids){
@@ -3229,7 +3238,7 @@
         function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
         function saveSetting(k,v){State.settings[k]=v;State.save();}
         let previousPage = 'dashboard';
-        function switchPage(p){if(p!=='settings')previousPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
+        function switchPage(p){if(p!=='settings')previousPage=p;API.cancelNonPriority();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
         function goBackFromSettings(){switchPage(previousPage);}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
         function openModal(id){document.getElementById(id).classList.add('active');}
@@ -3835,6 +3844,7 @@
             if(recentSetsLoaded)return;
             const container=document.getElementById('recentSetsPreviewGrid');
             if(!container)return;
+            // Show a lightweight placeholder while we fetch the sets list
             container.innerHTML='<div class="loading-spinner" style="margin:2rem auto;"></div>';
             try{
                 if(!State.sets.length){const d=await API.sets();State.sets=d.data;}
@@ -3843,8 +3853,9 @@
                 const recent=State.sets
                     .filter(s=>validTypes.includes(s.set_type)&&new Date(s.released_at)<=now&&s.card_count>=100)
                     .sort((a,b)=>new Date(b.released_at)-new Date(a.released_at))
-                    .slice(0,10);
+                    .slice(0,6);
                 if(!recent.length){container.innerHTML='<p style="color:var(--text-secondary);">No sets found.</p>';return;}
+                // Render shells IMMEDIATELY so user sees set names/icons right away
                 container.innerHTML=recent.map(s=>`
                     <div style="background:var(--bg-card);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;border:1px solid var(--bg-tertiary);">
                         <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;cursor:pointer;" onclick="openSetView('${s.code}')">
@@ -3856,19 +3867,21 @@
                         <button class="btn btn-secondary" id="rsMore_${s.code}" onclick="expandRS('${s.code}')" style="display:none;margin-top:0.5rem;font-size:0.75rem;">Show Top 50 →</button>
                     </div>`).join('');
                 recentSetsLoaded=true;
-                for(let i=0;i<recent.length;i+=3){
-                    const batch=recent.slice(i,i+3);
-                    await Promise.all(batch.map(s=>loadRSCards(s.code,5)));
+                // CASCADE: load cards sequentially top-to-bottom so first set appears ASAP
+                for(const s of recent){
+                    await loadRSCards(s.code,5);
                 }
             }catch(e){container.innerHTML='<p>Failed to load sets</p>';}
         }
         const rsData={};
         async function loadRSCards(code,limit){
             const grid=document.getElementById('rsCards_'+code);if(!grid)return;
-            try{const d=await API.search('set:'+code+' (usd>0 or usd_foil>0)',{order:'usd',dir:'desc'});
+            try{
+                // Use priority so browse cards jump ahead of any background dashboard loads
+                const d=await API.searchPriority('set:'+code+' (usd>0 or usd_foil>0)',{order:'usd',dir:'desc'});
                 if(d.data?.length){rsData[code]=d;grid.innerHTML=d.data.slice(0,limit).map(c=>cardEl(c)).join('');
                 const btn=document.getElementById('rsMore_'+code);if(btn&&d.data.length>5)btn.style.display='inline-flex';
-            }else{grid.innerHTML='<p style="color:var(--text-muted);font-size:0.8rem;">No priced cards</p>';}}catch(e){grid.innerHTML='';}
+            }else{grid.innerHTML='<p style="color:var(--text-muted);font-size:0.8rem;">No priced cards</p>';}}catch(e){if(e.message!=='Cancelled')grid.innerHTML='';}
         }
         function expandRS(code){const d=rsData[code];const grid=document.getElementById('rsCards_'+code);const btn=document.getElementById('rsMore_'+code);if(d&&d.data&&grid){grid.innerHTML=d.data.slice(0,50).map(c=>cardEl(c)).join('');if(btn)btn.style.display='none';}}
 
@@ -4600,13 +4613,13 @@
         }
 
         // Get card image for current face
-        function getCardFaceImage(c) {
+        function getCardFaceImage(c, size='small') {
             const isFlipped = State.flippedCards[c.id] || false;
             if (isDoubleFaced(c)) {
                 const faceIndex = isFlipped ? 1 : 0;
-                return c.card_faces[faceIndex]?.image_uris?.normal || c.card_faces[faceIndex]?.image_uris?.small || '';
+                return c.card_faces[faceIndex]?.image_uris?.[size] || c.card_faces[faceIndex]?.image_uris?.normal || c.card_faces[faceIndex]?.image_uris?.small || '';
             }
-            return c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.normal || '';
+            return c.image_uris?.[size] || c.image_uris?.normal || c.card_faces?.[0]?.image_uris?.[size] || c.card_faces?.[0]?.image_uris?.normal || '';
         }
 
         // Toggle card flip on main grid
