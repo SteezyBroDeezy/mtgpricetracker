@@ -386,6 +386,8 @@
 
         .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-weight: 600; cursor: pointer; margin-bottom: 1rem; }
         .back-btn:hover { background: var(--bg-card); }
+        .nav-back-btn { display: inline-flex; align-items: center; padding: 0.4rem 0.75rem; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); color: var(--accent-secondary); font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .nav-back-btn:hover { background: var(--accent-primary); color: white; }
 
         .filters-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-md); }
         .filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -1037,6 +1039,7 @@
     </div>
 
     <nav class="navbar">
+        <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
         <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle</div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
@@ -3249,7 +3252,55 @@
         function saveSetting(k,v){State.settings[k]=v;State.save();}
         let previousPage = 'dashboard';
         let dashCategoriesLoaded = false;
-        function switchPage(p){if(p!=='settings')previousPage=p;if(p!=='dashboard')API.cancelNonPriority();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
+        const pageHistory = ['dashboard'];
+        let handlingPopState = false;
+        function switchPage(p, fromPopState=false){
+            const currentPage = pageHistory[pageHistory.length-1];
+            if(p!=='settings') previousPage=p;
+            if(p!=='dashboard') API.cancelNonPriority();
+            document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+            document.getElementById(p+'Page').classList.add('active');
+            document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));
+            // Push to browser history so back button navigates within the app
+            if(!fromPopState && p !== currentPage){
+                pageHistory.push(p);
+                history.pushState({page:p},'',null);
+            }
+            // Show/hide the back button
+            updateBackButton();
+            if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}
+            if(p==='browse'){loadSets();loadRecentSetsPreview();}
+            if(p==='watchlist')renderWatchlist();
+            if(p==='portfolio')renderPortfolio();
+            if(p==='lists')renderLists();
+            if(p==='alerts')renderAlerts();
+            if(p==='settings')updateSettingsSyncStatus();
+            window.scrollTo(0,0);
+        }
+        function updateBackButton(){
+            const btn=document.getElementById('navBackBtn');
+            if(!btn) return;
+            if(pageHistory.length>1){
+                btn.style.display='inline-flex';
+            } else {
+                btn.style.display='none';
+            }
+        }
+        function goBackNav(){
+            if(pageHistory.length>1){
+                pageHistory.pop();
+                const prev=pageHistory[pageHistory.length-1]||'dashboard';
+                history.back();
+            }
+        }
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate',function(e){
+            if(pageHistory.length>1) pageHistory.pop();
+            const target = (e.state && e.state.page) ? e.state.page : (pageHistory[pageHistory.length-1]||'dashboard');
+            switchPage(target, true);
+        });
+        // Set initial history state
+        history.replaceState({page:'dashboard'},'',null);
         function reloadDashCategories(){const container=document.getElementById('dynamicCategories');if(!container||!container.innerHTML.trim())return;const empties=container.querySelectorAll('.category-mover-card[style*="display: none"], .category-mover-card[style*="display:none"]');if(empties.length>0){dashCategoriesLoaded=false;loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});}else{dashCategoriesLoaded=true;}}
         function goBackFromSettings(){switchPage(previousPage);}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
