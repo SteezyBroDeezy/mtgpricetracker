@@ -1450,6 +1450,15 @@
             </section>
 
             <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
+            <section class="category-movers-section desktop-only" id="spoilerTopCardsSection" style="display:none;">
+                <div class="section-header">
+                    <h2 class="section-title">🔮 Spoiler Season — Most Valuable</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">Top cards by price from upcoming & recent sets</p>
+                </div>
+                <div class="category-movers-grid" id="spoilerTopCardsGrid"></div>
+            </section>
+
+            <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
             <section class="category-movers-section desktop-only" id="reprintsDashSection" style="display:none;">
                 <div class="section-header">
                     <h2 class="section-title">🔄 Reprints — Latest Sets</h2>
@@ -1643,15 +1652,16 @@
             <!-- Browse by Category / Function - Compact Button -->
             <div class="desktop-only" style="margin-bottom:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
                 <button class="btn btn-secondary" onclick="switchPage('browse')" style="font-size:0.85rem;">📚 Browse Sets & Categories</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseFunction('ramp')" style="font-size:0.8rem;">🌱 Ramp</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseFunction('removal')" style="font-size:0.8rem;">💀 Removal</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseFunction('draw')" style="font-size:0.8rem;">🎴 Draw</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseFunction('protection')" style="font-size:0.8rem;">🛡️ Protection</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseFunction('wipes')" style="font-size:0.8rem;">💥 Wipes</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseFunction('tutor')" style="font-size:0.8rem;">🔍 Tutors</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('under5')" style="font-size:0.8rem;">💵 Under $5</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('under10')" style="font-size:0.8rem;">💰 Under $10</button>
                 <button class="btn btn-secondary" onclick="switchToBrowseCategory('mythic')" style="font-size:0.8rem;">🔥 Mythics</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseCategory('rare')" style="font-size:0.8rem;">⭐ Rares</button>
-                <button class="btn btn-secondary" onclick="switchToBrowseCategory('reserved')" style="font-size:0.8rem;">💰 Reserved</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('reserved')" style="font-size:0.8rem;">🏦 Reserved List</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('commander')" style="font-size:0.8rem;">⚔️ Commander Staples</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('lands')" style="font-size:0.8rem;">🏔️ Top Lands</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('sleepers')" style="font-size:0.8rem;">😴 Sleeper Picks</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('highend')" style="font-size:0.8rem;">💎 High-End ($50+)</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('newreprints')" style="font-size:0.8rem;">🔄 New Reprints</button>
+                <button class="btn btn-secondary" onclick="switchToBrowseCategory('foils')" style="font-size:0.8rem;">✨ Premium Foils</button>
             </div>
 
             <!-- Recent Sets - Top Cards (auto-populated) -->
@@ -3238,7 +3248,9 @@
         function setTheme(t){document.documentElement.setAttribute('data-theme',t);State.settings.theme=t;document.querySelectorAll('.theme-option').forEach(o=>o.classList.toggle('selected',o.classList.contains(t)));State.save();}
         function saveSetting(k,v){State.settings[k]=v;State.save();}
         let previousPage = 'dashboard';
-        function switchPage(p){if(p!=='settings')previousPage=p;API.cancelNonPriority();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
+        let dashCategoriesLoaded = false;
+        function switchPage(p){if(p!=='settings')previousPage=p;if(p!=='dashboard')API.cancelNonPriority();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
+        function reloadDashCategories(){const container=document.getElementById('dynamicCategories');if(!container||!container.innerHTML.trim())return;const empties=container.querySelectorAll('.category-mover-card[style*="display: none"], .category-mover-card[style*="display:none"]');if(empties.length>0){dashCategoriesLoaded=false;loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});}else{dashCategoriesLoaded=true;}}
         function goBackFromSettings(){switchPage(previousPage);}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
         function openModal(id){document.getElementById(id).classList.add('active');}
@@ -3800,9 +3812,9 @@
         }
 
         // Categories
-        const catQueries={mythic:'r:mythic',rare:'r:rare',uncommon:'r:uncommon',drops:'',reprints:'is:reprint -t:land',reserved:'is:reserved'};
+        const catQueries={mythic:'r:mythic usd>1',rare:'r:rare usd>0.50',uncommon:'r:uncommon',drops:'',reprints:'is:reprint -t:land',reserved:'is:reserved usd>0',under5:'usd<5 usd>0.25',under10:'usd<10 usd>=5',commander:'f:commander usd>5',lands:'t:land usd>3',sleepers:'r:rare usd<3 usd>0.50 year>=2023',highend:'usd>=50',newreprints:'is:reprint year>=2024 usd>1',foils:'usd_foil>10'};
         const funcQueries={ramp:'(o:"add" o:"mana") or (t:land o:search)',removal:'o:destroy or (o:exile o:target)',draw:'o:"draw" (o:"card" or o:"cards")',protection:'o:hexproof or o:indestructible',wipes:'(o:destroy o:all) or (o:"each creature gets")',tutor:'o:"search your library"'};
-        const allBrowseTitles={mythic:'🔥 Hot Mythics',rare:'⭐ Hot Rares',uncommon:'💎 Hot Uncommons',drops:'📉 Price Drops',reprints:'🔄 Reprints (No Lands)',reserved:'💰 Reserved List',ramp:'🌱 Ramp',removal:'💀 Removal',draw:'🎴 Card Draw',protection:'🛡️ Protection',wipes:'💥 Board Wipes',tutor:'🔍 Tutors'};
+        const allBrowseTitles={mythic:'🔥 Hot Mythics',rare:'⭐ Hot Rares',uncommon:'💎 Hot Uncommons',drops:'📉 Price Drops',reprints:'🔄 Reprints (No Lands)',reserved:'🏦 Reserved List',ramp:'🌱 Ramp',removal:'💀 Removal',draw:'🎴 Card Draw',protection:'🛡️ Protection',wipes:'💥 Board Wipes',tutor:'🔍 Tutors',under5:'💵 Budget Picks Under $5',under10:'💰 Mid-Range $5-$10',commander:'⚔️ Commander Staples',lands:'🏔️ Top Lands',sleepers:'😴 Sleeper Picks (Under $3)',highend:'💎 High-End Cards ($50+)',newreprints:'🔄 Recent Reprints (2024+)',foils:'✨ Premium Foils ($10+)'};
 
         // Navigate to Browse page and show results
         function switchToBrowseCategory(cat){switchPage('browse');setTimeout(()=>showBrowseResults(allBrowseTitles[cat]||cat,catQueries[cat]||'r:'+cat),50);}
@@ -5132,6 +5144,51 @@
             }
 
             if (manual) showToast('Spoiler check complete!', 'success');
+
+            // Also load top priced cards from spoiler sets
+            loadSpoilerTopCards(results);
+        }
+
+        // ====== SPOILER TOP CARDS BY VALUE ======
+        async function loadSpoilerTopCards(spoilerResults) {
+            if (!spoilerResults || !spoilerResults.length) return;
+            const section = document.getElementById('spoilerTopCardsSection');
+            const grid = document.getElementById('spoilerTopCardsGrid');
+            if (!section || !grid) return;
+
+            section.style.display = 'block';
+            grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>';
+
+            const setsToShow = spoilerResults.filter(r => r.currentCount > 0).slice(0, 5);
+            if (!setsToShow.length) { section.style.display = 'none'; return; }
+
+            let html = '';
+            for (const r of setsToShow) {
+                try {
+                    const d = await API.search('set:' + r.code + ' usd>0', { order: 'usd', dir: 'desc' });
+                    if (d.data?.length) {
+                        const topCards = d.data.slice(0, 6);
+                        topCards.forEach(c => APICache.set('/cards/' + c.id, c));
+                        const cardRows = topCards.map(c => {
+                            const pr = getPrice(c);
+                            return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
+                                <span class="category-mover-name">${c.name}</span>
+                                <span class="category-mover-price">${pr.val}</span>
+                            </div>`;
+                        }).join('');
+                        const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd away' : 'Released';
+                        html += `<div class="category-mover-card" style="display:block;">
+                            <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
+                                <span>🔮</span> ${r.name} <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:${r.isFuture?'rgba(255,215,0,0.2);color:var(--accent-gold)':'rgba(0,255,136,0.15);color:var(--accent-green)'};">${daysLabel}</span>
+                                <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                            </div>
+                            <div class="category-mover-content">${cardRows}</div>
+                        </div>`;
+                    }
+                } catch(e) { if (e.message !== 'Cancelled') console.warn('Spoiler top cards failed for', r.code, e); }
+            }
+
+            grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No priced spoiler cards yet.</p>';
         }
 
         // ====== INLINE LIST CREATION ======
@@ -6448,7 +6505,23 @@
                 budgetWipes: { e:'💥', l:'Board Wipes < $10', q:'(o:"destroy all" or o:"exile all") usd<10 usd>0.50' },
                 budgetProtection: { e:'🛡️', l:'Protection < $5', q:'(o:"hexproof" or o:"indestructible") usd<5 usd>0.25' }
             }},
+            formatBudget: { title: '🏆 Format Staples (Budget)', alwaysOn: true, cats: {
+                commanderBdg: { e:'⚔️', l:'Commander < $20', q:'f:commander is:staple usd<20 usd>0.50' }, modernBudget: { e:'🥇', l:'Modern < $20', q:'f:modern is:staple usd<20 usd>0.50' },
+                pioneerBudget: { e:'🌟', l:'Pioneer < $15', q:'f:pioneer usd<15 usd>0.50' }, stdBudget: { e:'📦', l:'Standard', q:'f:standard usd>0.25' }, pauperBudget: { e:'🪙', l:'Pauper', q:'f:pauper usd>0.10' }
+            }},
+            investorPicks: { title: '📈 Investor Picks', subtitle: 'Cards with investment potential', alwaysOn: true, cats: {
+                sleeperRares: { e:'😴', l:'Sleeper Rares < $3', q:'r:rare usd<3 usd>0.50 year>=2023' },
+                cheapMythics: { e:'🔥', l:'Mythics Under $5', q:'r:mythic usd<5 usd>1 year>=2022' },
+                stapleReprints: { e:'🔄', l:'Reprinted Staples', q:'is:reprint f:commander usd>3 year>=2024' },
+                reservedUnder20: { e:'🏦', l:'Reserved < $20', q:'is:reserved usd<20 usd>1' },
+                highEndLands: { e:'🏔️', l:'Lands $10+', q:'t:land usd>=10' },
+                premiumFoils: { e:'✨', l:'Foils $20+', q:'usd_foil>=20 year>=2023' }
+            }},
             // === ROTATING: Random selection each visit ===
+            rarityBudget: { title: '⭐ Hot by Rarity', cats: {
+                mythicBudget: { e:'🔥', l:'Mythics < $20', q:'r:mythic usd<20 usd>1' }, rareBudget: { e:'⭐', l:'Rares < $10', q:'r:rare usd<10 usd>0.50' },
+                uncommonBudget: { e:'💎', l:'Uncommons < $5', q:'r:uncommon usd<5 usd>0.25' }, commonBudget: { e:'🪙', l:'Commons < $2', q:'r:common usd<2 usd>0.10' }
+            }},
             colors: { title: '🎨 Hot by Color (Under $20)', cats: {
                 white: { e:'⚪', l:'White Cards', q:'c:w usd<20 usd>0.50' }, blue: { e:'🔵', l:'Blue Cards', q:'c:u usd<20 usd>0.50' },
                 black: { e:'⚫', l:'Black Cards', q:'c:b usd<20 usd>0.50' }, red: { e:'🔴', l:'Red Cards', q:'c:r usd<20 usd>0.50' },
@@ -6468,14 +6541,6 @@
                 sorceries: { e:'🔮', l:'Sorceries', q:'t:sorcery usd<20 usd>0.50' }, enchantments: { e:'✨', l:'Enchantments', q:'t:enchantment usd<20 usd>0.50' },
                 artifacts: { e:'⚙️', l:'Artifacts', q:'t:artifact usd<20 usd>0.50' }, lands: { e:'🏔️', l:'Lands', q:'t:land usd<20 usd>0.50' },
                 planeswalkers: { e:'🌀', l:'Planeswalkers', q:'t:planeswalker usd<20 usd>0.50' }, legendary: { e:'👑', l:'Legendary', q:'t:legendary usd<20 usd>0.50' }
-            }},
-            formatBudget: { title: '🏆 Format Staples (Budget)', cats: {
-                commanderBdg: { e:'⚔️', l:'Commander < $20', q:'f:commander is:staple usd<20 usd>0.50' }, modernBudget: { e:'🥇', l:'Modern < $20', q:'f:modern is:staple usd<20 usd>0.50' },
-                pioneerBudget: { e:'🌟', l:'Pioneer < $15', q:'f:pioneer usd<15 usd>0.50' }, stdBudget: { e:'📦', l:'Standard', q:'f:standard usd>0.25' }, pauperBudget: { e:'🪙', l:'Pauper', q:'f:pauper usd>0.10' }
-            }},
-            rarityBudget: { title: '⭐ Hot by Rarity', cats: {
-                mythicBudget: { e:'🔥', l:'Mythics < $20', q:'r:mythic usd<20 usd>1' }, rareBudget: { e:'⭐', l:'Rares < $10', q:'r:rare usd<10 usd>0.50' },
-                uncommonBudget: { e:'💎', l:'Uncommons < $5', q:'r:uncommon usd<5 usd>0.25' }, commonBudget: { e:'🪙', l:'Commons < $2', q:'r:common usd<2 usd>0.10' }
             }},
             collector: { title: '✨ Collector Booster Specials', subtitle: 'Extended Art, Showcase, Borderless variants', cats: {
                 lorwynCollector: { e:'🌟', l:'Lorwyn Collector', q:'set:ecl (is:extendedart or is:showcase or is:borderless) usd>0' },
@@ -6724,7 +6789,7 @@
             } else {
                 // Desktop: fire all at once, API queue handles rate limiting
                 const promises = toLoad.map(([cat, config]) => loadSingleCategoryMover(cat, config));
-                Promise.all(promises.slice(0, 10)).then(() => {
+                await Promise.all(promises).then(() => {
                     setTimeout(() => {
                         addCategoryTrackButtons();
                         renderTrackedCategoriesWidget();
@@ -7237,7 +7302,7 @@
                     // Trigger load based on section
                     if (id === 'staplesSection') loadFormatStaples('commander');
                     if (id === 'moversSection') loadPriceMovers(1);
-                    if (id === 'dynamicCategories') loadCategoryMovers();
+                    if (id === 'dynamicCategories') loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});
                     if (id === 'reprintsDashSection') loadReprintsDashboard();
                 }
             });
@@ -7994,7 +8059,7 @@
                     loadFormatStaples('commander')
                 ]);
                 loadPriceMovers(1);
-                loadCategoryMovers();
+                loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});
                 loadReprintsDashboard();
                 checkSpoilers(); // Spoiler tracker
             }
