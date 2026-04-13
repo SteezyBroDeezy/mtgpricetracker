@@ -386,8 +386,6 @@
 
         .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-weight: 600; cursor: pointer; margin-bottom: 1rem; }
         .back-btn:hover { background: var(--bg-card); }
-        .nav-back-btn { display: inline-flex; align-items: center; padding: 0.4rem 0.75rem; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); color: var(--accent-secondary); font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
-        .nav-back-btn:hover { background: var(--accent-primary); color: white; }
 
         .filters-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-md); }
         .filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -1039,7 +1037,6 @@
     </div>
 
     <nav class="navbar">
-        <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
         <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle</div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
@@ -1459,6 +1456,20 @@
                     <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">Top cards by price from upcoming & recent sets</p>
                 </div>
                 <div class="category-movers-grid" id="spoilerTopCardsGrid"></div>
+            </section>
+
+            <!-- Spoiler Reprints — Buy the Dip -->
+            <section class="category-movers-section desktop-only" id="spoilerReprintsSection" style="display:none;">
+                <div class="section-header">
+                    <h2 class="section-title">💰 Spoiler Reprints — Buy the Dip</h2>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">Reprints confirmed in upcoming sets — prices drop at release, then recover</p>
+                    </div>
+                </div>
+                <div style="background:linear-gradient(90deg,rgba(0,255,136,0.05),rgba(255,215,0,0.05));border:1px solid rgba(0,255,136,0.15);border-radius:var(--radius-md);padding:0.6rem 1rem;margin-bottom:1rem;font-size:0.8rem;color:var(--text-secondary);">
+                    💡 <strong style="color:var(--accent-green);">Investor Tip:</strong> When a high-value card gets reprinted, the original printing's price typically drops 20-40% around release. Buying reprints early at the dip can yield solid returns as supply stabilizes.
+                </div>
+                <div class="category-movers-grid" id="spoilerReprintsGrid"></div>
             </section>
 
             <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
@@ -3252,55 +3263,7 @@
         function saveSetting(k,v){State.settings[k]=v;State.save();}
         let previousPage = 'dashboard';
         let dashCategoriesLoaded = false;
-        const pageHistory = ['dashboard'];
-        let handlingPopState = false;
-        function switchPage(p, fromPopState=false){
-            const currentPage = pageHistory[pageHistory.length-1];
-            if(p!=='settings') previousPage=p;
-            if(p!=='dashboard') API.cancelNonPriority();
-            document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-            document.getElementById(p+'Page').classList.add('active');
-            document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));
-            // Push to browser history so back button navigates within the app
-            if(!fromPopState && p !== currentPage){
-                pageHistory.push(p);
-                history.pushState({page:p},'',null);
-            }
-            // Show/hide the back button
-            updateBackButton();
-            if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}
-            if(p==='browse'){loadSets();loadRecentSetsPreview();}
-            if(p==='watchlist')renderWatchlist();
-            if(p==='portfolio')renderPortfolio();
-            if(p==='lists')renderLists();
-            if(p==='alerts')renderAlerts();
-            if(p==='settings')updateSettingsSyncStatus();
-            window.scrollTo(0,0);
-        }
-        function updateBackButton(){
-            const btn=document.getElementById('navBackBtn');
-            if(!btn) return;
-            if(pageHistory.length>1){
-                btn.style.display='inline-flex';
-            } else {
-                btn.style.display='none';
-            }
-        }
-        function goBackNav(){
-            if(pageHistory.length>1){
-                pageHistory.pop();
-                const prev=pageHistory[pageHistory.length-1]||'dashboard';
-                history.back();
-            }
-        }
-        // Handle browser back/forward buttons
-        window.addEventListener('popstate',function(e){
-            if(pageHistory.length>1) pageHistory.pop();
-            const target = (e.state && e.state.page) ? e.state.page : (pageHistory[pageHistory.length-1]||'dashboard');
-            switchPage(target, true);
-        });
-        // Set initial history state
-        history.replaceState({page:'dashboard'},'',null);
+        function switchPage(p){if(p!=='settings')previousPage=p;if(p!=='dashboard')API.cancelNonPriority();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
         function reloadDashCategories(){const container=document.getElementById('dynamicCategories');if(!container||!container.innerHTML.trim())return;const empties=container.querySelectorAll('.category-mover-card[style*="display: none"], .category-mover-card[style*="display:none"]');if(empties.length>0){dashCategoriesLoaded=false;loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});}else{dashCategoriesLoaded=true;}}
         function goBackFromSettings(){switchPage(previousPage);}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
@@ -5017,11 +4980,11 @@
             }
             const today = new Date().toISOString().split('T')[0];
             const validTypes = ['expansion','core','masters','draft_innovation'];
-            // Upcoming + recently released (last 14 days) sets worth tracking
-            const twoWeeksAgo = new Date(Date.now() - 14*86400000).toISOString().split('T')[0];
+            // Upcoming + recently released (last 30 days) sets worth tracking
+            const lookbackDate = new Date(Date.now() - 30*86400000).toISOString().split('T')[0];
             const trackableSets = allScryfallSets.filter(s =>
                 !s.digital && validTypes.includes(s.set_type) &&
-                s.released_at && s.released_at > twoWeeksAgo &&
+                s.released_at && s.released_at > lookbackDate &&
                 !s.parent_set_code // Only parent sets
             ).sort((a,b) => a.released_at.localeCompare(b.released_at));
 
@@ -5057,8 +5020,22 @@
                     } catch(e) { /* set may have no reprints yet */ }
                 }
 
-                // Fetch newest spoiled cards if count grew
+                // Fetch newest spoiled cards if count grew, PLUS always fetch top by value
                 let newCards = [];
+                let topCards = [];
+                if (currentCount > 0) {
+                    // Always get top cards by value for display
+                    try {
+                        const topData = await API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '+usd%3E0&order=usd&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
+                        topCards = (topData.data || []).slice(0, 8).map(c => ({
+                            id: c.id,
+                            name: c.name,
+                            image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                            isReprint: c.reprint || false,
+                            price: c.prices?.usd || c.prices?.usd_foil || null
+                        }));
+                    } catch(e) {}
+                }
                 if (currentCount > prev.count && currentCount > 0) {
                     try {
                         const spoiledData = await API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '&order=released&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
@@ -5087,6 +5064,7 @@
                     reprintCount,
                     reprintDelta: reprintDelta > 0 ? reprintDelta : 0,
                     newCards: newCards.length ? newCards : (prev.newCards || []),
+                    topCards: topCards.length ? topCards : (prev.topCards || []),
                     newReprints: newReprints.length ? newReprints : (prev.newReprints || []),
                     expectedCards: set.card_count || 0
                 });
@@ -5097,6 +5075,7 @@
                     reprintCount,
                     lastCheck: Date.now(),
                     newCards: newCards.length ? newCards : (prev.newCards || []),
+                    topCards: topCards.length ? topCards : (prev.topCards || []),
                     newReprints: newReprints.length ? newReprints : (prev.newReprints || [])
                 };
             }
@@ -5147,9 +5126,12 @@
                 desktopGrid.innerHTML = results.map(r => {
                     const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd away' : 'Released';
                     const progressPct = r.expectedCards > 0 ? Math.min(100, Math.round(r.currentCount / r.expectedCards * 100)) : 0;
-                    const thumbs = (r.newCards || []).slice(0, 6);
+                    const thumbs = (r.topCards && r.topCards.length ? r.topCards : r.newCards || []).slice(0, 6);
+                    const justDropped = r.countDelta > 0;
+                    const spoilerBanner = justDropped ? `<div style="background:linear-gradient(90deg,rgba(255,215,0,0.15),rgba(157,78,221,0.1));padding:0.4rem 0.75rem;border-radius:var(--radius-sm);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;"><span style="font-size:1rem;">🔥</span><span style="color:var(--accent-gold);font-weight:700;font-size:0.85rem;">New Spoilers Dropped!</span><span style="color:var(--text-secondary);font-size:0.75rem;">+${r.countDelta} card${r.countDelta>1?'s':''} just revealed</span></div>` : '';
 
-                    return `<div class="spoiler-set-card">
+                    return `<div class="spoiler-set-card" style="${justDropped?'border-color:var(--accent-gold);box-shadow:0 0 15px rgba(255,215,0,0.15);':''}">
+                        ${spoilerBanner}
                         <div class="spoiler-set-header" onclick="switchPage('browse');openSetView('${r.code}');">
                             ${r.icon ? `<img src="${r.icon}" alt="">` : ''}
                             <div>
@@ -5171,6 +5153,9 @@
                         ${thumbs.length ? `<div class="spoiler-cards-preview">${thumbs.map(c =>
                             `<img class="spoiler-card-thumb" src="${c.image}" alt="${c.name}" title="${c.name}${c.isReprint?' (Reprint)':''}${c.price?' — $'+c.price:''}" onclick="event.stopPropagation();openCardDetail('${c.id}')" loading="lazy">`
                         ).join('')}</div>` : ''}
+                        <div style="margin-top:0.5rem;text-align:center;">
+                            <button class="btn btn-secondary" onclick="event.stopPropagation();switchPage('browse');openSetView('${r.code}');" style="font-size:0.75rem;padding:0.35rem 1rem;">View All ${r.currentCount} Spoilers →</button>
+                        </div>
                     </div>`;
                 }).join('');
             }
@@ -5240,6 +5225,57 @@
             }
 
             grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No priced spoiler cards yet.</p>';
+
+            // Also load reprints from spoiler sets
+            loadSpoilerReprints(spoilerResults);
+        }
+
+        // ====== SPOILER REPRINTS — BUY THE DIP ======
+        async function loadSpoilerReprints(spoilerResults) {
+            if (!spoilerResults || !spoilerResults.length) return;
+            const section = document.getElementById('spoilerReprintsSection');
+            const grid = document.getElementById('spoilerReprintsGrid');
+            if (!section || !grid) return;
+
+            // Only show sets that have reprints
+            const setsWithReprints = spoilerResults.filter(r => r.reprintCount > 0 && r.currentCount > 0);
+            if (!setsWithReprints.length) { section.style.display = 'none'; return; }
+
+            section.style.display = 'block';
+            grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>';
+
+            let html = '';
+            for (const r of setsWithReprints.slice(0, 6)) {
+                try {
+                    // Fetch reprints for this set sorted by price
+                    const d = await API.req('/cards/search?q=s%3A' + encodeURIComponent(r.code) + '+is%3Areprint+usd%3E0&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
+                    if (d.data?.length) {
+                        const reprints = d.data.slice(0, 6);
+                        reprints.forEach(c => APICache.set('/cards/' + c.id, c));
+                        const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd until release' : 'Just Released';
+                        const cardRows = reprints.map(c => {
+                            const pr = getPrice(c);
+                            return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
+                                <span class="category-mover-name">${c.name}</span>
+                                <span class="category-mover-price">${pr.val}</span>
+                            </div>`;
+                        }).join('');
+                        const totalReprints = d.total_cards || reprints.length;
+                        html += `<div class="category-mover-card" style="display:block;border-color:rgba(0,255,136,0.2);">
+                            <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
+                                <span>💰</span> ${r.name}
+                                <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${daysLabel}</span>
+                                <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                            </div>
+                            <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed</div>
+                            <div class="category-mover-content">${cardRows}</div>
+                            ${totalReprints > 6 ? `<div class="category-show-more" onclick="openReprintsFullView('${r.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
+                        </div>`;
+                    }
+                } catch(e) { if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', r.code, e); }
+            }
+
+            grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No reprints found in spoiled sets yet.</p>';
         }
 
         // ====== INLINE LIST CREATION ======
@@ -7491,11 +7527,12 @@
             }
         }
 
-        // Get the latest N set families (released, not future)
+        // Get the latest N set families (released OR upcoming with spoiled cards)
         async function getLatestFamilies(count = 5, includeSmall = false) {
             const families = await buildSetFamilies(includeSmall);
             const now = new Date().toISOString().split('T')[0];
-            return families.filter(f => f.releasedAt && f.releasedAt <= now).slice(0, count);
+            // Include released sets AND upcoming sets that already have cards (spoiler season)
+            return families.filter(f => f.releasedAt && (f.releasedAt <= now || f.totalCards > 0)).slice(0, count);
         }
 
         // Toggle small sets in reprints browser
@@ -7638,7 +7675,7 @@
             if (!section || !grid) return;
 
             try {
-                const families = await getLatestFamilies(6);
+                const families = await getLatestFamilies(8);
                 if (!families.length) { section.style.display = 'none'; return; }
 
                 // Fetch reprints from each family in parallel
