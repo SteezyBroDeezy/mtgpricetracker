@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTG Price Oracle | Track. Alert. Profit.</title>
+    <meta name="theme-color" content="#0a0a12">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MTG Oracle">
+    <meta name="description" content="Track MTG card prices, get spoiler alerts, find reprints, and build your portfolio.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%239d4edd'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230a0a12'/%3E%3Cpath d='M32 8 L52 32 L32 56 L12 32 Z' fill='url(%23g)' opacity='0.9'/%3E%3Cpath d='M32 16 L44 32 L32 48 L20 32 Z' fill='%230a0a12' opacity='0.4'/%3E%3Ccircle cx='32' cy='32' r='6' fill='white' opacity='0.8'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%239d4edd'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='36' fill='%230a0a12'/%3E%3Cpath d='M90 25 L145 90 L90 155 L35 90 Z' fill='url(%23g)' opacity='0.9'/%3E%3Cpath d='M90 45 L125 90 L90 135 L55 90 Z' fill='%230a0a12' opacity='0.4'/%3E%3Ccircle cx='90' cy='90' r='16' fill='white' opacity='0.8'/%3E%3C/svg%3E">
+    <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22MTG%20Price%20Oracle%22%2C%22short_name%22%3A%22MTG%20Oracle%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a12%22%2C%22theme_color%22%3A%22%230a0a12%22%2C%22description%22%3A%22Track%20MTG%20card%20prices%2C%20spoilers%2C%20reprints%20%26%20alerts%22%7D">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -386,6 +394,8 @@
 
         .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-weight: 600; cursor: pointer; margin-bottom: 1rem; }
         .back-btn:hover { background: var(--bg-card); }
+        .nav-back-btn { display: inline-flex; align-items: center; padding: 0.4rem 0.75rem; background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); color: var(--accent-secondary); font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .nav-back-btn:hover { background: var(--accent-primary); color: white; }
 
         .filters-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding: 1rem; background: var(--bg-card); border-radius: var(--radius-md); }
         .filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
@@ -1037,6 +1047,7 @@
     </div>
 
     <nav class="navbar">
+        <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
         <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle</div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
@@ -1536,6 +1547,73 @@
                     <div class="mobile-section-content expanded" id="mobileReprintsContent">
                         <div id="mobileReprintsGrid" style="display:flex;flex-direction:column;gap:0.4rem;"></div>
                         <button class="btn btn-primary" onclick="openReprintsFullView()" style="width:100%;margin-top:0.75rem;font-size:0.85rem;">🔄 View All with Images</button>
+                    </div>
+                </div>
+
+                <!-- Spoiler Reprints — Buy the Dip (Mobile) -->
+                <div class="mobile-section" id="mobileSpoilerReprintsSection" style="display:none;">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>💰 Spoiler Reprints — Buy the Dip</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded" id="mobileSpoilerReprintsContent">
+                        <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:var(--radius-sm);padding:0.5rem;margin-bottom:0.5rem;font-size:0.7rem;color:var(--text-secondary);">
+                            💡 Reprints drop 20-40% at release — buy the dip!
+                        </div>
+                        <div id="mobileSpoilerReprintsGrid" style="display:flex;flex-direction:column;gap:0.4rem;"></div>
+                    </div>
+                </div>
+
+                <!-- 🔥 Hot Cards with Images -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>🔥 Hot Cards Right Now</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded" id="mobileHotCardsContent">
+                        <div id="mobileHotCardsGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;"><div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.4);margin:0.5rem auto;"></div></div>
+                    </div>
+                </div>
+
+                <!-- 😴 Sleeper Picks with Images -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>😴 Sleeper Picks Under $3</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded" id="mobileSleeperContent">
+                        <div id="mobileSleeperGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;"><div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.4);margin:0.5rem auto;"></div></div>
+                    </div>
+                </div>
+
+                <!-- ⚔️ Commander Picks with Images -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>⚔️ Commander Picks Under $10</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded" id="mobileCommanderContent">
+                        <div id="mobileCommanderGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;"><div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.4);margin:0.5rem auto;"></div></div>
+                    </div>
+                </div>
+
+                <!-- Quick Browse Buttons -->
+                <div class="mobile-section">
+                    <div class="mobile-section-header expanded" onclick="toggleMobileSection(this)">
+                        <h3>📈 Quick Browse</h3>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="mobile-section-content expanded">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('under5')" style="font-size:0.8rem;padding:0.5rem;">💵 Under $5</button>
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('under10')" style="font-size:0.8rem;padding:0.5rem;">💰 Under $10</button>
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('mythic')" style="font-size:0.8rem;padding:0.5rem;">🔥 Mythics</button>
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('reserved')" style="font-size:0.8rem;padding:0.5rem;">🏦 Reserved List</button>
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('lands')" style="font-size:0.8rem;padding:0.5rem;">🏔️ Top Lands</button>
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('highend')" style="font-size:0.8rem;padding:0.5rem;">💎 High-End $50+</button>
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('foils')" style="font-size:0.8rem;padding:0.5rem;">✨ Premium Foils</button>
+                            <button class="btn btn-secondary" onclick="switchToBrowseCategory('newreprints')" style="font-size:0.8rem;padding:0.5rem;">🔄 New Reprints</button>
+                        </div>
                     </div>
                 </div>
 
@@ -2379,6 +2457,7 @@
                 <div class="filters-bar">
                     <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="setRarity" onchange="loadSetCards()"><option value="">All</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
                     <div class="filter-group"><span class="filter-label">Sort</span><select class="filter-select" id="setSort" onchange="loadSetCards()"><option value="usd">Price ↓</option><option value="name">Name</option><option value="rarity">Rarity</option></select></div>
+                    <div class="filter-group" style="display:flex;align-items:center;gap:0.5rem;"><label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);"><input type="checkbox" id="setReprintsOnly" onchange="loadSetCards()" style="accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer;">🔄 Reprints Only</label></div>
                 </div>
                 <div class="card-grid" id="setCardsGrid"></div>
                 <div class="pagination" id="setPagination"></div>
@@ -2490,7 +2569,21 @@
 
         <!-- Alerts -->
         <div class="page" id="alertsPage">
-            <div class="section-header"><h2 class="section-title">🔔 Price Alert Rules</h2><button class="btn btn-gold" onclick="openAlertModal()">+ New Rule</button></div>
+            <div class="section-header"><h2 class="section-title">🔔 Alert Rules</h2><button class="btn btn-gold" onclick="openAlertModal()">+ New Rule</button></div>
+            <div style="background:var(--bg-card);border-radius:var(--radius-md);padding:1rem;margin-bottom:1.5rem;border:1px solid var(--bg-tertiary);">
+                <h3 style="font-family:var(--font-display);font-size:1rem;margin-bottom:0.75rem;color:var(--text-primary);">⚡ Quick Setup</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('new_spoiler','New Spoilers Alert','set')" style="font-size:0.8rem;">🔍 New Spoilers</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('spoiled_reprint','Reprint Alert','set')" style="font-size:0.8rem;">🔄 New Reprints</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('commander_spoiler','Commander Info','set')" style="font-size:0.8rem;">⚔️ Commander Drops</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('set_release_reprints','Release Day Reprints','set')" style="font-size:0.8rem;">📦 Release Reprints</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('upcoming_set_news','Set News','set')" style="font-size:0.8rem;">📰 Set News</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('ban_update','Ban List Updates','custom')" style="font-size:0.8rem;">🚫 Ban Updates</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('rule_change','Rules Changes','custom')" style="font-size:0.8rem;">📜 Rule Changes</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('spike','Price Spikes','watchlist')" style="font-size:0.8rem;">📈 Price Spikes</button>
+                    <button class="btn btn-secondary" onclick="quickCreateAlert('crash','Price Crashes','watchlist')" style="font-size:0.8rem;">📉 Price Crashes</button>
+                </div>
+            </div>
             <div class="alerts-grid" id="alertsGrid"></div>
         </div>
 
@@ -2674,7 +2767,15 @@
                                     <optgroup label="Spoiler & Set Tracking">
                                         <option value="new_spoiler">New card spoiled for set</option>
                                         <option value="spoiled_reprint">Reprint spoiled for set</option>
+                                        <option value="commander_spoiler">Commander deck info dropped</option>
                                         <option value="set_release_reprints">On release — track all reprints</option>
+                                        <option value="upcoming_set_news">Upcoming set — new info released</option>
+                                    </optgroup>
+                                    <optgroup label="Game & Format Changes">
+                                        <option value="ban_update">Card banned or unbanned</option>
+                                        <option value="rule_change">Rules change announced</option>
+                                        <option value="game_changer_add">Card added to Game Changers list</option>
+                                        <option value="game_changer_remove">Card removed from Game Changers list</option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -3263,12 +3364,74 @@
         function saveSetting(k,v){State.settings[k]=v;State.save();}
         let previousPage = 'dashboard';
         let dashCategoriesLoaded = false;
-        function switchPage(p){if(p!=='settings')previousPage=p;if(p!=='dashboard')API.cancelNonPriority();document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}if(p==='browse'){loadSets();loadRecentSetsPreview();}if(p==='watchlist')renderWatchlist();if(p==='portfolio')renderPortfolio();if(p==='lists')renderLists();if(p==='alerts')renderAlerts();if(p==='settings')updateSettingsSyncStatus();}
+        const pageHistory = ['dashboard'];
+        function switchPage(p, fromPopState=false){
+            const currentPage = pageHistory[pageHistory.length-1];
+            if(p!=='settings') previousPage=p;
+            if(p!=='dashboard') API.cancelNonPriority();
+            document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+            document.getElementById(p+'Page').classList.add('active');
+            document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.page===p));
+            if(!fromPopState && p !== currentPage){
+                pageHistory.push(p);
+                history.pushState({page:p},'',null);
+            }
+            updateBackButton();
+            if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}
+            if(p==='browse'){loadSets();loadRecentSetsPreview();}
+            if(p==='watchlist')renderWatchlist();
+            if(p==='portfolio')renderPortfolio();
+            if(p==='lists')renderLists();
+            if(p==='alerts')renderAlerts();
+            if(p==='settings')updateSettingsSyncStatus();
+            window.scrollTo(0,0);
+        }
+        function updateBackButton(){
+            const btn=document.getElementById('navBackBtn');
+            if(!btn) return;
+            btn.style.display = pageHistory.length>1 ? 'inline-flex' : 'none';
+        }
+        function goBackNav(){
+            if(pageHistory.length>1){
+                pageHistory.pop();
+                history.back();
+            }
+        }
+        window.addEventListener('popstate',function(e){
+            if(pageHistory.length>1) pageHistory.pop();
+            const target = (e.state && e.state.page) ? e.state.page : (pageHistory[pageHistory.length-1]||'dashboard');
+            switchPage(target, true);
+        });
+        history.replaceState({page:'dashboard'},'',null);
         function reloadDashCategories(){const container=document.getElementById('dynamicCategories');if(!container||!container.innerHTML.trim())return;const empties=container.querySelectorAll('.category-mover-card[style*="display: none"], .category-mover-card[style*="display:none"]');if(empties.length>0){dashCategoriesLoaded=false;loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});}else{dashCategoriesLoaded=true;}}
         function goBackFromSettings(){switchPage(previousPage);}
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
-        function openModal(id){document.getElementById(id).classList.add('active');}
+        let alertFormDirty = false;
+        function openModal(id){
+            const el = document.getElementById(id);
+            el.classList.add('active');
+            if(id === 'alertModal') alertFormDirty = false;
+        }
         function closeModal(id){document.getElementById(id).classList.remove('active');}
+        document.addEventListener('click', function(e) {
+            const overlay = e.target.closest('.modal-overlay');
+            if (!overlay || !overlay.classList.contains('active')) return;
+            if (e.target !== overlay) return;
+            const modalId = overlay.id;
+            if (modalId === 'alertModal') {
+                const nameVal = document.getElementById('alertName')?.value?.trim();
+                if (nameVal || alertFormDirty) {
+                    if (!confirm('You have unsaved changes. Close without saving?')) return;
+                }
+            }
+            closeModal(modalId);
+        });
+        document.addEventListener('input', function(e) {
+            if (e.target.closest('#alertModal')) alertFormDirty = true;
+        });
+        document.addEventListener('change', function(e) {
+            if (e.target.closest('#alertModal')) alertFormDirty = true;
+        });
         function toggleCollapsible(el){el.nextElementSibling.classList.toggle('hidden');el.querySelector('span').textContent=el.nextElementSibling.classList.contains('hidden')?'▶':'▼';}
         function toggleColor(el){el.classList.toggle('selected');}
         function toggleBrowserNotifs(){const c=document.getElementById('browserNotifs').checked;State.settings.browserNotifs=c;State.save();if(c&&'Notification'in window)Notification.requestPermission();}
@@ -4627,7 +4790,7 @@
         document.getElementById('setsBrowserType')?.addEventListener('change', () => filterBrowserSets());
         document.getElementById('setsBrowserMajorOnly')?.addEventListener('change', () => filterBrowserSets());
 
-        async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}}catch(e){grid.innerHTML='<p>No cards</p>';}}
+        async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value,reprintsOnly=document.getElementById('setReprintsOnly')?.checked;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;if(reprintsOnly)q+=' is:reprint';try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}else{grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}catch(e){grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}
 
         // Trending - section removed but keeping function stub for compatibility
         async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');if(!grid)return;}
@@ -4691,7 +4854,7 @@
             if(cardId){document.getElementById('alertScope').value='specific';document.getElementById('alertCardId').value=cardId;document.getElementById('alertCardName').value=cardName;}
             updateAlertUI();updateScopeUI();openModal('alertModal');
         }
-        function updateAlertUI(){const t=document.getElementById('alertType').value;const thG=document.getElementById('thresholdGroup'),tfG=document.getElementById('timeframeGroup');const spoilerTypes=['new_spoiler','spoiled_reprint','set_release_reprints'];if(t.includes('steady')){tfG.style.display='block';thG.style.display='block';document.getElementById('thresholdLabel').textContent='Min % Change';document.getElementById('alertThreshold').placeholder='5';}else if(t==='reprint'||t==='spike'||t==='crash'||spoilerTypes.includes(t)){thG.style.display='none';tfG.style.display='none';if(spoilerTypes.includes(t)){document.getElementById('alertScope').value='set';updateScopeUI();}}else{thG.style.display='block';tfG.style.display='none';document.getElementById('thresholdLabel').textContent=t.includes('pct')?'Percentage':'Price ($)';document.getElementById('alertThreshold').placeholder=t.includes('pct')?'20':'10.00';}}
+        function updateAlertUI(){const t=document.getElementById('alertType').value;const thG=document.getElementById('thresholdGroup'),tfG=document.getElementById('timeframeGroup');const spoilerTypes=['new_spoiler','spoiled_reprint','set_release_reprints','commander_spoiler','upcoming_set_news'];const gameTypes=['ban_update','rule_change','game_changer_add','game_changer_remove'];if(t.includes('steady')){tfG.style.display='block';thG.style.display='block';document.getElementById('thresholdLabel').textContent='Min % Change';document.getElementById('alertThreshold').placeholder='5';}else if(t==='reprint'||t==='spike'||t==='crash'||spoilerTypes.includes(t)||gameTypes.includes(t)){thG.style.display='none';tfG.style.display='none';if(spoilerTypes.includes(t)){document.getElementById('alertScope').value='set';updateScopeUI();}if(gameTypes.includes(t)){document.getElementById('alertScope').value='custom';updateScopeUI();}}else{thG.style.display='block';tfG.style.display='none';document.getElementById('thresholdLabel').textContent=t.includes('pct')?'Percentage':'Price ($)';document.getElementById('alertThreshold').placeholder=t.includes('pct')?'20':'10.00';}}
         function updateScopeUI(){
             const s=document.getElementById('alertScope').value;
             document.getElementById('specificCardGroup').style.display=s==='specific'?'block':'none';
@@ -4938,7 +5101,7 @@
         }
 
         function renderAlerts(){
-            const types={price_above:'Above $',price_below:'Below $',pct_up:'Up %',pct_down:'Down %',steady_up:'Steady ↑',steady_down:'Steady ↓',reprint:'Reprint',spike:'Spike',crash:'Crash',new_spoiler:'🔍 New Spoiler',spoiled_reprint:'🔄 Reprint Spoiled',set_release_reprints:'📦 Release Reprints'};
+            const types={price_above:'Above $',price_below:'Below $',pct_up:'Up %',pct_down:'Down %',steady_up:'Steady ↑',steady_down:'Steady ↓',reprint:'Reprint',spike:'Spike',crash:'Crash',new_spoiler:'🔍 New Spoiler',spoiled_reprint:'🔄 Reprint Spoiled',set_release_reprints:'📦 Release Reprints',commander_spoiler:'⚔️ Commander Info',upcoming_set_news:'📰 Set News',ban_update:'🚫 Ban Update',rule_change:'📜 Rule Change',game_changer_add:'📈 Game Changer Added',game_changer_remove:'📉 Game Changer Removed'};
             const g=document.getElementById('alertsGrid');
             g.innerHTML=State.alerts.map(a=>{
                 let conditions=[`<span class="alert-condition">${types[a.type]||a.type}${a.threshold||''}</span>`];
@@ -4963,6 +5126,14 @@
         }
         function toggleAlert(id){const a=State.alerts.find(x=>x.id===id);if(a){a.enabled=!a.enabled;State.save();updateStats();}}
         function deleteAlert(id){State.alerts=State.alerts.filter(a=>a.id!==id);State.save();renderAlerts();updateStats();showToast('Deleted','info');}
+        function quickCreateAlert(type, name, scope) {
+            openAlertModal();
+            document.getElementById('alertName').value = name;
+            document.getElementById('alertType').value = type;
+            document.getElementById('alertScope').value = scope;
+            updateAlertUI();
+            updateScopeUI();
+        }
 
         // ====== SPOILER TRACKER ======
         // Stores { setCode: { count, reprintCount, lastCheck, newCards:[], newReprints:[] } }
@@ -5324,6 +5495,29 @@
             }
 
             grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No reprints found in spoiled sets yet.</p>';
+
+            // Mobile: populate mobile spoiler reprints grid
+            const mobileSection = document.getElementById('mobileSpoilerReprintsSection');
+            const mobileGrid = document.getElementById('mobileSpoilerReprintsGrid');
+            if (mobileSection && mobileGrid && html) {
+                mobileSection.style.display = 'block';
+                let mobileHtml = '';
+                for (const r of setsWithReprints.slice(0, 4)) {
+                    const fCodes = familyLookup[r.code] || [r.code];
+                    const sQ = fCodes.length > 1 ? '(' + fCodes.map(c => 's:' + c).join(' or ') + ')' : 's:' + r.code;
+                    try {
+                        const cached = APICache.get('/cards/search?q=' + encodeURIComponent(sQ + ' is:reprint usd>0') + '&order=usd&dir=desc&unique=cards');
+                        if (cached && cached.data) {
+                            const top3 = cached.data.slice(0, 3);
+                            mobileHtml += `<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border-left:3px solid var(--accent-green);">
+                                <div style="font-weight:600;font-size:0.8rem;margin-bottom:0.3rem;" onclick="switchPage('browse');openSetView('${r.code}');">${r.name} <span style="font-size:0.65rem;color:var(--accent-green);">🔄 ${cached.total_cards||top3.length}</span></div>
+                                ${top3.map(c => {const pr=getPrice(c);return `<div onclick="openCardDetail('${c.id}')" style="display:flex;justify-content:space-between;font-size:0.75rem;padding:0.15rem 0;cursor:pointer;"><span style="color:var(--text-secondary);">${c.name}</span><span style="color:var(--accent-gold);">${pr.val}</span></div>`;}).join('')}
+                            </div>`;
+                        }
+                    } catch(e) {}
+                }
+                mobileGrid.innerHTML = mobileHtml || '<p style="color:var(--text-muted);font-size:0.75rem;">Loading...</p>';
+            }
         }
 
         // ====== INLINE LIST CREATION ======
@@ -6259,6 +6453,41 @@
                     <span>${s.icon}</span> ${s.name}
                 </button>
             `).join('');
+        }
+
+        // ====== MOBILE VISUAL CARD GRIDS ======
+        function renderMobileCardGrid(cards, gridId, limit=6) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            if (!cards || !cards.length) {
+                grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.75rem;grid-column:1/-1;text-align:center;">No cards found</p>';
+                return;
+            }
+            grid.innerHTML = cards.slice(0, limit).map(c => {
+                const img = c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '';
+                const price = c.prices?.usd || c.prices?.usd_foil;
+                return `<div onclick="openCardDetail('${c.id}')" style="text-align:center;cursor:pointer;">
+                    <img src="${img}" alt="${c.name}" style="width:100%;border-radius:6px;aspect-ratio:5/7;object-fit:cover;" loading="lazy">
+                    <div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div>
+                    ${price ? `<div style="font-size:0.7rem;color:var(--accent-gold);font-weight:600;">$${price}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        async function loadMobileVisualSections() {
+            // Cascade: load one at a time so first section pops in fast
+            try {
+                const d = await API.searchPriority('r:mythic usd>5 year>=2024', {order:'usd',dir:'desc'});
+                if (d.data) { d.data.forEach(c => APICache.set('/cards/'+c.id, c)); renderMobileCardGrid(d.data, 'mobileHotCardsGrid', 6); }
+            } catch(e) {}
+            try {
+                const d = await API.search('r:rare usd<3 usd>0.50 year>=2023', {order:'usd',dir:'desc'});
+                if (d.data) { d.data.forEach(c => APICache.set('/cards/'+c.id, c)); renderMobileCardGrid(d.data, 'mobileSleeperGrid', 6); }
+            } catch(e) {}
+            try {
+                const d = await API.search('t:legendary t:creature f:commander usd<10 usd>1', {order:'usd',dir:'desc'});
+                if (d.data) { d.data.forEach(c => APICache.set('/cards/'+c.id, c)); renderMobileCardGrid(d.data, 'mobileCommanderGrid', 6); }
+            } catch(e) {}
         }
 
         async function showMobileMoverCategory(cat) {
@@ -8139,18 +8368,24 @@
             loadUniqueCardCount();
 
             if (isMobile) {
-                // Mobile: always lean
+                // Mobile: cascade load — visual stuff first, background data after
                 renderTrackedSets();
                 renderTrackedSetsWidget();
                 renderMobileLatestSets();
-                Promise.all([
-                    loadPriceMovers(1),
-                    loadUpcomingReleases(),
-                    loadReprintsDashboard()
-                ]).then(() => {
-                    updateMobileDashboard();
+
+                // 1. Load visual card grids FIRST (card images pop in immediately)
+                loadMobileVisualSections();
+
+                // 2. Spoilers + reprints in parallel (populate top sections)
+                loadUpcomingReleases().then(() => {
                     if (State.upcomingReleases) renderMobileReleases(State.upcomingReleases);
-                    checkSpoilers(); // Spoiler check after sets loaded
+                });
+                checkSpoilers();
+                loadReprintsDashboard();
+
+                // 3. Price movers load last (background, less visual impact)
+                loadPriceMovers(1).then(() => {
+                    updateMobileDashboard();
                 });
             } else if (mode === 'fast') {
                 // FAST: Only load trending, everything else lazy-loads on scroll
