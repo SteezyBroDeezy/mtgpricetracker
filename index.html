@@ -1446,28 +1446,32 @@
 
             <!-- Spoiler Tracker - Desktop -->
             <!-- PATCHED: Spoiler Tracker + Spoiler Season — Most Valuable, side-by-side row -->
-            <div class="spoiler-combo-row desktop-only" id="spoilerComboRow" style="display:none;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+            <div class="spoiler-combo-row desktop-only" id="spoilerComboRow" style="display:none;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;align-items:start;">
                 <section class="category-movers-section" id="spoilerDashSection" style="margin:0;display:none;">
-                    <div class="section-header">
-                        <h2 class="section-title">🔍 Spoiler Tracker</h2>
-                        <div style="display:flex;gap:0.5rem;align-items:center;">
+                    <div class="section-header" style="margin-bottom:1rem;min-height:3.5rem;align-items:flex-start;">
+                        <div style="flex:1;">
+                            <h2 class="section-title">🔍 Spoiler Tracker</h2>
+                            <p style="color:var(--text-secondary);font-size:0.85rem;margin:0.25rem 0 0;">New cards and reprints spoiled for upcoming sets</p>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;align-items:center;flex-shrink:0;">
                             <span id="spoilerLastCheck" style="font-size:0.7rem;color:var(--text-muted);"></span>
                             <button class="btn btn-sm" onclick="checkSpoilers(true)">🔄 Check Now</button>
                             <button class="btn btn-sm" onclick="openAlertModal();document.getElementById('alertType').value='new_spoiler';updateAlertUI();">🔔 Alert</button>
                         </div>
                     </div>
-                    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">New cards and reprints spoiled for upcoming sets — auto-checks Scryfall each visit</p>
                     <div id="spoilerDashGrid" style="display:grid;grid-template-columns:1fr;gap:0.75rem;">
                         <div style="padding:1rem;color:var(--text-muted);font-size:0.85rem;">Checking for spoilers...</div>
                     </div>
                 </section>
 
                 <section class="category-movers-section" id="spoilerTopCardsSection" style="margin:0;display:none;">
-                    <div class="section-header">
-                        <h2 class="section-title">🔮 Spoiler Season — Most Valuable</h2>
-                        <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">Top cards by price from upcoming & recent sets</p>
+                    <div class="section-header" style="margin-bottom:1rem;min-height:3.5rem;align-items:flex-start;">
+                        <div style="flex:1;">
+                            <h2 class="section-title">🔮 Spoiler Season — Most Valuable</h2>
+                            <p style="color:var(--text-secondary);font-size:0.85rem;margin:0.25rem 0 0;">Top cards by price from upcoming &amp; recent sets</p>
+                        </div>
                     </div>
-                    <div class="category-movers-grid" id="spoilerTopCardsGrid" style="grid-template-columns:1fr;"></div>
+                    <div class="category-movers-grid" id="spoilerTopCardsGrid" style="grid-template-columns:1fr;gap:0.75rem;"></div>
                 </section>
             </div>
 
@@ -5467,7 +5471,7 @@
                     const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd away' : 'Released';
                     const justDropped = r.countDelta > 0;
                     // Prefer topCards (priced) for the list; fallback to newCards; show names only with price
-                    const cardsForList = (r.topCards && r.topCards.length ? r.topCards : r.newCards || []).slice(0, 6);
+                    const cardsForList = (r.topCards && r.topCards.length ? r.topCards : r.newCards || []).slice(0, 5);
                     const cardRows = cardsForList.length ? cardsForList.map(c => {
                         const priceStr = c.price ? '$' + parseFloat(c.price).toFixed(2) : '—';
                         const reprintTag = c.isReprint ? ' <span style="font-size:0.6rem;color:var(--accent-secondary);">🔄</span>' : '';
@@ -5555,7 +5559,7 @@
             let html = '';
             for (const { r, data } of setResults) {
                 if (!data || !data.data?.length) continue;
-                const topCards = data.data.slice(0, 6);
+                const topCards = data.data.slice(0, 5);
                 topCards.forEach(c => APICache.set('/cards/' + c.id, c));
                 const cardRows = topCards.map(c => {
                     const pr = getPrice(c);
