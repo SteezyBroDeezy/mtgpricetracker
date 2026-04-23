@@ -3775,7 +3775,8 @@
             try{
             const c=await API.card(id, true);
             recordPriceSnapshot(c).catch(()=>{});
-            const hasMultipleFaces = c.card_faces && c.card_faces.length > 1;
+            // PATCHED: use isDoubleFaced() to exclude adventure/split/flip/meld layouts that have card_faces but no real flip
+            const hasMultipleFaces = isDoubleFaced(c);
             const img=c.image_uris?.normal||c.card_faces?.[0]?.image_uris?.normal||'';
             const backImg = hasMultipleFaces ? (c.card_faces[1]?.image_uris?.normal || '') : '';
             State.currentCardFaces = hasMultipleFaces ? [img, backImg] : null;
@@ -4784,8 +4785,17 @@
         async function loadMoreTrending(){}
 
         // Helper to check if card is double-faced
+        // Only these layouts have a physically flippable/transforming second side.
+        // Layouts like adventure, split, flip (old rotational), meld have card_faces
+        // but render on a SINGLE physical card face — no flip button needed.
+        // See: https://scryfall.com/docs/api/layouts
+        const FLIPPABLE_LAYOUTS = new Set(['transform','modal_dfc','double_faced_token','double_sided','art_series','reversible_card','battle']);
         function isDoubleFaced(c) {
-            return c.card_faces && c.card_faces.length > 1 && c.card_faces[0]?.image_uris;
+            if (!c || !c.card_faces || c.card_faces.length < 2) return false;
+            // PATCHED: require a flippable layout — excludes adventure / split / flip / meld
+            if (c.layout && !FLIPPABLE_LAYOUTS.has(c.layout)) return false;
+            // Also require per-face image_uris (transform/dfc cards have them; adventure-style don't)
+            return !!c.card_faces[0]?.image_uris;
         }
 
         // Get card image for current face
