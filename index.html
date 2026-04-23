@@ -5614,7 +5614,9 @@
             });
 
             // Get the 5 most recent LARGE main sets (card_count >= 100, is parent set, not too far in future)
-            const cutoffFuture = new Date(Date.now() + 60*86400000).toISOString().split('T')[0];
+            // PATCHED: 14-day cutoff = "fully spoiled (~2 weeks before release or later)"
+            // Show 5 newest large sets matching this rule - newer sets naturally bump older ones out
+            const cutoffFuture = new Date(Date.now() + 14*86400000).toISOString().split('T')[0];
             const validTypes = ['expansion','core','masters','draft_innovation'];
             const recentLargeSets = allScryfallSets
                 .filter(s =>
@@ -5626,7 +5628,7 @@
                     s.released_at <= cutoffFuture      // not absurdly far future
                 )
                 .sort((a,b) => b.released_at.localeCompare(a.released_at))  // newest first
-                .slice(0, 2);  // PATCHED: 2 newest only per user preference
+                .slice(0, 5);  // PATCHED: 5 newest fully-spoiled sets, rotates as new ones hit the cutoff
 
             if (!recentLargeSets.length) { section.style.display = 'none'; return; }
 
