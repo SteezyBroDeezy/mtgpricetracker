@@ -3064,13 +3064,14 @@
 
         // === API Layer with Priority Queue + Response Cache ===
         const APICache={
-            store:{},ttl:5*60*1000, // 5 min default TTL
-            get(key){const e=this.store[key];if(!e)return null;if(Date.now()-e.ts>this.ttl){delete this.store[key];return null;}return e.data;},
-            set(key,data){this.store[key]=({ts:Date.now(),data});this._trim();},
+            store:{},defaultTtl:5*60*1000, // 5 min default TTL
+            // PATCHED: respect per-entry TTL (was ignored before — caused /sets to re-download every 5min)
+            get(key){const e=this.store[key];if(!e)return null;const ttl=e.ttl||this.defaultTtl;if(Date.now()-e.ts>ttl){delete this.store[key];return null;}return e.data;},
+            set(key,data,ttl){this.store[key]=({ts:Date.now(),data,ttl:ttl||this.defaultTtl});this._trim();},
             _trim(){const keys=Object.keys(this.store);if(keys.length>200){const sorted=keys.sort((a,b)=>this.store[a].ts-this.store[b].ts);sorted.slice(0,50).forEach(k=>delete this.store[k]);}},
             // Persist top-level cache to localStorage for repeat visits
             persist(){try{const slim={};let count=0;for(const[k,v]of Object.entries(this.store)){if(count>=50)break;slim[k]=v;count++;}localStorage.setItem('mtg_oracle_cache',JSON.stringify(slim));}catch(e){}},
-            restore(){try{const d=localStorage.getItem('mtg_oracle_cache');if(d){const parsed=JSON.parse(d);for(const[k,v]of Object.entries(parsed)){if(Date.now()-v.ts<this.ttl)this.store[k]=v;}}}catch(e){}}
+            restore(){try{const d=localStorage.getItem('mtg_oracle_cache');if(d){const parsed=JSON.parse(d);for(const[k,v]of Object.entries(parsed)){const ttl=v.ttl||this.defaultTtl;if(Date.now()-v.ts<ttl)this.store[k]=v;}}}catch(e){}}
         };
         APICache.restore();
 
@@ -3106,7 +3107,7 @@
                         if(!resp.ok)throw new Error('HTTP '+resp.status);
                         this.status('ready');
                         const data=await resp.json();
-                        APICache.set(ep,data);
+                        APICache.set(ep,data,cacheTTL);
                         res(data);
                     }catch(e){
                         // Retry network errors up to 3 times with backoff
@@ -4790,7 +4791,7 @@
         document.getElementById('setsBrowserType')?.addEventListener('change', () => filterBrowserSets());
         document.getElementById('setsBrowserMajorOnly')?.addEventListener('change', () => filterBrowserSets());
 
-        async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value,reprintsOnly=document.getElementById('setReprintsOnly')?.checked;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;if(reprintsOnly)q+=' is:reprint';try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}else{grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}catch(e){grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}
+        async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value,reprintsOnly=document.getElementById('setReprintsOnly')?.checked;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;if(reprintsOnly)q+=' is:reprint';try{let d;if(url){const r=await fetch(url);d=await r.json();}else{try{d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});}catch(e1){/* PATCHED: fallback to name-sort if price-sort returns 404 (unpriced preview cards)*/if(sort==='usd'){try{d=await API.search(q,{order:'name',dir:'asc'});}catch(e2){throw e2;}}else throw e1;}}if(d&&d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}else{grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}catch(e){grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}
 
         // Trending - section removed but keeping function stub for compatibility
         async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');if(!grid)return;}
@@ -5145,6 +5146,25 @@
         }
 
         async function checkSpoilers(manual = false) {
+            // === CACHE-FIRST: render stored data IMMEDIATELY, then refresh in background ===
+            const cachedSpoilerData = getSpoilerData();
+            const cachedCodes = Object.keys(cachedSpoilerData || {});
+            if (!manual && cachedCodes.length) {
+                // Build quick results from cache so user sees something in <100ms
+                const cachedResults = cachedCodes.map(code => {
+                    const d = cachedSpoilerData[code];
+                    return {
+                        code, name: d.name || code.toUpperCase(), icon: d.icon || null,
+                        released: d.released || '', isFuture: d.isFuture || false,
+                        currentCount: d.count || 0, prevCount: d.count || 0, countDelta: 0,
+                        reprintCount: d.reprintCount || 0, reprintDelta: 0,
+                        newCards: d.newCards || [], topCards: d.topCards || [],
+                        newReprints: d.newReprints || [], expectedCards: d.expectedCards || 0
+                    };
+                }).filter(r => r.currentCount > 0);
+                if (cachedResults.length) renderSpoilerDashboard(cachedResults, false, true /* fromCache */);
+            }
+
             // Get upcoming sets from Scryfall
             if (!allScryfallSets || !allScryfallSets.length) {
                 try { const d = await API.sets(); allScryfallSets = d.data || []; } catch(e) { return; }
@@ -5165,7 +5185,6 @@
             }
 
             const spoilerData = getSpoilerData();
-            const results = [];
 
             // Build family lookup to include commander sub-sets
             const familyLookup = {};
@@ -5176,7 +5195,24 @@
                 if (!familyLookup[parentCode].includes(s.code)) familyLookup[parentCode].push(s.code);
             });
 
-            for (const set of trackableSets.slice(0, 6)) {
+            // === PARALLELIZED: process all 6 sets at once instead of sequential for...await ===
+            const setsToProcess = trackableSets.slice(0, 6);
+            const totalSets = setsToProcess.length;
+            let completedSets = 0;
+
+            // Show progress hint on the grid while loading
+            const progressEl = document.getElementById('spoilerDashGrid');
+            if (progressEl && !cachedCodes.length) {
+                progressEl.innerHTML = `<div style="padding:1rem;color:var(--text-muted);font-size:0.85rem;">Loading 0 of ${totalSets} sets...</div>`;
+            }
+            const updateProgress = () => {
+                completedSets++;
+                if (progressEl && !cachedCodes.length && completedSets < totalSets) {
+                    progressEl.innerHTML = `<div style="padding:1rem;color:var(--text-muted);font-size:0.85rem;">Loading ${completedSets} of ${totalSets} sets...</div>`;
+                }
+            };
+
+            const results = await Promise.all(setsToProcess.map(async (set) => {
                 const prev = spoilerData[set.code] || { count: 0, reprintCount: 0 };
                 const isFuture = set.released_at > today;
                 // Count cards across the full family (main set + commander decks)
@@ -5186,61 +5222,65 @@
                     return sum + (s ? s.card_count || 0 : 0);
                 }, 0);
 
-                // Check reprints count across the FULL family (main + commander + extras)
+                // Build family set query once
+                const setQuery = familyCodes.length > 1
+                    ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
+                    : 's:' + set.code;
+
+                // PARALLEL: fire reprints + top-by-value + new-cards queries concurrently per set
+                const reprintPromise = currentCount > 0
+                    ? API.req('/cards/search?q=' + encodeURIComponent(setQuery + ' is:reprint') + '&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 }).catch(() => null)
+                    : Promise.resolve(null);
+                const topPromise = currentCount > 0
+                    ? API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '+usd%3E0&order=usd&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 }).catch(() => null)
+                    : Promise.resolve(null);
+                const needsNewCards = currentCount > prev.count && currentCount > 0;
+                const newCardsPromise = needsNewCards
+                    ? API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '&order=released&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 }).catch(() => null)
+                    : Promise.resolve(null);
+
+                const [reprintData, topData, spoiledData] = await Promise.all([reprintPromise, topPromise, newCardsPromise]);
+
                 let reprintCount = prev.reprintCount || 0;
                 let newReprints = [];
-                if (currentCount > 0) {
-                    try {
-                        const setQuery = familyCodes.length > 1
-                            ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
-                            : 's:' + set.code;
-                        const reprintData = await API.req('/cards/search?q=' + encodeURIComponent(setQuery + ' is:reprint') + '&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
-                        reprintCount = reprintData.total_cards || 0;
-                        // If reprints increased, fetch the newest ones
-                        if (reprintCount > (prev.reprintCount || 0)) {
-                            newReprints = (reprintData.data || []).slice(0, 6).map(c => ({
-                                id: c.id,
-                                name: c.name,
-                                image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
-                                price: c.prices?.usd || c.prices?.usd_foil || null
-                            }));
-                        }
-                    } catch(e) { /* set may have no reprints yet */ }
+                if (reprintData) {
+                    reprintCount = reprintData.total_cards || 0;
+                    if (reprintCount > (prev.reprintCount || 0)) {
+                        newReprints = (reprintData.data || []).slice(0, 6).map(c => ({
+                            id: c.id,
+                            name: c.name,
+                            image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                            price: c.prices?.usd || c.prices?.usd_foil || null
+                        }));
+                    }
                 }
 
-                // Fetch newest spoiled cards if count grew, PLUS always fetch top by value
-                let newCards = [];
                 let topCards = [];
-                if (currentCount > 0) {
-                    // Always get top cards by value for display
-                    try {
-                        const topData = await API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '+usd%3E0&order=usd&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
-                        topCards = (topData.data || []).slice(0, 8).map(c => ({
-                            id: c.id,
-                            name: c.name,
-                            image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
-                            isReprint: c.reprint || false,
-                            price: c.prices?.usd || c.prices?.usd_foil || null
-                        }));
-                    } catch(e) {}
+                if (topData) {
+                    topCards = (topData.data || []).slice(0, 8).map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                        isReprint: c.reprint || false,
+                        price: c.prices?.usd || c.prices?.usd_foil || null
+                    }));
                 }
-                if (currentCount > prev.count && currentCount > 0) {
-                    try {
-                        const spoiledData = await API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '&order=released&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 });
-                        newCards = (spoiledData.data || []).slice(0, 8).map(c => ({
-                            id: c.id,
-                            name: c.name,
-                            image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
-                            isReprint: c.reprint || false,
-                            price: c.prices?.usd || c.prices?.usd_foil || null
-                        }));
-                    } catch(e) {}
+
+                let newCards = [];
+                if (spoiledData) {
+                    newCards = (spoiledData.data || []).slice(0, 8).map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
+                        isReprint: c.reprint || false,
+                        price: c.prices?.usd || c.prices?.usd_foil || null
+                    }));
                 }
 
                 const countDelta = currentCount - prev.count;
                 const reprintDelta = reprintCount - (prev.reprintCount || 0);
 
-                results.push({
+                const result = {
                     code: set.code,
                     name: set.name,
                     icon: set.icon_svg_uri,
@@ -5255,18 +5295,26 @@
                     topCards: topCards.length ? topCards : (prev.topCards || []),
                     newReprints: newReprints.length ? newReprints : (prev.newReprints || []),
                     expectedCards: set.card_count || 0
-                });
+                };
 
-                // Update stored data
+                // Update stored data with extra fields for cache-first hydration
                 spoilerData[set.code] = {
                     count: currentCount,
                     reprintCount,
                     lastCheck: Date.now(),
+                    name: set.name,
+                    icon: set.icon_svg_uri,
+                    released: set.released_at,
+                    isFuture,
+                    expectedCards: set.card_count || 0,
                     newCards: newCards.length ? newCards : (prev.newCards || []),
                     topCards: topCards.length ? topCards : (prev.topCards || []),
                     newReprints: newReprints.length ? newReprints : (prev.newReprints || [])
                 };
-            }
+
+                updateProgress();
+                return result;
+            }));
 
             saveSpoilerData(spoilerData);
 
@@ -5294,13 +5342,13 @@
             }
         }
 
-        function renderSpoilerDashboard(results, manual) {
+        function renderSpoilerDashboard(results, manual, fromCache) {
             const desktopGrid = document.getElementById('spoilerDashGrid');
             const desktopSection = document.getElementById('spoilerDashSection');
             const mobileGrid = document.getElementById('mobileSpoilerGrid');
             const lastCheckEl = document.getElementById('spoilerLastCheck');
 
-            if (lastCheckEl) lastCheckEl.textContent = 'Checked: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+            if (lastCheckEl && !fromCache) lastCheckEl.textContent = 'Checked: ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 
             if (!results.length) {
                 if (desktopSection) desktopSection.style.display = 'none';
@@ -5308,47 +5356,42 @@
                 return;
             }
 
-            // Desktop rendering
+            // === DESKTOP: list-style card matching Budget Picks format ===
             if (desktopGrid && desktopSection) {
                 desktopSection.style.display = 'block';
                 desktopGrid.innerHTML = results.map(r => {
                     const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd away' : 'Released';
-                    const progressPct = r.expectedCards > 0 ? Math.min(100, Math.round(r.currentCount / r.expectedCards * 100)) : 0;
-                    const thumbs = (r.topCards && r.topCards.length ? r.topCards : r.newCards || []).slice(0, 6);
                     const justDropped = r.countDelta > 0;
-                    const spoilerBanner = justDropped ? `<div style="background:linear-gradient(90deg,rgba(255,215,0,0.15),rgba(157,78,221,0.1));padding:0.4rem 0.75rem;border-radius:var(--radius-sm);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;"><span style="font-size:1rem;">🔥</span><span style="color:var(--accent-gold);font-weight:700;font-size:0.85rem;">New Spoilers Dropped!</span><span style="color:var(--text-secondary);font-size:0.75rem;">+${r.countDelta} card${r.countDelta>1?'s':''} just revealed</span></div>` : '';
+                    // Prefer topCards (priced) for the list; fallback to newCards; show names only with price
+                    const cardsForList = (r.topCards && r.topCards.length ? r.topCards : r.newCards || []).slice(0, 6);
+                    const cardRows = cardsForList.length ? cardsForList.map(c => {
+                        const priceStr = c.price ? '$' + parseFloat(c.price).toFixed(2) : '—';
+                        const reprintTag = c.isReprint ? ' <span style="font-size:0.6rem;color:var(--accent-secondary);">🔄</span>' : '';
+                        return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
+                            <span class="category-mover-name">${c.name}${reprintTag}</span>
+                            <span class="category-mover-price">${priceStr}</span>
+                        </div>`;
+                    }).join('') : `<div style="padding:0.75rem 0;color:var(--text-muted);font-size:0.8rem;text-align:center;">No priced cards yet</div>`;
 
-                    return `<div class="spoiler-set-card" style="${justDropped?'border-color:var(--accent-gold);box-shadow:0 0 15px rgba(255,215,0,0.15);':''}">
-                        ${spoilerBanner}
-                        <div class="spoiler-set-header" onclick="switchPage('browse');openSetView('${r.code}');">
-                            ${r.icon ? `<img src="${r.icon}" alt="">` : ''}
-                            <div>
-                                <div class="spoiler-set-name">${r.name}</div>
-                                <div class="spoiler-set-meta">
-                                    <span style="color:var(--text-muted);">${r.released}</span>
-                                    <span class="spoiler-badge ${r.isFuture?'upcoming':'new'}">${daysLabel}</span>
-                                    ${r.countDelta > 0 ? `<span class="spoiler-badge new">+${r.countDelta} new</span>` : ''}
-                                    ${r.reprintDelta > 0 ? `<span class="spoiler-badge reprint">+${r.reprintDelta} reprints</span>` : ''}
-                                </div>
-                            </div>
-                            <div style="text-align:right;margin-left:auto;">
-                                <div style="font-family:var(--font-mono);font-size:1.1rem;font-weight:700;color:var(--text-primary);">${r.currentCount}</div>
-                                <div style="font-size:0.65rem;color:var(--text-muted);">cards spoiled</div>
-                                ${r.reprintCount > 0 ? `<div style="font-size:0.7rem;color:var(--accent-secondary);margin-top:0.15rem;">🔄 ${r.reprintCount} reprints</div>` : ''}
-                            </div>
+                    const badgeColor = r.isFuture ? 'rgba(255,215,0,0.2);color:var(--accent-gold)' : 'rgba(0,255,136,0.15);color:var(--accent-green)';
+                    const newBadge = justDropped ? `<span style="margin-left:0.4rem;font-size:0.6rem;padding:0.1rem 0.35rem;border-radius:3px;background:rgba(0,255,136,0.15);color:var(--accent-green);font-weight:700;">+${r.countDelta} NEW</span>` : '';
+                    const reprintBadge = r.reprintCount > 0 ? `<span style="margin-left:0.4rem;font-size:0.6rem;padding:0.1rem 0.35rem;border-radius:3px;background:rgba(157,78,221,0.15);color:var(--accent-secondary);font-weight:700;">🔄 ${r.reprintCount}</span>` : '';
+                    const iconHtml = r.icon ? `<img src="${r.icon}" style="width:18px;height:18px;filter:brightness(0) invert(1);opacity:0.85;" alt="">` : '🔮';
+                    const highlightStyle = justDropped ? 'border-color:var(--accent-gold);box-shadow:0 0 12px rgba(255,215,0,0.12);' : '';
+
+                    return `<div class="category-mover-card" style="display:block;${highlightStyle}">
+                        <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View all ${r.currentCount} spoilers">
+                            ${iconHtml} ${r.name}
+                            <span style="margin-left:0.4rem;font-size:0.6rem;padding:0.1rem 0.35rem;border-radius:3px;background:${badgeColor};font-weight:700;">${daysLabel.toUpperCase()}</span>
+                            ${newBadge}${reprintBadge}
+                            <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
                         </div>
-                        ${r.expectedCards > 0 ? `<div class="spoiler-progress"><div class="spoiler-progress-bar" style="width:${progressPct}%"></div></div>` : ''}
-                        ${thumbs.length ? `<div class="spoiler-cards-preview">${thumbs.map(c =>
-                            `<img class="spoiler-card-thumb" src="${c.image}" alt="${c.name}" title="${c.name}${c.isReprint?' (Reprint)':''}${c.price?' — $'+c.price:''}" onclick="event.stopPropagation();openCardDetail('${c.id}')" loading="lazy">`
-                        ).join('')}</div>` : ''}
-                        <div style="margin-top:0.5rem;text-align:center;">
-                            <button class="btn btn-secondary" onclick="event.stopPropagation();switchPage('browse');openSetView('${r.code}');" style="font-size:0.75rem;padding:0.35rem 1rem;">View All ${r.currentCount} Spoilers →</button>
-                        </div>
+                        <div class="category-mover-content">${cardRows}</div>
                     </div>`;
                 }).join('');
             }
 
-            // Mobile rendering
+            // === MOBILE: unchanged compact row format ===
             if (mobileGrid) {
                 mobileGrid.innerHTML = results.map(r => {
                     const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd' : '✓';
@@ -5369,8 +5412,12 @@
 
             if (manual) showToast('Spoiler check complete!', 'success');
 
-            // Also load top priced cards from spoiler sets
-            loadSpoilerTopCards(results);
+            // === PATCHED: fire reprints FIRST (user priority), top-cards in parallel ===
+            // Don't wait on either — they render into their own sections independently
+            if (!fromCache) {
+                loadSpoilerReprints(results);   // priority: user wants reprints loading fast
+                loadSpoilerTopCards(results);   // fires in parallel, not chained after
+            }
         }
 
         // ====== SPOILER TOP CARDS BY VALUE ======
@@ -5386,36 +5433,42 @@
             const setsToShow = spoilerResults.filter(r => r.currentCount > 0).slice(0, 5);
             if (!setsToShow.length) { section.style.display = 'none'; return; }
 
-            let html = '';
-            for (const r of setsToShow) {
+            // === PARALLELIZED: fire all set searches concurrently, preserve original order ===
+            const setResults = await Promise.all(setsToShow.map(async (r) => {
                 try {
                     const d = await API.search('set:' + r.code + ' usd>0', { order: 'usd', dir: 'desc' });
-                    if (d.data?.length) {
-                        const topCards = d.data.slice(0, 6);
-                        topCards.forEach(c => APICache.set('/cards/' + c.id, c));
-                        const cardRows = topCards.map(c => {
-                            const pr = getPrice(c);
-                            return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
-                                <span class="category-mover-name">${c.name}</span>
-                                <span class="category-mover-price">${pr.val}</span>
-                            </div>`;
-                        }).join('');
-                        const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd away' : 'Released';
-                        html += `<div class="category-mover-card" style="display:block;">
-                            <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
-                                <span>🔮</span> ${r.name} <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:${r.isFuture?'rgba(255,215,0,0.2);color:var(--accent-gold)':'rgba(0,255,136,0.15);color:var(--accent-green)'};">${daysLabel}</span>
-                                <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
-                            </div>
-                            <div class="category-mover-content">${cardRows}</div>
-                        </div>`;
-                    }
-                } catch(e) { if (e.message !== 'Cancelled') console.warn('Spoiler top cards failed for', r.code, e); }
+                    return { r, data: d };
+                } catch(e) {
+                    if (e.message !== 'Cancelled') console.warn('Spoiler top cards failed for', r.code, e);
+                    return { r, data: null };
+                }
+            }));
+
+            let html = '';
+            for (const { r, data } of setResults) {
+                if (!data || !data.data?.length) continue;
+                const topCards = data.data.slice(0, 6);
+                topCards.forEach(c => APICache.set('/cards/' + c.id, c));
+                const cardRows = topCards.map(c => {
+                    const pr = getPrice(c);
+                    return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
+                        <span class="category-mover-name">${c.name}</span>
+                        <span class="category-mover-price">${pr.val}</span>
+                    </div>`;
+                }).join('');
+                const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd away' : 'Released';
+                html += `<div class="category-mover-card" style="display:block;">
+                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
+                        <span>🔮</span> ${r.name} <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:${r.isFuture?'rgba(255,215,0,0.2);color:var(--accent-gold)':'rgba(0,255,136,0.15);color:var(--accent-green)'};">${daysLabel}</span>
+                        <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                    </div>
+                    <div class="category-mover-content">${cardRows}</div>
+                </div>`;
             }
 
             grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No priced spoiler cards yet.</p>';
 
-            // Also load reprints from spoiler sets
-            loadSpoilerReprints(spoilerResults);
+            // PATCHED: reprints no longer chained here — fires in parallel from renderSpoilerDashboard
         }
 
         // ====== SPOILER REPRINTS — BUY THE DIP ======
@@ -5448,50 +5501,54 @@
                 });
             } catch(e) {}
 
-            let html = '';
-            for (const r of setsWithReprints.slice(0, 6)) {
+            // === PARALLELIZED: fire all set queries concurrently, preserve order ===
+            const reprintResults = await Promise.all(setsWithReprints.slice(0, 6).map(async (r) => {
                 try {
-                    // Get ALL set codes in this family (main set + commander + extras)
                     const familyCodes = familyLookup[r.code] || [r.code];
-                    // Build Scryfall query: (s:code1 or s:code2 or ...) is:reprint usd>0
                     const setQuery = familyCodes.length > 1
                         ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
                         : 's:' + r.code;
                     const fullQuery = encodeURIComponent(setQuery + ' is:reprint usd>0');
-
                     const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
-                    if (d.data?.length) {
-                        // Deduplicate by name (keep highest price)
-                        const seen = {};
-                        d.data.forEach(c => {
-                            if (!seen[c.name] || parseFloat(c.prices?.usd||0) > parseFloat(seen[c.name].prices?.usd||0)) seen[c.name] = c;
-                        });
-                        const deduped = Object.values(seen).sort((a,b) => parseFloat(b.prices?.usd||0) - parseFloat(a.prices?.usd||0));
-                        const reprints = deduped.slice(0, 8);
-                        reprints.forEach(c => APICache.set('/cards/' + c.id, c));
-                        const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd until release' : 'Just Released';
-                        const cmdCount = familyCodes.length > 1 ? familyCodes.length - 1 : 0;
-                        const familyNote = cmdCount > 0 ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
-                        const cardRows = reprints.map(c => {
-                            const pr = getPrice(c);
-                            return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
-                                <span class="category-mover-name">${c.name}</span>
-                                <span class="category-mover-price">${pr.val}</span>
-                            </div>`;
-                        }).join('');
-                        const totalReprints = d.total_cards || reprints.length;
-                        html += `<div class="category-mover-card" style="display:block;border-color:rgba(0,255,136,0.2);">
-                            <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
-                                <span>💰</span> ${r.name}${familyNote}
-                                <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${daysLabel}</span>
-                                <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
-                            </div>
-                            <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed across all products</div>
-                            <div class="category-mover-content">${cardRows}</div>
-                            ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${r.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
-                        </div>`;
-                    }
-                } catch(e) { if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', r.code, e); }
+                    return { r, familyCodes, data: d };
+                } catch(e) {
+                    if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', r.code, e);
+                    return { r, familyCodes: familyLookup[r.code] || [r.code], data: null };
+                }
+            }));
+
+            let html = '';
+            for (const { r, familyCodes, data: d } of reprintResults) {
+                if (!d || !d.data?.length) continue;
+                // Deduplicate by name (keep highest price)
+                const seen = {};
+                d.data.forEach(c => {
+                    if (!seen[c.name] || parseFloat(c.prices?.usd||0) > parseFloat(seen[c.name].prices?.usd||0)) seen[c.name] = c;
+                });
+                const deduped = Object.values(seen).sort((a,b) => parseFloat(b.prices?.usd||0) - parseFloat(a.prices?.usd||0));
+                const reprints = deduped.slice(0, 8);
+                reprints.forEach(c => APICache.set('/cards/' + c.id, c));
+                const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd until release' : 'Just Released';
+                const cmdCount = familyCodes.length > 1 ? familyCodes.length - 1 : 0;
+                const familyNote = cmdCount > 0 ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
+                const cardRows = reprints.map(c => {
+                    const pr = getPrice(c);
+                    return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
+                        <span class="category-mover-name">${c.name}</span>
+                        <span class="category-mover-price">${pr.val}</span>
+                    </div>`;
+                }).join('');
+                const totalReprints = d.total_cards || reprints.length;
+                html += `<div class="category-mover-card" style="display:block;border-color:rgba(0,255,136,0.2);">
+                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
+                        <span>💰</span> ${r.name}${familyNote}
+                        <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${daysLabel}</span>
+                        <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                    </div>
+                    <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed across all products</div>
+                    <div class="category-mover-content">${cardRows}</div>
+                    ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${r.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
+                </div>`;
             }
 
             grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No reprints found in spoiled sets yet.</p>';
@@ -7085,7 +7142,11 @@
         }
 
         // ====== RECENT SETS - TOP CARDS ======
+        let _recentSetsTopCardsLoaded = false;
         async function loadRecentSetsTopCards() {
+            // PATCHED: guard against duplicate calls (now triggered immediately AND by loadCategoryMovers)
+            if (_recentSetsTopCardsLoaded) return;
+            _recentSetsTopCardsLoaded = true;
             try {
                 let setsData = State.sets;
                 if (!setsData || !setsData.length) {
@@ -7123,7 +7184,7 @@
                         await loadSingleCategoryMover(catKey, config);
                     }));
                 }
-            } catch(e) { console.warn('Failed to load recent sets:', e); }
+            } catch(e) { console.warn('Failed to load recent sets:', e); _recentSetsTopCardsLoaded = false; }
         }
 
         // ====== LOAD CATEGORY MOVERS (replaces old function) ======
@@ -7668,6 +7729,9 @@
                     if (id === 'moversSection') loadPriceMovers(1);
                     if (id === 'dynamicCategories') loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});
                     if (id === 'reprintsDashSection') loadReprintsDashboard();
+                    // PATCHED: Secret Lair + Trending now lazy-loaded (not priorities per user request)
+                    if (id === 'secretLairDashSection') loadUpcomingReleases(); // renders secret lair as side effect
+                    if (id === 'trendingSection') loadTrending();
                 }
             });
         }, { rootMargin: '200px' }); // Start loading 200px before visible
@@ -8368,71 +8432,84 @@
             loadUniqueCardCount();
 
             if (isMobile) {
-                // Mobile: cascade load — visual stuff first, background data after
+                // MOBILE — PRIORITY 1: Spoilers + Recent Sets (fires immediately, parallel)
                 renderTrackedSets();
                 renderTrackedSetsWidget();
                 renderMobileLatestSets();
 
-                // 1. Load visual card grids FIRST (card images pop in immediately)
-                loadMobileVisualSections();
-
-                // 2. Spoilers + reprints in parallel (populate top sections)
-                loadUpcomingReleases().then(() => {
-                    if (State.upcomingReleases) renderMobileReleases(State.upcomingReleases);
-                });
+                // Spoilers — fires cache render instantly, then refreshes
                 checkSpoilers();
-                loadReprintsDashboard();
+                // Recent Sets Top Cards — second priority, fires immediately
+                loadRecentSetsTopCards();
 
-                // 3. Price movers load last (background, less visual impact)
-                loadPriceMovers(1).then(() => {
-                    updateMobileDashboard();
-                });
+                // PRIORITY 2 (deferred): visual card sections + upcoming/secret lair + reprints
+                setTimeout(() => {
+                    loadMobileVisualSections();
+                    loadUpcomingReleases().then(() => {
+                        if (State.upcomingReleases) renderMobileReleases(State.upcomingReleases);
+                    });
+                    loadReprintsDashboard();
+                }, 400);
+
+                // PRIORITY 3 (background): price movers last
+                setTimeout(() => {
+                    loadPriceMovers(1).then(() => { updateMobileDashboard(); });
+                }, 1200);
             } else if (mode === 'fast') {
-                // FAST: Only load trending, everything else lazy-loads on scroll
+                // FAST: Only spoilers + recent sets load eagerly, EVERYTHING else lazy
                 renderTrackedSets();
                 renderTrackedSetsWidget();
-                loadTrending(); // Don't await - let it fill in
-                loadUpcomingReleases(); // Banner is lightweight, always load
-                loadReprintsDashboard(); // Reprints are lightweight, load directly (display:none blocks observer)
-                checkSpoilers(); // Spoiler tracker
-                // Lazy-load everything else
-                ['staplesSection','moversSection','dynamicCategories'].forEach(id => {
+
+                // PRIORITY 1: Spoilers + Recent Sets
+                checkSpoilers();
+                loadRecentSetsTopCards();
+
+                // Lazy-load everything else on scroll
+                ['trendingSection','secretLairDashSection','staplesSection','moversSection','dynamicCategories','reprintsDashSection'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) lazyObserver.observe(el);
                 });
             } else if (mode === 'balanced') {
-                // BALANCED: Load trending + staples + releases in parallel, lazy-load category movers
+                // BALANCED: PRIORITY 1 = Spoilers + Recent Sets. Everything else lazy.
                 renderTrackedSets();
                 renderTrackedSetsWidget();
-                Promise.all([
-                    loadTrending(),
-                    loadUpcomingReleases(),
-                    loadFormatStaples('commander')
-                ]).then(() => {
-                    lazyLoadedSections.add('trendingSection');
-                    lazyLoadedSections.add('staplesSection');
-                });
-                // Load reprints (lightweight, don't block)
-                loadReprintsDashboard();
-                checkSpoilers(); // Spoiler tracker
-                // Price movers + category movers lazy-load on scroll
-                ['moversSection','dynamicCategories'].forEach(id => {
+
+                // PRIORITY 1: Spoilers + Recent Sets (user's stated priorities)
+                checkSpoilers();
+                loadRecentSetsTopCards();
+
+                // Upcoming releases banner is tiny — load it after a short delay for the tracker widget
+                setTimeout(() => loadUpcomingReleases(), 500);
+
+                // Lazy-load everything else on scroll
+                ['trendingSection','secretLairDashSection','staplesSection','moversSection','dynamicCategories','reprintsDashSection'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) lazyObserver.observe(el);
                 });
             } else {
-                // FULL: Load everything (parallel where possible, then category movers)
+                // FULL: PRIORITY 1 first, then load everything (but staggered)
                 renderTrackedSets();
                 renderTrackedSetsWidget();
-                await Promise.all([
-                    loadTrending(),
-                    loadUpcomingReleases(),
-                    loadFormatStaples('commander')
-                ]);
-                loadPriceMovers(1);
-                loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});
-                loadReprintsDashboard();
-                checkSpoilers(); // Spoiler tracker
+
+                // PRIORITY 1: Spoilers + Recent Sets
+                checkSpoilers();
+                loadRecentSetsTopCards();
+
+                // PRIORITY 2: upcoming, trending, staples (parallel, after short delay)
+                setTimeout(() => {
+                    Promise.all([
+                        loadUpcomingReleases(),
+                        loadTrending(),
+                        loadFormatStaples('commander')
+                    ]);
+                }, 600);
+
+                // PRIORITY 3: heavy stuff last
+                setTimeout(() => {
+                    loadPriceMovers(1);
+                    loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});
+                    loadReprintsDashboard();
+                }, 1500);
             }
         });
     </script>
