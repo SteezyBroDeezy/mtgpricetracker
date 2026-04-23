@@ -2444,6 +2444,7 @@
                     <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="setRarity" onchange="loadSetCards()"><option value="">All</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
                     <div class="filter-group"><span class="filter-label">Sort</span><select class="filter-select" id="setSort" onchange="loadSetCards()"><option value="usd">Price ↓</option><option value="name">Name</option><option value="rarity">Rarity</option></select></div>
                     <div class="filter-group" style="display:flex;align-items:center;gap:0.5rem;"><label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);"><input type="checkbox" id="setReprintsOnly" onchange="loadSetCards()" style="accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer;">🔄 Reprints Only</label></div>
+                    <div class="filter-group" style="display:flex;align-items:center;gap:0.5rem;" id="setIncludeFamilyGroup"><label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);" title="Include Commander decks, bonus sheets, and other products from this set's family"><input type="checkbox" id="setIncludeFamily" checked onchange="loadSetCards()" style="accent-color:var(--accent-primary);width:16px;height:16px;cursor:pointer;">📦 Include Commander & extras</label></div>
                 </div>
                 <div class="card-grid" id="setCardsGrid"></div>
                 <div class="pagination" id="setPagination"></div>
@@ -4586,8 +4587,33 @@
             document.getElementById('setCardsView').style.display='block';
             const set=State.sets.find(s=>s.code===code) || State.allSetsData?.find(s=>s.code===code);
             State.currentBrowsingSet = set;
+
+            // PATCHED: compute family info to show combined card count + hint
+            let familyExtras = []; // sub-sets other than the parent
+            try {
+                const sets = (typeof allScryfallSets !== 'undefined' && allScryfallSets && allScryfallSets.length)
+                    ? allScryfallSets
+                    : (State.allSetsData && State.allSetsData.length ? State.allSetsData : null);
+                if (sets) {
+                    const parentCode = (set?.parent_set_code) || code;
+                    familyExtras = sets.filter(s => !s.digital && s.code !== code && (s.parent_set_code || s.code) === parentCode);
+                }
+            } catch(e) {}
+            const familyCardTotal = (set?.card_count || 0) + familyExtras.reduce((sum, s) => sum + (s.card_count || 0), 0);
+            const hasFamily = familyExtras.length > 0;
+            // Toggle visibility of the Include Family checkbox group
+            const familyToggleGroup = document.getElementById('setIncludeFamilyGroup');
+            if (familyToggleGroup) familyToggleGroup.style.display = hasFamily ? 'flex' : 'none';
+
             const titleEl = document.getElementById('setViewTitle');
             if (set) {
+                const familyLabels = [];
+                if (familyExtras.some(s => s.set_type === 'commander')) familyLabels.push('Commander');
+                if (familyExtras.some(s => s.set_type === 'masterpiece' || s.set_type === 'memorabilia')) familyLabels.push('bonus sheet');
+                if (familyExtras.some(s => s.set_type === 'token')) familyLabels.push('tokens');
+                const familyHint = hasFamily
+                    ? `<span style="color:var(--accent-primary);font-size:0.8rem;margin-left:0.5rem;">+ ${familyCardTotal - (set.card_count||0)} from ${familyLabels.length ? familyLabels.join(' & ') : 'extras'}</span>`
+                    : '';
                 titleEl.innerHTML = `
                     <div class="set-header-banner">
                         <div class="set-header-banner-icon">
@@ -4595,7 +4621,7 @@
                         </div>
                         <div class="set-header-banner-info">
                             <h3>${set.name}</h3>
-                            <p>${set.code.toUpperCase()} • ${set.card_count} cards • ${formatSetDate(set.released_at)}</p>
+                            <p>${set.code.toUpperCase()} • ${set.card_count} cards${familyHint} • ${formatSetDate(set.released_at)}</p>
                         </div>
                         <button class="set-header-banner-close" onclick="closeSetView()">✕ Close</button>
                     </div>
@@ -4778,7 +4804,80 @@
         document.getElementById('setsBrowserType')?.addEventListener('change', () => filterBrowserSets());
         document.getElementById('setsBrowserMajorOnly')?.addEventListener('change', () => filterBrowserSets());
 
-        async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value,reprintsOnly=document.getElementById('setReprintsOnly')?.checked;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;if(reprintsOnly)q+=' is:reprint';try{let d;if(url){const r=await fetch(url);d=await r.json();}else{try{d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});}catch(e1){/* PATCHED: fallback to name-sort if price-sort returns 404 (unpriced preview cards)*/if(sort==='usd'){try{d=await API.search(q,{order:'name',dir:'asc'});}catch(e2){throw e2;}}else throw e1;}}if(d&&d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}else{grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}catch(e){grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}
+        // PATCHED: Get all set codes in the family for the currently browsed set
+        function getFamilyCodesForCurrentSet() {
+            const code = State.currentSet;
+            if (!code) return [code];
+            // Need allScryfallSets populated; if not, return just the current code
+            const sets = (typeof allScryfallSets !== 'undefined' && allScryfallSets && allScryfallSets.length)
+                ? allScryfallSets
+                : (State.allSetsData && State.allSetsData.length ? State.allSetsData : null);
+            if (!sets) return [code];
+            // Find the parent (which is the current set itself if it has no parent)
+            const currentSetObj = sets.find(s => s.code === code);
+            if (!currentSetObj) return [code];
+            const parentCode = currentSetObj.parent_set_code || code;
+            // Collect parent + all children that share this parent code
+            const family = [];
+            sets.forEach(s => {
+                if (s.digital) return;
+                const sParent = s.parent_set_code || s.code;
+                if (sParent === parentCode && !family.includes(s.code)) family.push(s.code);
+            });
+            return family.length ? family : [code];
+        }
+
+        async function loadSetCards(url=null){
+            const grid=document.getElementById('setCardsGrid');
+            grid.innerHTML='<div class="loading-spinner"></div>';
+            const rar=document.getElementById('setRarity').value;
+            const sort=document.getElementById('setSort').value;
+            const reprintsOnly=document.getElementById('setReprintsOnly')?.checked;
+            const includeFamily=document.getElementById('setIncludeFamily')?.checked;
+
+            // PATCHED: build query as family-union if includeFamily is on AND the family has > 1 set
+            let setClause = 'set:' + State.currentSet;
+            if (includeFamily) {
+                const family = getFamilyCodesForCurrentSet();
+                if (family.length > 1) {
+                    setClause = '(' + family.map(c => 'set:' + c).join(' or ') + ')';
+                }
+            }
+            let q = setClause;
+            if (rar) q += ' r:' + rar;
+            if (reprintsOnly) q += ' is:reprint';
+
+            try {
+                let d;
+                if (url) {
+                    const r = await fetch(url);
+                    d = await r.json();
+                } else {
+                    try {
+                        d = await API.search(q, { order: sort, dir: sort === 'name' ? 'asc' : 'desc', unique: 'cards' });
+                    } catch(e1) {
+                        // PATCHED: fallback to name-sort if price-sort returns 404 (unpriced preview cards)
+                        if (sort === 'usd') {
+                            try { d = await API.search(q, { order: 'name', dir: 'asc', unique: 'cards' }); }
+                            catch(e2) { throw e2; }
+                        } else throw e1;
+                    }
+                }
+                if (d && d.data) {
+                    grid.innerHTML = d.data.map(c => cardEl(c, c.rarity)).join('');
+                    document.getElementById('setPagination').innerHTML =
+                        `<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button>` +
+                        `<span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span>` +
+                        `<button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;
+                } else {
+                    grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';
+                    document.getElementById('setPagination').innerHTML = '';
+                }
+            } catch(e) {
+                grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';
+                document.getElementById('setPagination').innerHTML = '';
+            }
+        }
 
         // Trending - section removed but keeping function stub for compatibility
         async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');if(!grid)return;}
