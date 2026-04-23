@@ -1483,20 +1483,6 @@
                 <div class="category-movers-grid" id="spoilerReprintsGrid"></div>
             </section>
 
-            <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
-            <section class="category-movers-section desktop-only" id="reprintsDashSection" style="display:none;">
-                <div class="section-header">
-                    <h2 class="section-title">🔄 Reprints — Latest Sets</h2>
-                    <div style="display:flex;align-items:center;gap:0.5rem;">
-                        <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">Reprints from recent releases, sorted by value</p>
-                        <button class="btn btn-sm" onclick="openReprintsFullView()">View All with Images →</button>
-                    </div>
-                </div>
-                <div class="category-movers-grid" id="reprintsDashGrid">
-                    <div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>
-                </div>
-            </section>
-
             <!-- Mobile Dashboard - Collapsible Sections -->
             <div id="mobileDashboard" class="mobile-only" style="display:none;">
                 <!-- Secret Lair Tracker -->
@@ -5415,7 +5401,7 @@
             // === PATCHED: fire reprints FIRST (user priority), top-cards in parallel ===
             // Don't wait on either — they render into their own sections independently
             if (!fromCache) {
-                loadSpoilerReprints(results);   // priority: user wants reprints loading fast
+                loadSpoilerReprints();          // priority: user wants reprints loading fast
                 loadSpoilerTopCards(results);   // fires in parallel, not chained after
             }
         }
@@ -5472,55 +5458,74 @@
         }
 
         // ====== SPOILER REPRINTS — BUY THE DIP ======
-        async function loadSpoilerReprints(spoilerResults) {
-            if (!spoilerResults || !spoilerResults.length) return;
+        async function loadSpoilerReprints() {
+            // === PATCHED: independent of checkSpoilers — fetches 5 most recent large main sets ===
             const section = document.getElementById('spoilerReprintsSection');
             const grid = document.getElementById('spoilerReprintsGrid');
             if (!section || !grid) return;
 
-            // Only show sets that have reprints
-            const setsWithReprints = spoilerResults.filter(r => r.reprintCount > 0 && r.currentCount > 0);
-            if (!setsWithReprints.length) { section.style.display = 'none'; return; }
-
             section.style.display = 'block';
             grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>';
 
-            // Build family lookup so we can find commander sub-sets
-            let familyLookup = {};
+            // Ensure we have the sets catalog
             try {
                 if (!allScryfallSets || !allScryfallSets.length) {
                     const d = await API.sets();
                     allScryfallSets = d.data || [];
                 }
-                // Map parent code -> all child codes (including parent itself)
-                allScryfallSets.forEach(s => {
-                    if (s.digital) return;
-                    const parentCode = s.parent_set_code || s.code;
-                    if (!familyLookup[parentCode]) familyLookup[parentCode] = [];
-                    if (!familyLookup[parentCode].includes(s.code)) familyLookup[parentCode].push(s.code);
-                });
-            } catch(e) {}
+            } catch(e) {
+                grid.innerHTML = '<p style="color:var(--text-muted);padding:1rem;">Could not load reprint data.</p>';
+                return;
+            }
 
-            // === PARALLELIZED: fire all set queries concurrently, preserve order ===
-            const reprintResults = await Promise.all(setsWithReprints.slice(0, 6).map(async (r) => {
+            // Build family lookup: parent -> [parent + all children]
+            const familyLookup = {};
+            allScryfallSets.forEach(s => {
+                if (s.digital) return;
+                const parentCode = s.parent_set_code || s.code;
+                if (!familyLookup[parentCode]) familyLookup[parentCode] = [];
+                if (!familyLookup[parentCode].includes(s.code)) familyLookup[parentCode].push(s.code);
+            });
+
+            // Get the 5 most recent LARGE main sets (card_count >= 100, is parent set, not too far in future)
+            const cutoffFuture = new Date(Date.now() + 60*86400000).toISOString().split('T')[0];
+            const validTypes = ['expansion','core','masters','draft_innovation'];
+            const recentLargeSets = allScryfallSets
+                .filter(s =>
+                    !s.digital &&
+                    validTypes.includes(s.set_type) &&
+                    !s.parent_set_code &&              // main/parent sets only
+                    s.card_count >= 100 &&             // LARGE sets only
+                    s.released_at &&
+                    s.released_at <= cutoffFuture      // not absurdly far future
+                )
+                .sort((a,b) => b.released_at.localeCompare(a.released_at))  // newest first
+                .slice(0, 5);
+
+            if (!recentLargeSets.length) { section.style.display = 'none'; return; }
+
+            const today = new Date().toISOString().split('T')[0];
+
+            // === PARALLEL: fire family-union queries for all 5 at once ===
+            const reprintResults = await Promise.all(recentLargeSets.map(async (set) => {
+                const familyCodes = familyLookup[set.code] || [set.code];
                 try {
-                    const familyCodes = familyLookup[r.code] || [r.code];
                     const setQuery = familyCodes.length > 1
                         ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
-                        : 's:' + r.code;
+                        : 's:' + set.code;
                     const fullQuery = encodeURIComponent(setQuery + ' is:reprint usd>0');
                     const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
-                    return { r, familyCodes, data: d };
+                    return { set, familyCodes, data: d };
                 } catch(e) {
-                    if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', r.code, e);
-                    return { r, familyCodes: familyLookup[r.code] || [r.code], data: null };
+                    if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', set.code, e);
+                    return { set, familyCodes, data: null };
                 }
             }));
 
             let html = '';
-            for (const { r, familyCodes, data: d } of reprintResults) {
+            for (const { set, familyCodes, data: d } of reprintResults) {
                 if (!d || !d.data?.length) continue;
-                // Deduplicate by name (keep highest price)
+                // Deduplicate by name (keep highest-priced printing)
                 const seen = {};
                 d.data.forEach(c => {
                     if (!seen[c.name] || parseFloat(c.prices?.usd||0) > parseFloat(seen[c.name].prices?.usd||0)) seen[c.name] = c;
@@ -5528,9 +5533,21 @@
                 const deduped = Object.values(seen).sort((a,b) => parseFloat(b.prices?.usd||0) - parseFloat(a.prices?.usd||0));
                 const reprints = deduped.slice(0, 8);
                 reprints.forEach(c => APICache.set('/cards/' + c.id, c));
-                const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd until release' : 'Just Released';
-                const cmdCount = familyCodes.length > 1 ? familyCodes.length - 1 : 0;
-                const familyNote = cmdCount > 0 ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
+
+                // PATCHED: Scryfall groups all commander precons into ONE sub-set (e.g. SOC contains all 5 Strixhaven precons)
+                // Count siblings by type instead of pretending each sub-set code == 1 precon
+                const siblings = familyCodes.filter(c => c !== set.code).map(c => allScryfallSets.find(s => s.code === c)).filter(Boolean);
+                const hasCommander = siblings.some(s => s.set_type === 'commander');
+                const hasBonusSheet = siblings.some(s => s.set_type === 'masterpiece' || s.set_type === 'memorabilia');
+                const hasTokens = siblings.some(s => s.set_type === 'token');
+                const labels = [];
+                if (hasCommander) labels.push('Commander');
+                if (hasBonusSheet) labels.push('bonus sheet');
+                if (hasTokens && !hasCommander && !hasBonusSheet) labels.push('tokens');
+                const familyNote = labels.length
+                    ? ` <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;">+ ${labels.join(' & ')}</span>`
+                    : '';
+
                 const cardRows = reprints.map(c => {
                     const pr = getPrice(c);
                     return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
@@ -5540,18 +5557,17 @@
                 }).join('');
                 const totalReprints = d.total_cards || reprints.length;
                 html += `<div class="category-mover-card" style="display:block;border-color:rgba(0,255,136,0.2);">
-                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
-                        <span>💰</span> ${r.name}${familyNote}
-                        <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${daysLabel}</span>
+                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${set.code}');" title="View full set">
+                        <span>💰</span> ${set.name}${familyNote}
                         <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
                     </div>
                     <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed across all products</div>
                     <div class="category-mover-content">${cardRows}</div>
-                    ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${r.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
+                    ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${set.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
                 </div>`;
             }
 
-            grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No reprints found in spoiled sets yet.</p>';
+            grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No reprints found in recent sets yet.</p>';
 
             // Mobile: populate mobile spoiler reprints grid
             const mobileSection = document.getElementById('mobileSpoilerReprintsSection');
@@ -5559,21 +5575,15 @@
             if (mobileSection && mobileGrid && html) {
                 mobileSection.style.display = 'block';
                 let mobileHtml = '';
-                for (const r of setsWithReprints.slice(0, 4)) {
-                    const fCodes = familyLookup[r.code] || [r.code];
-                    const sQ = fCodes.length > 1 ? '(' + fCodes.map(c => 's:' + c).join(' or ') + ')' : 's:' + r.code;
-                    try {
-                        const cached = APICache.get('/cards/search?q=' + encodeURIComponent(sQ + ' is:reprint usd>0') + '&order=usd&dir=desc&unique=cards');
-                        if (cached && cached.data) {
-                            const top3 = cached.data.slice(0, 3);
-                            mobileHtml += `<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border-left:3px solid var(--accent-green);">
-                                <div style="font-weight:600;font-size:0.8rem;margin-bottom:0.3rem;" onclick="switchPage('browse');openSetView('${r.code}');">${r.name} <span style="font-size:0.65rem;color:var(--accent-green);">🔄 ${cached.total_cards||top3.length}</span></div>
-                                ${top3.map(c => {const pr=getPrice(c);return `<div onclick="openCardDetail('${c.id}')" style="display:flex;justify-content:space-between;font-size:0.75rem;padding:0.15rem 0;cursor:pointer;"><span style="color:var(--text-secondary);">${c.name}</span><span style="color:var(--accent-gold);">${pr.val}</span></div>`;}).join('')}
-                            </div>`;
-                        }
-                    } catch(e) {}
+                for (const { set, familyCodes, data: d } of reprintResults.slice(0, 4)) {
+                    if (!d || !d.data?.length) continue;
+                    const top3 = d.data.slice(0, 3);
+                    mobileHtml += `<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border-left:3px solid var(--accent-green);">
+                        <div style="font-weight:600;font-size:0.8rem;margin-bottom:0.3rem;" onclick="switchPage('browse');openSetView('${set.code}');">${set.name} <span style="font-size:0.65rem;color:var(--accent-green);">🔄 ${d.total_cards||top3.length}</span></div>
+                        ${top3.map(c => {const pr=getPrice(c);return `<div onclick="openCardDetail('${c.id}')" style="display:flex;justify-content:space-between;font-size:0.75rem;padding:0.15rem 0;cursor:pointer;"><span style="color:var(--text-secondary);">${c.name}</span><span style="color:var(--accent-gold);">${pr.val}</span></div>`;}).join('')}
+                    </div>`;
                 }
-                mobileGrid.innerHTML = mobileHtml || '<p style="color:var(--text-muted);font-size:0.75rem;">Loading...</p>';
+                mobileGrid.innerHTML = mobileHtml || '<p style="color:var(--text-muted);font-size:0.75rem;">No reprints yet.</p>';
             }
         }
 
@@ -7728,7 +7738,7 @@
                     if (id === 'staplesSection') loadFormatStaples('commander');
                     if (id === 'moversSection') loadPriceMovers(1);
                     if (id === 'dynamicCategories') loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});
-                    if (id === 'reprintsDashSection') loadReprintsDashboard();
+                    if (id === 'reprintsDashSection') { /* section removed */ }
                     // PATCHED: Secret Lair + Trending now lazy-loaded (not priorities per user request)
                     if (id === 'secretLairDashSection') loadUpcomingReleases(); // renders secret lair as side effect
                     if (id === 'trendingSection') loadTrending();
@@ -8438,6 +8448,7 @@
                 renderMobileLatestSets();
 
                 // Spoilers — fires cache render instantly, then refreshes
+                loadSpoilerReprints();  // PRIORITY 1a: user's #1 priority, independent of checkSpoilers
                 checkSpoilers();
                 // Recent Sets Top Cards — second priority, fires immediately
                 loadRecentSetsTopCards();
@@ -8461,6 +8472,7 @@
                 renderTrackedSetsWidget();
 
                 // PRIORITY 1: Spoilers + Recent Sets
+                loadSpoilerReprints();  // PRIORITY 1a: user's #1 priority, fires first
                 checkSpoilers();
                 loadRecentSetsTopCards();
 
@@ -8475,6 +8487,7 @@
                 renderTrackedSetsWidget();
 
                 // PRIORITY 1: Spoilers + Recent Sets (user's stated priorities)
+                loadSpoilerReprints();  // PRIORITY 1a: user's #1 priority, fires first
                 checkSpoilers();
                 loadRecentSetsTopCards();
 
@@ -8492,6 +8505,7 @@
                 renderTrackedSetsWidget();
 
                 // PRIORITY 1: Spoilers + Recent Sets
+                loadSpoilerReprints();  // PRIORITY 1a: user's #1 priority, fires first
                 checkSpoilers();
                 loadRecentSetsTopCards();
 
