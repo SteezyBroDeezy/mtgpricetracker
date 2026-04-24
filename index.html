@@ -1139,7 +1139,7 @@
 
     <nav class="navbar">
         <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.04.24.2025</span></div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.04.24.2059</span></div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -1525,9 +1525,7 @@
                     <h2 class="section-title">📅 Upcoming Set Releases</h2>
                     <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">All upcoming paper sets from Scryfall — auto-updates as new sets are announced</p>
                 </div>
-                <div id="upcomingReleasesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.75rem;">
-                    <div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>
-                </div>
+                <div id="upcomingReleasesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.75rem;"></div>
             </section>
 
             <!-- Slim Secret Lair indicator (replaces the big boxed section) -->
@@ -1565,9 +1563,7 @@
                     </div>
                 </div>
                 <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">New cards and reprints spoiled for upcoming sets — auto-checks Scryfall each visit</p>
-                <div id="spoilerDashGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:0.75rem;">
-                    <div style="padding:1rem;color:var(--text-muted);font-size:0.85rem;">Checking for spoilers...</div>
-                </div>
+                <div id="spoilerDashGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.75rem;"></div>
             </section>
 
             <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
@@ -2796,7 +2792,7 @@
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
-    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.04.24.2025</div>
+    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.04.24.2059</div>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -5320,27 +5316,13 @@
         }
 
         async function checkSpoilers(manual = false) {
-            // Show themed loaders in the spoiler sections RIGHT AWAY — don't wait
-            // for the first API call to resolve. Users see the sections "working" instead
-            // of blank space. Cleaned up in renderSpoilerDashboard / loadSpoilerReprints.
-            const spoilerSection = document.getElementById('spoilerDashSection');
-            const reprintsSection = document.getElementById('spoilerReprintsSection');
-            if (spoilerSection) {
-                spoilerSection.style.display = 'block';
-                stopManaLoader('spoilerDashGrid');
-                activeManaLoaders['spoilerDashGrid'] = showManaLoader('spoilerDashGrid', 'Scanning upcoming sets');
-            }
-            if (reprintsSection) {
-                reprintsSection.style.display = 'block';
-                stopManaLoader('spoilerReprintsGrid');
-                activeManaLoaders['spoilerReprintsGrid'] = showManaLoader('spoilerReprintsGrid', 'Hunting reprints worth buying the dip on');
-            }
+            // Silent loading: sections stay hidden (display:none) until data is ready,
+            // then appear instantly. No spinners, no "Consulting the Oracle..." placeholders.
+            // The sections will be revealed by renderSpoilerDashboard / loadSpoilerReprints.
 
             // Get upcoming sets from Scryfall
             if (!allScryfallSets || !allScryfallSets.length) {
                 try { const d = await API.sets(); allScryfallSets = d.data || []; } catch(e) {
-                    stopManaLoader('spoilerDashGrid');
-                    stopManaLoader('spoilerReprintsGrid');
                     return;
                 }
             }
@@ -5706,10 +5688,14 @@
 
                 if (!reprints.length) {
                     html += `<div class="category-mover-card" style="display:block;border-color:rgba(255,255,255,0.05);opacity:0.6;">
-                        <div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set">
-                            <span>💰</span> ${s.name}${familyNote}
-                            <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--text-muted);">${releaseLabel}</span>
-                            <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                        <div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set" style="display:flex;align-items:center;gap:0.5rem;">
+                            <span>💰</span>
+                            <span style="flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</span>
+                            <span style="font-size:0.7rem;opacity:0.7;color:var(--accent-primary);white-space:nowrap;">View All →</span>
+                        </div>
+                        <div style="padding:0.25rem 0.75rem 0.4rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+                            <span style="font-size:0.62rem;padding:0.12rem 0.4rem;border-radius:3px;background:rgba(255,255,255,0.05);color:var(--text-muted);">${releaseLabel}</span>
+                            ${cmdCount > 0 ? `<span style="font-size:0.62rem;color:var(--text-muted);">incl. ${cmdCount} Commander deck${cmdCount>1?'s':''}</span>` : ''}
                         </div>
                         <div class="category-mover-content"><div style="padding:1rem;color:var(--text-muted);font-size:0.8rem;text-align:center;">No priced reprints found yet</div></div>
                     </div>`;
@@ -5727,14 +5713,18 @@
                 const totalReprints = d.total_cards || reprints.length;
 
                 html += `<div class="category-mover-card" style="display:block;border-color:rgba(0,255,136,0.2);">
-                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set">
-                        <span>💰</span> ${s.name}${familyNote}
-                        <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${releaseLabel}</span>
-                        <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set" style="display:flex;align-items:center;gap:0.5rem;">
+                        <span>💰</span>
+                        <span style="flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</span>
+                        <span style="font-size:0.7rem;opacity:0.7;color:var(--accent-primary);white-space:nowrap;">View All →</span>
                     </div>
-                    <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed across all products</div>
+                    <div style="padding:0.25rem 0.75rem 0.4rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+                        <span style="font-size:0.62rem;padding:0.12rem 0.4rem;border-radius:3px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${releaseLabel}</span>
+                        <span style="font-size:0.65rem;color:var(--accent-green);">🔄 ${totalReprints} reprints</span>
+                        ${cmdCount > 0 ? `<span style="font-size:0.62rem;color:var(--text-muted);">incl. ${cmdCount} Commander deck${cmdCount>1?'s':''}</span>` : ''}
+                    </div>
                     <div class="category-mover-content">${cardRows}</div>
-                    ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${s.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
+                    ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${s.code}')" style="padding:0.5rem;text-align:center;cursor:pointer;border-top:1px solid var(--bg-tertiary);font-size:0.75rem;color:var(--accent-primary);"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
                 </div>`;
             }
 
@@ -6122,13 +6112,18 @@
             }
             const today = new Date().toISOString().split('T')[0];
             // Show ALL upcoming paper sets (typically 6-12 announced at any given time).
+            // Auto-removes sets after their release date passes (released_at > today).
             // Filter exclusions:
             //   - s.digital: Arena-only sets like "Through the Omenpaths" (no paper, no prices)
+            //   - s.parent_set_code: sub-sets like "Marvel Super Heroes Commander" — we already
+            //     show their parent ("Marvel Super Heroes"), so skipping these dedups the view
             //   - set_type: only meaningful release types for a price tracker
-            //     (excludes 'token', 'memorabilia', 'promo', 'arsenal', etc. which clutter the list)
+            //     (excludes 'token', 'memorabilia', 'promo', 'arsenal', etc. which clutter)
+            // Note: limited by what Scryfall has dated. Wizards may have announced more sets
+            // (e.g. The Hobbit, Star Trek for late 2026) that don't yet have firm release dates.
             const validTypes = ['expansion', 'core', 'masters', 'draft_innovation', 'commander'];
             const upcoming = State.sets
-                .filter(s => s.released_at > today && validTypes.includes(s.set_type) && !s.digital)
+                .filter(s => s.released_at > today && validTypes.includes(s.set_type) && !s.digital && !s.parent_set_code)
                 .sort((a, b) => a.released_at.localeCompare(b.released_at));
             State.upcomingReleases = upcoming.map(s => {
                 const releaseDate = new Date(s.released_at);
@@ -6568,6 +6563,14 @@
                     </button>
                 </div>`;
             }).join('');
+
+            // Append a small note explaining the dataset's freshness limit
+            grid.insertAdjacentHTML('afterend', '<div id="upcomingReleasesHint" style="margin-top:0.6rem;font-size:0.7rem;color:var(--text-muted);text-align:center;font-style:italic;">Showing every paper set Scryfall has dated. Wizards may have announced additional 2026 sets without firm release dates yet.</div>');
+            // Remove any duplicate hint from a prior render
+            const allHints = grid.parentElement.querySelectorAll('#upcomingReleasesHint');
+            if (allHints.length > 1) {
+                for (let i = 0; i < allHints.length - 1; i++) allHints[i].remove();
+            }
         }
 
         function renderSecretLairSection() {
@@ -8276,7 +8279,7 @@
             if (!section || !grid) return;
 
             try {
-                const families = await getLatestFamilies(8);
+                const families = await getLatestFamilies(10);
                 if (!families.length) { section.style.display = 'none'; return; }
 
                 // Fetch reprints from each family in parallel
@@ -8654,7 +8657,7 @@
             // Log build version to console so it's visible even if the badge is hidden.
             // If the version in the console doesn't match the file you last uploaded to GitHub,
             // the site is serving a stale build (deployment hasn't finished or wrong file).
-            const APP_VERSION = 'v2026.04.24.2025';
+            const APP_VERSION = 'v2026.04.24.2059';
             console.log('%c MTG Oracle ' + APP_VERSION + ' ', 'background:#9d4edd;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px;');
 
             // Make the corner badge copy its version to clipboard on click
