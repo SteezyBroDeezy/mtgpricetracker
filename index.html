@@ -1139,7 +1139,7 @@
 
     <nav class="navbar">
         <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.04.24.1949</span></div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.04.24.2025</span></div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -1519,20 +1519,28 @@
 
             <!-- Watchlist preview removed - use Watch tab -->
 
-            <!-- Secret Lair Drops - Desktop -->
-            <section class="category-movers-section desktop-only" id="secretLairDashSection" style="display:none;">
+            <!-- Upcoming Set Releases - Desktop (prominent boxes, auto-fetched from Scryfall) -->
+            <section class="category-movers-section desktop-only" id="upcomingReleasesSection" style="display:none;">
                 <div class="section-header">
-                    <h2 class="section-title">🎴 Secret Lair Drops</h2>
-                    <div style="display:flex;gap:0.5rem;">
-                        <button class="btn btn-sm" onclick="checkSecretLairNews()">📰 News</button>
-                        <button class="btn btn-sm" onclick="openSecretLairAlerts()">🔔 Alerts</button>
-                        <a href="https://secretlair.wizards.com" target="_blank" rel="noopener" class="btn btn-sm">🛒 Shop</a>
-                    </div>
+                    <h2 class="section-title">📅 Upcoming Set Releases</h2>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">All upcoming paper sets from Scryfall — auto-updates as new sets are announced</p>
                 </div>
-                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">Track upcoming and available Secret Lair drops with countdown timers</p>
-                <div id="secretLairDashGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.75rem;">
+                <div id="upcomingReleasesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.75rem;">
                     <div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>
                 </div>
+            </section>
+
+            <!-- Slim Secret Lair indicator (replaces the big boxed section) -->
+            <div class="desktop-only" id="secretLairSlim" style="display:none;margin:0.5rem 0 1rem;padding:0.5rem 0.85rem;background:var(--bg-card);border-radius:var(--radius-md);font-size:0.8rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;border:1px solid rgba(255,255,255,0.04);">
+                <span style="color:var(--text-muted);">🎴 Secret Lair:</span>
+                <span id="secretLairSlimContent" style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;flex:1;min-width:0;"></span>
+                <a href="https://secretlair.wizards.com" target="_blank" rel="noopener" style="color:var(--accent-primary);text-decoration:none;font-size:0.75rem;white-space:nowrap;">Shop →</a>
+            </div>
+
+            <!-- Original Secret Lair big-box section kept hidden for back-compat (alerts/news still reference it).
+                 If this block is fully removed later, also remove references in alert/news handlers. -->
+            <section class="category-movers-section desktop-only" id="secretLairDashSection" style="display:none;">
+                <div id="secretLairDashGrid"></div>
             </section>
 
             <!-- Spoiler Reprints — Buy the Dip (shown FIRST per user preference) -->
@@ -2788,7 +2796,7 @@
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
-    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.04.24.1949</div>
+    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.04.24.2025</div>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -5598,77 +5606,117 @@
 
         // ====== SPOILER REPRINTS — BUY THE DIP ======
         async function loadSpoilerReprints(spoilerResults) {
-            if (!spoilerResults || !spoilerResults.length) return;
+            // NOTE: We no longer rely on spoilerResults for set selection. This section now
+            // shows the 5 most recent paper expansion sets (rolling window), so it auto-updates
+            // as new sets release: newest pushes in, oldest falls off. The spoilerResults param
+            // is kept only for back-compat with the call chain.
             const section = document.getElementById('spoilerReprintsSection');
             const grid = document.getElementById('spoilerReprintsGrid');
             if (!section || !grid) return;
 
-            // Only show sets that have reprints
-            const setsWithReprints = spoilerResults.filter(r => r.reprintCount > 0 && r.currentCount > 0);
-            if (!setsWithReprints.length) { section.style.display = 'none'; return; }
-
             section.style.display = 'block';
-            grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);"></div>';
 
-            // Build family lookup so we can find commander sub-sets
-            let familyLookup = {};
-            try {
-                if (!allScryfallSets || !allScryfallSets.length) {
+            // Make sure we have the sets list
+            if (!allScryfallSets || !allScryfallSets.length) {
+                try {
                     const d = await API.sets();
                     allScryfallSets = d.data || [];
-                }
-                // Map parent code -> all child codes (including parent itself)
-                allScryfallSets.forEach(s => {
-                    if (s.digital) return;
-                    const parentCode = s.parent_set_code || s.code;
-                    if (!familyLookup[parentCode]) familyLookup[parentCode] = [];
-                    if (!familyLookup[parentCode].includes(s.code)) familyLookup[parentCode].push(s.code);
-                });
-            } catch(e) {}
+                } catch(e) {}
+            }
 
-            let html = '';
-            // Parallelize the fetches — our API queue naturally spaces them by 150ms (minDelay)
-            // so this is safe from rate limits, but cuts wall-clock time roughly in half vs sequential.
-            // Order is preserved by using Promise.all with an index.
-            const targetSets = setsWithReprints.slice(0, 6);
-            const fetchPromises = targetSets.map(async (r) => {
+            // Build family lookup so we can find commander sub-sets attached to each main set
+            let familyLookup = {};
+            allScryfallSets.forEach(s => {
+                if (s.digital) return;
+                const parentCode = s.parent_set_code || s.code;
+                if (!familyLookup[parentCode]) familyLookup[parentCode] = [];
+                if (!familyLookup[parentCode].includes(s.code)) familyLookup[parentCode].push(s.code);
+            });
+
+            // ROLLING WINDOW: pick the 5 most recent paper expansion sets that have already released.
+            // 'expansion', 'core', 'masters', 'draft_innovation' = main paper releases.
+            // Excluding 'commander' here because Commander pre-cons aren't really "the latest set" —
+            // they piggyback on main releases (and we already include their cards via family lookup).
+            // !s.parent_set_code = parent sets only (not commander sub-sets, not promo sub-sets).
+            const today = new Date().toISOString().split('T')[0];
+            const validTypes = ['expansion', 'core', 'masters', 'draft_innovation'];
+            const latestSets = allScryfallSets
+                .filter(s => !s.digital && validTypes.includes(s.set_type) && s.released_at && s.released_at <= today && !s.parent_set_code)
+                .sort((a, b) => b.released_at.localeCompare(a.released_at))
+                .slice(0, 5);
+
+            if (!latestSets.length) {
+                stopManaLoader('spoilerReprintsGrid');
+                grid.innerHTML = '<p style="color:var(--text-muted);padding:1rem;">No recent sets available.</p>';
+                section.style.display = 'none';
+                return;
+            }
+
+            // Parallelize fetches for all 5 sets — queue enforces 150ms spacing for rate-limit safety
+            const fetchPromises = latestSets.map(async (s) => {
                 try {
-                    const familyCodes = familyLookup[r.code] || [r.code];
+                    const familyCodes = familyLookup[s.code] || [s.code];
                     const setQuery = familyCodes.length > 1
                         ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
-                        : 's:' + r.code;
+                        : 's:' + s.code;
                     const fullQuery = encodeURIComponent(setQuery + ' is:reprint usd>0');
                     const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
-                    return { r, familyCodes, d };
+                    return { s, familyCodes, d };
                 } catch(e) {
-                    if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', r.code, e);
-                    return { r, familyCodes: familyLookup[r.code] || [r.code], d: null };
+                    if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', s.code, e);
+                    return { s, familyCodes: familyLookup[s.code] || [s.code], d: null };
                 }
             });
             const fetched = await Promise.all(fetchPromises);
 
-            for (const { r, familyCodes, d } of fetched) {
-                if (!d || !d.data?.length) continue;
-                // Filter out basic lands — they're "reprints" in every set but not meaningful for tracking
-                const BASIC_LAND_NAMES = new Set(['Plains','Island','Swamp','Mountain','Forest','Wastes']);
+            const BASIC_LAND_NAMES = new Set(['Plains','Island','Swamp','Mountain','Forest','Wastes']);
+            let html = '';
+
+            for (const { s, familyCodes, d } of fetched) {
+                const cmdCount = familyCodes.length > 1 ? familyCodes.length - 1 : 0;
+                const familyNote = cmdCount > 0 ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
+                // Days-since-release label for context (e.g. "Just Released" / "12 days ago")
+                const daysSince = Math.floor((new Date() - new Date(s.released_at)) / 86400000);
+                const releaseLabel = daysSince <= 7 ? 'Just Released' : daysSince + ' days ago';
+
+                // If the fetch failed or returned nothing usable, render a placeholder card so
+                // we still show 5 boxes consistently — better than visibly missing slots
+                if (!d || !d.data?.length) {
+                    html += `<div class="category-mover-card" style="display:block;border-color:rgba(255,255,255,0.05);opacity:0.6;">
+                        <div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set">
+                            <span>💰</span> ${s.name}${familyNote}
+                            <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--text-muted);">${releaseLabel}</span>
+                            <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                        </div>
+                        <div class="category-mover-content"><div style="padding:1rem;color:var(--text-muted);font-size:0.8rem;text-align:center;">No priced reprints found yet</div></div>
+                    </div>`;
+                    continue;
+                }
+
+                // Filter out basic lands; dedupe by name keeping highest-price printing
                 const filtered = d.data.filter(c => !BASIC_LAND_NAMES.has(c.name) && c.type_line && !c.type_line.includes('Basic Land'));
-                // Deduplicate by name using getPrice() — which considers usd, usd_foil, usd_etched, eur.
-                // Using raw prices.usd was buggy: foil-only printings (no non-foil USD) got treated as $0
-                // and sorted to the bottom even though their real foil price was $125+.
                 const seen = {};
                 filtered.forEach(c => {
                     const p = getPrice(c).num;
                     const existing = seen[c.name] ? getPrice(seen[c.name]).num : -1;
                     if (p > existing) seen[c.name] = c;
                 });
-                // Sort descending by REAL price (via getPrice, not raw prices.usd)
                 const deduped = Object.values(seen).sort((a,b) => getPrice(b).num - getPrice(a).num);
                 const reprints = deduped.slice(0, 8);
-                if (!reprints.length) continue;
+
+                if (!reprints.length) {
+                    html += `<div class="category-mover-card" style="display:block;border-color:rgba(255,255,255,0.05);opacity:0.6;">
+                        <div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set">
+                            <span>💰</span> ${s.name}${familyNote}
+                            <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--text-muted);">${releaseLabel}</span>
+                            <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
+                        </div>
+                        <div class="category-mover-content"><div style="padding:1rem;color:var(--text-muted);font-size:0.8rem;text-align:center;">No priced reprints found yet</div></div>
+                    </div>`;
+                    continue;
+                }
+
                 reprints.forEach(c => APICache.set('/cards/' + c.id, c));
-                const daysLabel = r.isFuture ? Math.ceil((new Date(r.released) - new Date()) / 86400000) + 'd until release' : 'Just Released';
-                const cmdCount = familyCodes.length > 1 ? familyCodes.length - 1 : 0;
-                const familyNote = cmdCount > 0 ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
                 const cardRows = reprints.map(c => {
                     const pr = getPrice(c);
                     return `<div class="category-mover-item" onclick="openCardDetail('${c.id}')" style="cursor:pointer;">
@@ -5677,43 +5725,40 @@
                     </div>`;
                 }).join('');
                 const totalReprints = d.total_cards || reprints.length;
+
                 html += `<div class="category-mover-card" style="display:block;border-color:rgba(0,255,136,0.2);">
-                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${r.code}');" title="View full set">
-                        <span>💰</span> ${r.name}${familyNote}
-                        <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${daysLabel}</span>
+                    <div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set">
+                        <span>💰</span> ${s.name}${familyNote}
+                        <span style="margin-left:0.5rem;font-size:0.65rem;padding:0.15rem 0.4rem;border-radius:4px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${releaseLabel}</span>
                         <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span>
                     </div>
                     <div style="padding:0.3rem 0.75rem 0;font-size:0.7rem;color:var(--accent-green);">🔄 ${totalReprints} reprints confirmed across all products</div>
                     <div class="category-mover-content">${cardRows}</div>
-                    ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${r.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
+                    ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${s.code}')"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
                 </div>`;
             }
 
             // Done — stop the themed loader and render the real content
             stopManaLoader('spoilerReprintsGrid');
-            grid.innerHTML = html || '<p style="color:var(--text-muted);padding:1rem;">No reprints found in spoiled sets yet.</p>';
+            grid.innerHTML = html;
 
-            // Mobile: populate mobile spoiler reprints grid
+            // Mobile: populate mobile spoiler reprints grid (top 4 sets, 3 cards each)
             const mobileSection = document.getElementById('mobileSpoilerReprintsSection');
             const mobileGrid = document.getElementById('mobileSpoilerReprintsGrid');
-            if (mobileSection && mobileGrid && html) {
+            if (mobileSection && mobileGrid) {
                 mobileSection.style.display = 'block';
                 let mobileHtml = '';
-                for (const r of setsWithReprints.slice(0, 4)) {
-                    const fCodes = familyLookup[r.code] || [r.code];
-                    const sQ = fCodes.length > 1 ? '(' + fCodes.map(c => 's:' + c).join(' or ') + ')' : 's:' + r.code;
-                    try {
-                        const cached = APICache.get('/cards/search?q=' + encodeURIComponent(sQ + ' is:reprint usd>0') + '&order=usd&dir=desc&unique=cards');
-                        if (cached && cached.data) {
-                            const top3 = cached.data.slice(0, 3);
-                            mobileHtml += `<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border-left:3px solid var(--accent-green);">
-                                <div style="font-weight:600;font-size:0.8rem;margin-bottom:0.3rem;" onclick="switchPage('browse');openSetView('${r.code}');">${r.name} <span style="font-size:0.65rem;color:var(--accent-green);">🔄 ${cached.total_cards||top3.length}</span></div>
-                                ${top3.map(c => {const pr=getPrice(c);return `<div onclick="openCardDetail('${c.id}')" style="display:flex;justify-content:space-between;font-size:0.75rem;padding:0.15rem 0;cursor:pointer;"><span style="color:var(--text-secondary);">${c.name}</span><span style="color:var(--accent-gold);">${pr.val}</span></div>`;}).join('')}
-                            </div>`;
-                        }
-                    } catch(e) {}
+                for (const { s, familyCodes, d } of fetched.slice(0, 4)) {
+                    if (!d || !d.data?.length) continue;
+                    const filtered = d.data.filter(c => !BASIC_LAND_NAMES.has(c.name) && c.type_line && !c.type_line.includes('Basic Land'));
+                    const top3 = filtered.slice(0, 3);
+                    if (!top3.length) continue;
+                    mobileHtml += `<div style="padding:0.5rem;background:var(--bg-tertiary);border-radius:var(--radius-sm);border-left:3px solid var(--accent-green);">
+                        <div style="font-weight:600;font-size:0.8rem;margin-bottom:0.3rem;" onclick="switchPage('browse');openSetView('${s.code}');">${s.name} <span style="font-size:0.65rem;color:var(--accent-green);">🔄 ${d.total_cards||top3.length}</span></div>
+                        ${top3.map(c => {const pr=getPrice(c);return `<div onclick="openCardDetail('${c.id}')" style="display:flex;justify-content:space-between;font-size:0.75rem;padding:0.15rem 0;cursor:pointer;"><span style="color:var(--text-secondary);">${c.name}</span><span style="color:var(--accent-gold);">${pr.val}</span></div>`;}).join('')}
+                    </div>`;
                 }
-                mobileGrid.innerHTML = mobileHtml || '<p style="color:var(--text-muted);font-size:0.75rem;">Loading...</p>';
+                mobileGrid.innerHTML = mobileHtml || '<p style="color:var(--text-muted);font-size:0.75rem;">No reprints yet.</p>';
             }
         }
 
@@ -6076,21 +6121,26 @@
                 try { const d = await API.sets(); State.sets = d.data; } catch(e) { return; }
             }
             const today = new Date().toISOString().split('T')[0];
+            // Show ALL upcoming paper sets (typically 6-12 announced at any given time).
+            // Filter exclusions:
+            //   - s.digital: Arena-only sets like "Through the Omenpaths" (no paper, no prices)
+            //   - set_type: only meaningful release types for a price tracker
+            //     (excludes 'token', 'memorabilia', 'promo', 'arsenal', etc. which clutter the list)
+            const validTypes = ['expansion', 'core', 'masters', 'draft_innovation', 'commander'];
             const upcoming = State.sets
-                .filter(s => s.released_at > today && ['expansion', 'core', 'masters', 'draft_innovation'].includes(s.set_type))
-                .sort((a, b) => a.released_at.localeCompare(b.released_at))
-                .slice(0, 4);
+                .filter(s => s.released_at > today && validTypes.includes(s.set_type) && !s.digital)
+                .sort((a, b) => a.released_at.localeCompare(b.released_at));
             State.upcomingReleases = upcoming.map(s => {
                 const releaseDate = new Date(s.released_at);
                 const daysAway = Math.ceil((releaseDate - new Date()) / (1000 * 60 * 60 * 24));
                 return { ...s, daysAway, icon: s.icon_svg_uri };
             });
-            // Render compact banner
+            // Render compact banner — show top 6 in the chip strip to avoid wrapping into many rows
             const banner = document.getElementById('releasesBanner');
             const bannerContent = document.getElementById('releasesBannerContent');
             if (banner && bannerContent && upcoming.length) {
                 banner.style.display = 'block';
-                bannerContent.innerHTML = upcoming.map(s => {
+                bannerContent.innerHTML = upcoming.slice(0, 6).map(s => {
                     const days = Math.ceil((new Date(s.released_at) - new Date()) / (1000 * 60 * 60 * 24));
                     const isTracked = State.trackedSets.includes(s.code);
                     return '<div class="release-chip" onclick="toggleTrackSet(\''+s.code+'\')" style="cursor:pointer;" title="'+(isTracked?'Untrack':'Track')+' '+s.name+'"><img src="'+s.icon_svg_uri+'" alt=""><span>'+s.name+'</span><span style="color:var(--text-muted);">•</span><span class="days">'+days+'d</span>'+(isTracked?'<span style="color:var(--accent-green);">✓</span>':'')+'</div>';
@@ -6114,7 +6164,8 @@
             }
             // Render mobile releases
             renderMobileReleases(State.upcomingReleases);
-            // Render Secret Lair section
+            // Render the new big Upcoming Releases section + slim Secret Lair indicator
+            renderUpcomingReleasesSection();
             renderSecretLairSection();
             return State.upcomingReleases;
         }
@@ -6476,7 +6527,80 @@
             renderSecretLairSection();
         }
 
+        // ====== UPCOMING SET RELEASES — prominent boxed section ======
+        // Shows ALL upcoming paper sets. Auto-fetched from Scryfall via loadUpcomingReleases(),
+        // so the list updates automatically as Wizards announces new sets and Scryfall picks them up.
+        function renderUpcomingReleasesSection() {
+            const section = document.getElementById('upcomingReleasesSection');
+            const grid = document.getElementById('upcomingReleasesGrid');
+            if (!section || !grid) return;
+            const upcoming = State.upcomingReleases || [];
+            if (!upcoming.length) { section.style.display = 'none'; return; }
+            section.style.display = 'block';
+
+            // Color code by how soon: <30d gold (imminent), <90d green, else neutral
+            grid.innerHTML = upcoming.map(s => {
+                const days = s.daysAway;
+                const isTracked = State.trackedSets.includes(s.code);
+                const releaseDate = new Date(s.released_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                const accent = days < 30 ? 'var(--accent-gold)' : days < 90 ? 'var(--accent-green)' : 'var(--accent-primary)';
+                const accentBg = days < 30 ? 'rgba(255,215,0,0.08)' : days < 90 ? 'rgba(0,255,136,0.06)' : 'rgba(157,78,221,0.06)';
+                const setTypeLabel = (s.set_type || '').replace(/_/g,' ');
+                return `<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:0.85rem 1rem;border-left:3px solid ${accent};border:1px solid rgba(255,255,255,0.04);">
+                    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;cursor:pointer;" onclick="switchPage('browse');openSetView('${s.code}');">
+                        ${s.icon_svg_uri ? `<img src="${s.icon_svg_uri}" style="width:24px;height:24px;filter:brightness(0) invert(1);" alt="">` : ''}
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-family:var(--font-display);font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted);text-transform:capitalize;">${setTypeLabel}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.6rem;background:${accentBg};border-radius:var(--radius-sm);margin-bottom:0.5rem;">
+                        <div>
+                            <div style="font-family:var(--font-mono);font-weight:700;color:${accent};font-size:1.1rem;line-height:1;">${days}d</div>
+                            <div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.15rem;">until release</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:0.75rem;color:var(--text-secondary);font-family:var(--font-mono);">${releaseDate}</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation();toggleTrackSet('${s.code}');" style="width:100%;font-size:0.72rem;padding:0.35rem;${isTracked ? 'background:var(--accent-green);color:#000;' : ''}">
+                        ${isTracked ? '✓ Tracking' : '+ Track Set'}
+                    </button>
+                </div>`;
+            }).join('');
+        }
+
         function renderSecretLairSection() {
+            // === Slim indicator: just "Next: X in Yd · Latest: Z" — replaces the big box layout ===
+            const slim = document.getElementById('secretLairSlim');
+            const slimContent = document.getElementById('secretLairSlimContent');
+            if (slim && slimContent) {
+                const today = new Date();
+                const annotated = KNOWN_SECRET_LAIR_DROPS.map(drop => {
+                    const releaseDate = new Date(drop.date);
+                    const daysAway = Math.ceil((releaseDate - today) / (1000 * 60 * 60 * 24));
+                    return { ...drop, releaseDate, daysAway };
+                }).sort((a, b) => a.releaseDate - b.releaseDate);
+                const nextDrop = annotated.find(d => d.daysAway > 0);
+                const recentDrops = annotated.filter(d => d.daysAway <= 0);
+                const lastDrop = recentDrops.length ? recentDrops[recentDrops.length - 1] : null;
+                let parts = [];
+                if (nextDrop) {
+                    parts.push(`<span><span style="color:var(--accent-gold);">Next:</span> <strong>${nextDrop.name}</strong> <span style="color:var(--text-muted);font-family:var(--font-mono);">${nextDrop.daysAway}d</span></span>`);
+                }
+                if (lastDrop) {
+                    const daysAgo = Math.abs(lastDrop.daysAway);
+                    parts.push(`<span><span style="color:var(--accent-green);">Latest:</span> <strong>${lastDrop.name}</strong> <span style="color:var(--text-muted);font-family:var(--font-mono);">${daysAgo}d ago</span></span>`);
+                }
+                if (parts.length) {
+                    slimContent.innerHTML = parts.join('<span style="color:var(--text-muted);opacity:0.5;">·</span>');
+                    slim.style.display = 'flex';
+                } else {
+                    slim.style.display = 'none';
+                }
+            }
+
+            // === Original mobile rendering kept below — mobile dashboard still uses the compact card list ===
             const mobileGrid = document.getElementById('mobileSecretLairGrid');
             const desktopGrid = document.getElementById('secretLairDashGrid');
             const desktopSection = document.getElementById('secretLairDashSection');
@@ -6580,7 +6704,11 @@
                 }
 
                 desktopGrid.innerHTML = desktopHtml;
-                desktopSection.style.display = 'block';
+                // NOTE: The big desktop Secret Lair boxes are no longer shown — replaced by the
+                // slim #secretLairSlim indicator at the top of this function. We still populate
+                // desktopGrid above so any code that reads from it (alerts, etc.) still works,
+                // but we don't reveal the section.
+                // desktopSection.style.display = 'block';  // intentionally disabled
             }
         }
 
@@ -8526,7 +8654,7 @@
             // Log build version to console so it's visible even if the badge is hidden.
             // If the version in the console doesn't match the file you last uploaded to GitHub,
             // the site is serving a stale build (deployment hasn't finished or wrong file).
-            const APP_VERSION = 'v2026.04.24.1949';
+            const APP_VERSION = 'v2026.04.24.2025';
             console.log('%c MTG Oracle ' + APP_VERSION + ' ', 'background:#9d4edd;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px;');
 
             // Make the corner badge copy its version to clipboard on click
