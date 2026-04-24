@@ -5637,17 +5637,22 @@
             // === PARALLEL: fire family-union queries for all 10 candidates at once ===
             const reprintResults = await Promise.all(candidateSets.map(async (set) => {
                 const familyCodes = familyLookup[set.code] || [set.code];
+                const setQuery = familyCodes.length > 1
+                    ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
+                    : 's:' + set.code;
+                const fullQuery = encodeURIComponent(setQuery + ' is:reprint');
+                // PATCHED: try usd-sorted first (best UX when priced); fall back to name-sort if Scryfall 404s on unpriced sets
                 try {
-                    const setQuery = familyCodes.length > 1
-                        ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
-                        : 's:' + set.code;
-                    // PATCHED: drop strict usd>0 filter — let unpriced reprints through too
-                    const fullQuery = encodeURIComponent(setQuery + ' is:reprint');
                     const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
                     return { set, familyCodes, data: d };
-                } catch(e) {
-                    if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', set.code, e);
-                    return { set, familyCodes, data: null };
+                } catch(e1) {
+                    try {
+                        const d2 = await API.req('/cards/search?q=' + fullQuery + '&order=name&dir=asc&unique=cards', { cacheTTL: 600000 });
+                        return { set, familyCodes, data: d2 };
+                    } catch(e2) {
+                        if (e2.message !== 'Cancelled') console.warn('Spoiler reprints failed for', set.code, e2.message);
+                        return { set, familyCodes, data: null };
+                    }
                 }
             }));
 
@@ -7058,6 +7063,28 @@
             return `${otherStr} (${usdPart} or ${foilPart})`.trim();
         }
 
+        // PATCHED: "View All" helper — sends user to Browse with a Scryfall query prefilled
+        function openBrowseWithQuery(query, label) {
+            switchPage('browse');
+            // Close any set-view that's currently open
+            const setView = document.getElementById('setCardsView');
+            if (setView && setView.style.display === 'block') {
+                if (typeof closeSetView === 'function') closeSetView();
+            }
+            // Use a small timeout to let switchPage finish rendering browse DOM
+            setTimeout(() => {
+                const input = document.getElementById('browseCardSearch');
+                if (input) {
+                    input.value = query;
+                    const clearBtn = document.getElementById('browseClearBtn');
+                    if (clearBtn) clearBtn.classList.add('visible');
+                    if (typeof performAdvancedSearch === 'function') performAdvancedSearch();
+                }
+                // Scroll to top of browse
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
+        }
+
         const categorySections = {
             // === ALWAYS-ON: Show every visit ===
             priceTiers: { title: '🔥 Budget Picks by Price', subtitle: 'Hot cards at every price point', alwaysOn: true, cats: {
@@ -7277,9 +7304,12 @@
             if (!container) return;
             container.innerHTML = sectionKeys.map(secKey => {
                 const sec = categorySections[secKey];
-                const cardsHtml = Object.entries(sec.cats).map(([catKey, cat]) =>
-                    `<div class="category-mover-card" id="${catKey}Card" style="display:none;"><div class="category-mover-header" onclick="openCategoryFullView('${catKey}', '${cat.e} ${cat.l}')" title="View all cards"><span>${cat.e}</span> ${cat.l} <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span></div><div class="category-mover-content" id="${catKey}Content"></div></div>`
-                ).join('');
+                const cardsHtml = Object.entries(sec.cats).map(([catKey, cat]) => {
+                    // PATCHED: safely escape query for inline onclick (handles quotes, etc.)
+                    const safeQuery = JSON.stringify(cat.q);
+                    const safeLabel = JSON.stringify(cat.e + ' ' + cat.l);
+                    return `<div class="category-mover-card" id="${catKey}Card" style="display:none;"><div class="category-mover-header" onclick='openBrowseWithQuery(${safeQuery.replace(/'/g, "&apos;")}, ${safeLabel.replace(/'/g, "&apos;")})' title="View all cards"><span>${cat.e}</span> ${cat.l} <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span></div><div class="category-mover-content" id="${catKey}Content"></div></div>`;
+                }).join('');
                 return `<section class="category-movers-section" data-section="${secKey}">
                     <div class="section-header"><h2 class="section-title">${sec.title}</h2>${sec.subtitle ? `<p style="color:var(--text-secondary);font-size:0.85rem;">${sec.subtitle}</p>` : ''}</div>
                     <div class="category-movers-grid">${cardsHtml}</div>
@@ -7316,7 +7346,7 @@
 
                 // Generate card shells
                 grid.innerHTML = recent.map(s =>
-                    `<div class="category-mover-card" id="recentSet_${s.code}Card" style="display:none;"><div class="category-mover-header" onclick="openCategoryFullView('recentSet_${s.code}', '📦 ${s.name}')" title="View all cards"><span>📦</span> ${s.name} <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span></div><div class="category-mover-content" id="recentSet_${s.code}"></div></div>`
+                    `<div class="category-mover-card" id="recentSet_${s.code}Card" style="display:none;"><div class="category-mover-header" onclick="switchPage('browse');openSetView('${s.code}');" title="View full set"><span>📦</span> ${s.name} <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">View All →</span></div><div class="category-mover-content" id="recentSet_${s.code}"></div></div>`
                 ).join('');
 
                 // Load top cards for each set (3 at a time to be gentle on API)
