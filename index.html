@@ -1139,7 +1139,7 @@
 
     <nav class="navbar">
         <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.04.24.2059</span></div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.04.24.2114</span></div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -1563,7 +1563,7 @@
                     </div>
                 </div>
                 <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;">New cards and reprints spoiled for upcoming sets — auto-checks Scryfall each visit</p>
-                <div id="spoilerDashGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.75rem;"></div>
+                <div id="spoilerDashGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;"></div>
             </section>
 
             <!-- Reprints from Latest Sets - Dashboard Preview (compact category format) -->
@@ -2792,7 +2792,7 @@
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
-    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.04.24.2059</div>
+    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.04.24.2114</div>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -5375,13 +5375,15 @@
                     const setQuery = familyCodes.length > 1
                         ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
                         : 's:' + set.code;
-                    // Fire the 2-3 independent fetches for THIS set in parallel
+                    // Fire the 2-3 independent fetches for THIS set in parallel.
+                    // priority:true so they wait out rate-limit cooldowns instead of being dropped —
+                    // these populate above-the-fold content and shouldn't disappear when Scryfall throttles.
                     const [reprintData, topData, spoiledData] = await Promise.all([
-                        API.req('/cards/search?q=' + encodeURIComponent(setQuery + ' is:reprint') + '&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 }).catch(() => null),
-                        API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '+usd%3E0&order=usd&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 }).catch(() => null),
+                        API.req('/cards/search?q=' + encodeURIComponent(setQuery + ' is:reprint') + '&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000, priority: true }).catch(() => null),
+                        API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '+usd%3E0&order=usd&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000, priority: true }).catch(() => null),
                         // Only fetch newest spoiled cards if the count grew (matches original behavior)
                         (currentCount > prev.count)
-                            ? API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '&order=released&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000 }).catch(() => null)
+                            ? API.req('/cards/search?q=s%3A' + encodeURIComponent(set.code) + '&order=released&dir=desc&page=1&unique=cards', { cacheTTL: manual ? 0 : 600000, priority: true }).catch(() => null)
                             : Promise.resolve(null)
                     ]);
 
@@ -5642,7 +5644,7 @@
                         ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
                         : 's:' + s.code;
                     const fullQuery = encodeURIComponent(setQuery + ' is:reprint usd>0');
-                    const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000 });
+                    const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000, priority: true });
                     return { s, familyCodes, d };
                 } catch(e) {
                     if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', s.code, e);
@@ -6498,6 +6500,19 @@
             { id: 'sl-secret-scare', name: 'Secret Scare Superdrop', date: '2026-10-13', price: 'TBD', theme: 'Iron Maiden', status: 'upcoming', url: 'https://secretlair.wizards.com' }
         ];
 
+        // ====== ANNOUNCED-BUT-NOT-YET-INDEXED SETS ======
+        // Wizards announces these sets at MagicCon panels with firm dates, but Scryfall doesn't
+        // index them until they have a set code + product metadata (often months later).
+        // To avoid showing only 1-2 upcoming sets when there are clearly more announced, we keep
+        // this curated list. Entries automatically drop out once Scryfall picks them up
+        // (matched by name) — see renderUpcomingReleasesSection for the dedup logic.
+        // UPDATE THIS when WotC announces new sets at MagicCon panels.
+        const ANNOUNCED_PENDING_SETS = [
+            { name: 'The Hobbit', released_at: '2026-08-14', set_type: 'expansion', source: 'WotC announced (MagicCon Atlanta 2025)' },
+            { name: 'Reality Fracture', released_at: '2026-10-02', set_type: 'expansion', source: 'WotC announced (MagicCon Atlanta 2025)' },
+            { name: 'Star Trek', released_at: '2026-11-13', set_type: 'expansion', source: 'WotC announced (MagicCon Atlanta 2025)' }
+        ];
+
         function getSecretLairAlerts() {
             return JSON.parse(localStorage.getItem('secretLairAlerts') || '[]');
         }
@@ -6523,30 +6538,70 @@
         }
 
         // ====== UPCOMING SET RELEASES — prominent boxed section ======
-        // Shows ALL upcoming paper sets. Auto-fetched from Scryfall via loadUpcomingReleases(),
-        // so the list updates automatically as Wizards announces new sets and Scryfall picks them up.
+        // Two data sources:
+        //   1. Scryfall /sets endpoint (auto-fluid, the primary source)
+        //   2. ANNOUNCED_PENDING_SETS — manually curated for sets WotC has announced but
+        //      Scryfall hasn't indexed yet (no set code, no metadata). When Scryfall picks
+        //      one up (matched by name), the manual entry is automatically suppressed.
         function renderUpcomingReleasesSection() {
             const section = document.getElementById('upcomingReleasesSection');
             const grid = document.getElementById('upcomingReleasesGrid');
             if (!section || !grid) return;
-            const upcoming = State.upcomingReleases || [];
-            if (!upcoming.length) { section.style.display = 'none'; return; }
+
+            const scryfallSets = State.upcomingReleases || [];
+            // Build a name set (lowercased, fuzzy) of what Scryfall already has, so we don't
+            // double-list manually-curated entries that Scryfall has since indexed.
+            const scryfallNames = new Set(scryfallSets.map(s => (s.name || '').toLowerCase().trim()));
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            // Annotate the manual list, filter out anything Scryfall already covers OR that's
+            // already past its release date (auto-removal — same fluidity as the Scryfall list)
+            const pendingSets = ANNOUNCED_PENDING_SETS
+                .filter(p => p.released_at > todayStr)
+                .filter(p => !scryfallNames.has((p.name || '').toLowerCase().trim()))
+                .map(p => {
+                    const releaseDate = new Date(p.released_at);
+                    const daysAway = Math.ceil((releaseDate - today) / (1000 * 60 * 60 * 24));
+                    return { ...p, daysAway, isPending: true };
+                });
+
+            // Merge and sort by release date
+            const allUpcoming = [...scryfallSets, ...pendingSets].sort((a, b) => a.released_at.localeCompare(b.released_at));
+
+            if (!allUpcoming.length) { section.style.display = 'none'; return; }
             section.style.display = 'block';
 
             // Color code by how soon: <30d gold (imminent), <90d green, else neutral
-            grid.innerHTML = upcoming.map(s => {
+            // Pending entries (no Scryfall data) get a dimmer dashed border to signal "TBD"
+            grid.innerHTML = allUpcoming.map(s => {
                 const days = s.daysAway;
-                const isTracked = State.trackedSets.includes(s.code);
+                const isPending = !!s.isPending;
+                const isTracked = !isPending && State.trackedSets.includes(s.code);
                 const releaseDate = new Date(s.released_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
                 const accent = days < 30 ? 'var(--accent-gold)' : days < 90 ? 'var(--accent-green)' : 'var(--accent-primary)';
                 const accentBg = days < 30 ? 'rgba(255,215,0,0.08)' : days < 90 ? 'rgba(0,255,136,0.06)' : 'rgba(157,78,221,0.06)';
                 const setTypeLabel = (s.set_type || '').replace(/_/g,' ');
-                return `<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:0.85rem 1rem;border-left:3px solid ${accent};border:1px solid rgba(255,255,255,0.04);">
-                    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;cursor:pointer;" onclick="switchPage('browse');openSetView('${s.code}');">
-                        ${s.icon_svg_uri ? `<img src="${s.icon_svg_uri}" style="width:24px;height:24px;filter:brightness(0) invert(1);" alt="">` : ''}
+                const cardStyle = isPending
+                    ? `background:var(--bg-card);border-radius:var(--radius-md);padding:0.85rem 1rem;border-left:3px dashed ${accent};border:1px dashed rgba(255,255,255,0.08);opacity:0.85;`
+                    : `background:var(--bg-card);border-radius:var(--radius-md);padding:0.85rem 1rem;border-left:3px solid ${accent};border:1px solid rgba(255,255,255,0.04);`;
+                const headerClick = isPending ? '' : `cursor:pointer;`;
+                const headerOnclick = isPending ? '' : `onclick="switchPage('browse');openSetView('${s.code}');"`;
+                const iconHtml = !isPending && s.icon_svg_uri
+                    ? `<img src="${s.icon_svg_uri}" style="width:24px;height:24px;filter:brightness(0) invert(1);" alt="">`
+                    : `<span style="font-size:1.2rem;color:${accent};">📅</span>`;
+                const trackButton = isPending
+                    ? `<div style="width:100%;font-size:0.65rem;padding:0.35rem;text-align:center;color:var(--text-muted);font-style:italic;border:1px dashed rgba(255,255,255,0.08);border-radius:var(--radius-sm);">Awaiting set code from Scryfall</div>`
+                    : `<button class="btn btn-secondary" onclick="event.stopPropagation();toggleTrackSet('${s.code}');" style="width:100%;font-size:0.72rem;padding:0.35rem;${isTracked ? 'background:var(--accent-green);color:#000;' : ''}">
+                        ${isTracked ? '✓ Tracking' : '+ Track Set'}
+                    </button>`;
+                const pendingBadge = isPending ? `<span style="font-size:0.55rem;padding:0.1rem 0.35rem;border-radius:3px;background:rgba(255,255,255,0.08);color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-left:0.4rem;">Announced</span>` : '';
+                return `<div style="${cardStyle}">
+                    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;${headerClick}" ${headerOnclick}>
+                        ${iconHtml}
                         <div style="flex:1;min-width:0;">
-                            <div style="font-family:var(--font-display);font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
-                            <div style="font-size:0.7rem;color:var(--text-muted);text-transform:capitalize;">${setTypeLabel}</div>
+                            <div style="font-family:var(--font-display);font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}${pendingBadge}</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted);text-transform:capitalize;">${setTypeLabel || 'set'}</div>
                         </div>
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.6rem;background:${accentBg};border-radius:var(--radius-sm);margin-bottom:0.5rem;">
@@ -6558,19 +6613,18 @@
                             <div style="font-size:0.75rem;color:var(--text-secondary);font-family:var(--font-mono);">${releaseDate}</div>
                         </div>
                     </div>
-                    <button class="btn btn-secondary" onclick="event.stopPropagation();toggleTrackSet('${s.code}');" style="width:100%;font-size:0.72rem;padding:0.35rem;${isTracked ? 'background:var(--accent-green);color:#000;' : ''}">
-                        ${isTracked ? '✓ Tracking' : '+ Track Set'}
-                    </button>
+                    ${trackButton}
                 </div>`;
             }).join('');
 
-            // Append a small note explaining the dataset's freshness limit
-            grid.insertAdjacentHTML('afterend', '<div id="upcomingReleasesHint" style="margin-top:0.6rem;font-size:0.7rem;color:var(--text-muted);text-align:center;font-style:italic;">Showing every paper set Scryfall has dated. Wizards may have announced additional 2026 sets without firm release dates yet.</div>');
-            // Remove any duplicate hint from a prior render
-            const allHints = grid.parentElement.querySelectorAll('#upcomingReleasesHint');
-            if (allHints.length > 1) {
-                for (let i = 0; i < allHints.length - 1; i++) allHints[i].remove();
-            }
+            // Remove any prior hint, then append a fresh one
+            const oldHint = grid.parentElement.querySelector('#upcomingReleasesHint');
+            if (oldHint) oldHint.remove();
+            const pendingCount = pendingSets.length;
+            const hintText = pendingCount > 0
+                ? `Solid borders = on Scryfall (auto-tracked). Dashed borders = WotC-announced, awaiting Scryfall set code.`
+                : `Auto-fetched from Scryfall — updates as new sets are announced and released.`;
+            grid.insertAdjacentHTML('afterend', `<div id="upcomingReleasesHint" style="margin-top:0.6rem;font-size:0.7rem;color:var(--text-muted);text-align:center;font-style:italic;">${hintText}</div>`);
         }
 
         function renderSecretLairSection() {
@@ -7195,7 +7249,11 @@
                 budgetDraw: { e:'🎴', l:'Draw < $5', q:'o:"draw" o:"card" usd<5 usd>0.25' },
                 budgetRemoval: { e:'💀', l:'Removal < $5', q:'(o:"destroy target" or o:"exile target") usd<5 usd>0.25' },
                 budgetWipes: { e:'💥', l:'Board Wipes < $10', q:'(o:"destroy all" or o:"exile all") usd<10 usd>0.50' },
-                budgetProtection: { e:'🛡️', l:'Protection < $5', q:'(o:"hexproof" or o:"indestructible") usd<5 usd>0.25' }
+                budgetProtection: { e:'🛡️', l:'Protection < $5', q:'(o:"hexproof" or o:"indestructible") usd<5 usd>0.25' },
+                budgetCounters: { e:'🚫', l:'Counterspells < $5', q:'o:"counter target" t:instant usd<5 usd>0.25' },
+                budgetTutors: { e:'🔍', l:'Tutors < $10', q:'o:"search your library" usd<10 usd>0.50' },
+                budgetGraveyard: { e:'⚰️', l:'Graveyard < $5', q:'(o:"return" o:"graveyard" or o:"from your graveyard") usd<5 usd>0.25' },
+                budgetTokens: { e:'🪙', l:'Token Makers < $5', q:'o:"create" o:"token" usd<5 usd>0.25' }
             }},
             formatBudget: { title: '🏆 Format Staples (Budget)', alwaysOn: true, cats: {
                 commanderBdg: { e:'⚔️', l:'Commander < $20', q:'f:commander is:staple usd<20 usd>0.50' }, modernBudget: { e:'🥇', l:'Modern < $20', q:'f:modern is:staple usd<20 usd>0.50' },
@@ -8657,7 +8715,7 @@
             // Log build version to console so it's visible even if the badge is hidden.
             // If the version in the console doesn't match the file you last uploaded to GitHub,
             // the site is serving a stale build (deployment hasn't finished or wrong file).
-            const APP_VERSION = 'v2026.04.24.2059';
+            const APP_VERSION = 'v2026.04.24.2114';
             console.log('%c MTG Oracle ' + APP_VERSION + ' ', 'background:#9d4edd;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px;');
 
             // Make the corner badge copy its version to clipboard on click
