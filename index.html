@@ -2673,6 +2673,12 @@
                 </div>
             </div>
             <div class="alerts-grid" id="alertsGrid"></div>
+
+            <!-- Cheapest-Printing Activity (silent audit log of when watchlist cards swapped to a cheaper printing) -->
+            <div class="section-header" style="margin-top:2rem;"><h2 class="section-title">💰 Cheapest Printing Activity</h2></div>
+            <div id="cheapestActivityLog" style="background:var(--bg-card);border-radius:var(--radius-md);padding:1rem;border:1px solid var(--bg-tertiary);">
+                <p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:1rem;">No activity yet — when a reprint drops that's cheaper than what we're tracking for one of your watchlist cards, it'll show up here.</p>
+            </div>
         </div>
 
         <!-- Settings -->
@@ -3292,7 +3298,7 @@
             }
         };
 
-        const State={watchlist:[],alerts:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,loadingMode:'balanced',bgEffect:'none'},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,listSelectMode:false,selectedListCards:new Set(),
+        const State={watchlist:[],alerts:[],alertHistory:[],settings:{theme:'arcane',currency:'usd',browserNotifs:false,loadingMode:'balanced',bgEffect:'none'},sets:[],currentSet:null,trendingData:null,categoryData:null,currentCategory:null,trackedSets:[],trackedCategories:[],upcomingReleases:[],lastRefresh:null,userLists:[],currentList:null,listSelectMode:false,selectedListCards:new Set(),
             portfolio:[],priceMovers:null,marketAnalytics:null,lastPriceRecord:{},staplesData:null,currentStaplesFormat:'commander',currentStaplesTier:0.5,priceHistory:{},flippedCards:{},
             async load(){
                 // Step 1: Load from localStorage
@@ -3322,6 +3328,7 @@
                 if(chosen){
                     this.watchlist=chosen.watchlist||[];
                     this.alerts=chosen.alerts||[];
+                    this.alertHistory=chosen.alertHistory||[];
                     this.trackedSets=chosen.trackedSets||[];
                     this.trackedCategories=chosen.trackedCategories||[];
                     this.portfolio=chosen.portfolio||[];
@@ -3346,7 +3353,7 @@
             _pendingSync:false,
             _lastSyncTime:0,
             save(){
-                const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
+                const d={watchlist:this.watchlist,alerts:this.alerts,alertHistory:this.alertHistory||[],trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
                 // ONLY save to localStorage (no Firebase)
                 localStorage.setItem('mtg_oracle_v4',JSON.stringify(d));
                 this._pendingSync=true;
@@ -3356,7 +3363,7 @@
             async manualSync(){
                 if(!currentUser||!db){showToast('Please sign in to sync','warning');return{success:false};}
                 try{
-                    const d={watchlist:this.watchlist,alerts:this.alerts,trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
+                    const d={watchlist:this.watchlist,alerts:this.alerts,alertHistory:this.alertHistory||[],trackedSets:this.trackedSets,trackedCategories:this.trackedCategories,portfolio:this.portfolio,lastRefresh:this.lastRefresh,lastPriceRecord:this.lastPriceRecord,lastSaved:Date.now(),settings:this.settings};
                     await db.collection('priceOracleUsers').doc(currentUser.uid).set(d,{merge:true});
                     this._pendingSync=false;
                     this._lastSyncTime=Date.now();
@@ -3854,6 +3861,58 @@
         document.addEventListener('click',e=>{if(browseSearchInput && browseSearchResults && !browseSearchInput.contains(e.target)&&!browseSearchResults.contains(e.target))browseSearchResults.classList.remove('active');});
         function selectBrowseSuggestion(name){browseSearchInput.value=name;browseSearchResults.classList.remove('active');if(browseClearBtn)browseClearBtn.classList.add('visible');performAdvancedSearch();}
 
+        // Build a watchlist entry seeded with cheapest-printing tracking fields.
+        // Used by all add-to-watchlist paths so behavior is consistent.
+        function buildWatchlistEntry(c, pr) {
+            return {
+                id: c.id,
+                originalId: c.id,
+                name: c.name,
+                set: c.set,
+                setName: c.set_name,
+                rarity: c.rarity,
+                image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small,
+                price: pr.num,
+                priceStr: pr.val,
+                addedAt: new Date().toISOString(),
+                trackMode: 'cheapest',
+                cheapestId: c.id,
+                cheapestSet: c.set,
+                cheapestSetName: c.set_name,
+                cheapestPrice: pr.num,
+                cheapestPriceType: pr.type,
+                cheapestImage: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small,
+                cheapestHistory: []
+            };
+        }
+
+        // Background: after a watchlist entry is added, look up the actual cheapest
+        // printing of the card and silently re-target if needed. Called fire-and-forget
+        // by the quickWatch* functions so the UI stays responsive.
+        function seedCheapestForEntry(originalId, cardName) {
+            getCheapestPrinting(cardName).then(cheapest => {
+                if (!cheapest) return;
+                const e = State.watchlist.find(w => w.originalId === originalId);
+                if (!e) return;
+                if (cheapest.id !== e.cheapestId) {
+                    e.cheapestId = cheapest.id;
+                    e.id = cheapest.id;
+                    e.cheapestSet = cheapest.set;
+                    e.cheapestSetName = cheapest.setName;
+                    e.cheapestPrice = cheapest.price;
+                    e.cheapestPriceType = cheapest.priceType;
+                    e.cheapestImage = cheapest.image;
+                    e.image = cheapest.image || e.image;
+                    e.set = cheapest.set;
+                    e.setName = cheapest.setName;
+                    e.price = cheapest.price;
+                    e.priceStr = '$' + cheapest.price.toFixed(2);
+                    State.save();
+                    if (typeof renderWatchlist === 'function') { try { renderWatchlist(); } catch(_) {} }
+                }
+            }).catch(()=>{});
+        }
+
         async function quickWatchByName(name){
             watchlistSearchResults.classList.remove('active');
             watchlistSearchInput.value='';
@@ -3863,8 +3922,9 @@
                 if(c && c.id){
                     if(!isInWatchlist(c.id)){
                         const pr=getPrice(c);
-                        State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});
-                        showToast('Added to watchlist!','success');
+                        State.watchlist.push(buildWatchlistEntry(c, pr));
+                        showToast('Added to watchlist (tracking cheapest printing)','success');
+                        seedCheapestForEntry(c.id, c.name);
                     }else{showToast('Already in watchlist','info');}
                     State.save();updateStats();renderWatchlist();
                 }
@@ -3875,8 +3935,9 @@
                         const c=d.data[0];
                         if(!isInWatchlist(c.id)){
                             const pr=getPrice(c);
-                            State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});
-                            showToast('Added to watchlist!','success');
+                            State.watchlist.push(buildWatchlistEntry(c, pr));
+                            showToast('Added to watchlist (tracking cheapest printing)','success');
+                            seedCheapestForEntry(c.id, c.name);
                         }else{showToast('Already in watchlist','info');}
                         State.save();updateStats();renderWatchlist();
                     }
@@ -3886,14 +3947,40 @@
 
         async function quickWatchFromWatchlistSearch(id){
             if(!isInWatchlist(id)){
-                try{const c=await API.card(id, true);const pr=getPrice(c);State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});showToast('Added to watchlist!','success');}catch(e){showToast('Failed','error');return;}
+                try{
+                    const c=await API.card(id, true);
+                    const pr=getPrice(c);
+                    State.watchlist.push(buildWatchlistEntry(c, pr));
+                    showToast('Added to watchlist (tracking cheapest printing)','success');
+                    seedCheapestForEntry(c.id, c.name);
+                }catch(e){showToast('Failed','error');return;}
             }else{showToast('Already in watchlist','info');}
             State.save();updateStats();renderWatchlist();
             watchlistSearchInput.value='';watchlistSearchResults.classList.remove('active');
         }
 
         // Quick actions
-        async function quickWatch(id){const idx=State.watchlist.findIndex(c=>c.id===id);if(idx>-1){State.watchlist.splice(idx,1);showToast('Removed','info');}else{try{const c=await API.card(id, true);const pr=getPrice(c);State.watchlist.push({id:c.id,name:c.name,set:c.set,setName:c.set_name,rarity:c.rarity,image:c.image_uris?.small||c.card_faces?.[0]?.image_uris?.small,price:pr.num,priceStr:pr.val,addedAt:new Date().toISOString()});showToast('Added to watchlist!','success');}catch(e){showToast('Failed','error');return;}}State.save();updateStats();handleSearch(searchInput.value);}
+        async function quickWatch(id){
+            const idx=State.watchlist.findIndex(c=>c.id===id || c.originalId===id);
+            if(idx>-1){
+                State.watchlist.splice(idx,1);
+                showToast('Removed','info');
+            } else {
+                try {
+                    const c=await API.card(id, true);
+                    const pr=getPrice(c);
+                    State.watchlist.push(buildWatchlistEntry(c, pr));
+                    showToast('Added to watchlist (tracking cheapest printing)','success');
+                    seedCheapestForEntry(c.id, c.name);
+                } catch(e) {
+                    showToast('Failed','error');
+                    return;
+                }
+            }
+            State.save();
+            updateStats();
+            handleSearch(searchInput.value);
+        }
         
         function openQuickAlert(id,name){document.getElementById('quickAlertCardId').value=id;document.getElementById('quickAlertCardName').textContent=name;document.getElementById('quickAlertType').value='price_above';document.getElementById('quickAlertThreshold').value='';openModal('quickAlertModal');}
         
@@ -4040,7 +4127,39 @@
         }
 
         // Watchlist
-        function renderWatchlist(){const c=document.getElementById('watchlistContent');if(!State.watchlist.length){c.innerHTML='<div class="watchlist-empty"><div class="watchlist-empty-icon">👁️</div><h3>No cards yet</h3><p>Search and click 👁 to add cards</p></div>';return;}c.innerHTML='<div class="watchlist-grid">'+State.watchlist.map(card=>`<div class="watchlist-card"><img src="${card.image}" class="watchlist-card-img" onclick="openCardDetail('${card.id}')"><div class="watchlist-card-info"><div class="watchlist-card-name">${card.name}</div><div class="watchlist-card-set">${card.setName} • ${card.rarity}</div><div class="watchlist-card-price">${card.priceStr||'N/A'}</div><div class="watchlist-card-actions"><button class="watchlist-action-btn alert" onclick="openQuickAlert('${card.id}','${card.name.replace(/'/g,"\\'")}')">🔔 Alert</button><button class="watchlist-action-btn remove" onclick="quickWatch('${card.id}');renderWatchlist();">✕ Remove</button></div></div></div>`).join('')+'</div>';}
+        function renderWatchlist(){
+            const c=document.getElementById('watchlistContent');
+            if(!State.watchlist.length){
+                c.innerHTML='<div class="watchlist-empty"><div class="watchlist-empty-icon">👁️</div><h3>No cards yet</h3><p>Search and click 👁 to add cards</p></div>';
+                return;
+            }
+            c.innerHTML='<div class="watchlist-grid">'+State.watchlist.map(card=>{
+                // Use cheapest tracking fields if present, otherwise fall back to legacy fields
+                const isCheapest = card.trackMode === 'cheapest';
+                const displayId = card.cheapestId || card.id;
+                const displayImg = card.cheapestImage || card.image;
+                const displaySetName = card.cheapestSetName || card.setName;
+                const displayPrice = card.cheapestPrice ? ('$' + parseFloat(card.cheapestPrice).toFixed(2) + (card.cheapestPriceType ? ' (' + card.cheapestPriceType + ')' : '')) : (card.priceStr || 'N/A');
+                // Show "switched N times" badge if there's a history of cheapest changes
+                const switchCount = (card.cheapestHistory && card.cheapestHistory.length) || 0;
+                const cheapestBadge = isCheapest
+                    ? `<div style="font-size:0.65rem;color:var(--accent-green);margin-top:0.15rem;">💰 Cheapest printing${switchCount > 0 ? ` <span style="color:var(--text-muted);" title="Tracked printing has changed ${switchCount} time(s)">• swapped ${switchCount}×</span>` : ''}</div>`
+                    : '';
+                return `<div class="watchlist-card">
+                    <img src="${displayImg}" class="watchlist-card-img" onclick="openCardDetail('${displayId}')">
+                    <div class="watchlist-card-info">
+                        <div class="watchlist-card-name">${card.name}</div>
+                        <div class="watchlist-card-set">${displaySetName} • ${card.rarity}</div>
+                        <div class="watchlist-card-price">${displayPrice}</div>
+                        ${cheapestBadge}
+                        <div class="watchlist-card-actions">
+                            <button class="watchlist-action-btn alert" onclick="openQuickAlert('${displayId}','${card.name.replace(/'/g,"\\'")}')">🔔 Alert</button>
+                            <button class="watchlist-action-btn remove" onclick="quickWatch('${card.originalId || card.id}');renderWatchlist();">✕ Remove</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('')+'</div>';
+        }
 
         // Watchlist Preview on Dashboard
         // Render lists preview on dashboard
@@ -5366,7 +5485,48 @@
                 if(a.timeframe)conditions.push(`<span class="alert-condition">${a.timeframe}d</span>`);
                 return`<div class="alert-card"><div class="alert-header"><div class="alert-title">${a.name}</div><label class="alert-toggle"><input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAlert('${a.id}')"><span class="alert-toggle-slider"></span></label></div><div class="alert-conditions">${conditions.join('')}</div><div><button class="alert-btn alert-btn-delete" onclick="deleteAlert('${a.id}')">Delete</button></div></div>`;
             }).join('')+`<div class="alert-card new-alert-card" onclick="openAlertModal()"><div class="new-alert-icon">➕</div><div class="new-alert-text">New Rule</div></div>`;
+            // Also refresh the cheapest-printing activity log
+            try { renderCheapestActivityLog(); } catch(e) {}
         }
+        function renderCheapestActivityLog() {
+            const el = document.getElementById('cheapestActivityLog');
+            if (!el) return;
+            const log = State.alertHistory || [];
+            const cheapestEvents = log.filter(e => e.type === 'cheapest_change').slice(0, 30);
+            if (!cheapestEvents.length) {
+                el.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:1rem;">No activity yet — when a reprint drops that\'s cheaper than what we\'re tracking for one of your watchlist cards, it\'ll show up here.</p>';
+                return;
+            }
+            el.innerHTML = cheapestEvents.map(e => {
+                const date = new Date(e.date);
+                const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const pctDrop = (e.prevPrice && e.newPrice) ? Math.round(((e.prevPrice - e.newPrice) / e.prevPrice) * 100) : null;
+                const dropBadge = (pctDrop !== null && pctDrop > 0)
+                    ? `<span style="color:var(--accent-green);font-size:0.75rem;font-weight:600;margin-left:0.5rem;">−${pctDrop}%</span>`
+                    : (pctDrop !== null && pctDrop < 0
+                        ? `<span style="color:var(--accent-red);font-size:0.75rem;font-weight:600;margin-left:0.5rem;">+${Math.abs(pctDrop)}%</span>`
+                        : '');
+                const newPrintingBadge = e.isNewPrinting
+                    ? `<span style="background:rgba(0,255,136,0.15);color:var(--accent-green);font-size:0.6rem;padding:0.1rem 0.35rem;border-radius:3px;margin-left:0.4rem;">NEW PRINTING</span>`
+                    : `<span style="background:rgba(255,255,255,0.05);color:var(--text-muted);font-size:0.6rem;padding:0.1rem 0.35rem;border-radius:3px;margin-left:0.4rem;">EXISTING</span>`;
+                const meaningfulBadge = e.isMeaningful
+                    ? `<span style="background:rgba(255,215,0,0.15);color:var(--accent-gold);font-size:0.6rem;padding:0.1rem 0.35rem;border-radius:3px;margin-left:0.4rem;">SIGNIFICANT</span>`
+                    : '';
+                return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;border-bottom:1px solid var(--bg-tertiary);cursor:pointer;" onclick="openCardDetail('${e.cardId}')">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:600;font-size:0.9rem;color:var(--text-primary);">
+                            🔄 ${e.cardName} ${newPrintingBadge}${meaningfulBadge}
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.15rem;">
+                            Now tracking: <strong style="color:var(--accent-gold);">$${parseFloat(e.newPrice).toFixed(2)}</strong> from ${e.newSetName || (e.newSet || '?').toUpperCase()}${dropBadge}
+                            ${e.prevPrice ? ` • was $${parseFloat(e.prevPrice).toFixed(2)} from ${(e.prevSet || '?').toUpperCase()}` : ''}
+                        </div>
+                    </div>
+                    <div style="font-size:0.7rem;color:var(--text-muted);margin-left:0.75rem;white-space:nowrap;">${dateStr}</div>
+                </div>`;
+            }).join('');
+        }
+
         function toggleAlert(id){const a=State.alerts.find(x=>x.id===id);if(a){a.enabled=!a.enabled;State.save();updateStats();}}
         function deleteAlert(id){State.alerts=State.alerts.filter(a=>a.id!==id);State.save();renderAlerts();updateStats();showToast('Deleted','info');}
         function quickCreateAlert(type, name, scope) {
@@ -6442,6 +6602,156 @@
         }
 
         // Record prices for watchlist cards on load
+        // ====== CHEAPEST PRINTING TRACKER ======
+        // For watchlist entries with trackMode='cheapest', we periodically check
+        // Scryfall for the cheapest available printing of the card by name and
+        // re-target the entry if a cheaper printing exists. This is what catches
+        // brand-new reprints that drop below the previous floor.
+
+        // Find the cheapest printing of a card by name. Considers nonfoil OR foil
+        // (per user preference). Returns { id, set, setName, price, priceType }
+        // or null if nothing found.
+        async function getCheapestPrinting(cardName) {
+            try {
+                // Query: exact name match, has any USD price, sorted ascending
+                const query = `!"${cardName}" (usd>0 or usd_foil>0)`;
+                const d = await API.search(query, { order: 'usd', dir: 'asc', unique: 'prints' });
+                if (!d.data || !d.data.length) return null;
+                // Walk results and pick the printing with the lowest price among
+                // usd OR usd_foil (whichever is lower for that printing).
+                let best = null;
+                for (const c of d.data) {
+                    const usd = parseFloat(c.prices?.usd) || null;
+                    const foil = parseFloat(c.prices?.usd_foil) || null;
+                    let price = null, priceType = '';
+                    if (usd && foil) {
+                        if (usd <= foil) { price = usd; priceType = ''; }
+                        else { price = foil; priceType = 'foil'; }
+                    } else if (usd) { price = usd; priceType = ''; }
+                    else if (foil) { price = foil; priceType = 'foil'; }
+                    if (price === null) continue;
+                    if (!best || price < best.price) {
+                        best = {
+                            id: c.id,
+                            set: c.set,
+                            setName: c.set_name,
+                            price: price,
+                            priceType: priceType,
+                            image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small,
+                            releasedAt: c.released_at
+                        };
+                    }
+                }
+                return best;
+            } catch(e) {
+                console.warn('getCheapestPrinting failed for', cardName, e);
+                return null;
+            }
+        }
+
+        // Walk the watchlist, find any cheapest-mode entries whose tracked
+        // printing is no longer the cheapest, update them, and fire a toast +
+        // log an alert when a brand-new printing has displaced the old floor by
+        // more than 10%.
+        async function refreshWatchlistCheapest() {
+            if (!State.watchlist.length) return;
+            const REPRINT_ALERT_THRESHOLD = 0.10; // 10%
+            const cheapestEntries = State.watchlist.filter(w => w.trackMode === 'cheapest');
+            if (!cheapestEntries.length) return;
+
+            for (const entry of cheapestEntries) {
+                const cheapest = await getCheapestPrinting(entry.name);
+                if (!cheapest) continue;
+
+                const prevId = entry.cheapestId || entry.id;
+                const prevPrice = parseFloat(entry.cheapestPrice) || parseFloat(entry.price) || null;
+                const prevSet = entry.cheapestSet || entry.set;
+
+                // Nothing changed — same printing, similar price (avoid noise on float wobble)
+                if (cheapest.id === prevId) {
+                    // Still update stored price so the watchlist UI shows current price
+                    entry.cheapestPrice = cheapest.price;
+                    entry.cheapestPriceType = cheapest.priceType;
+                    continue;
+                }
+
+                // Different printing is now cheapest. Decide if this is a meaningful event.
+                const isNewPrinting = !entry.cheapestHistory || !entry.cheapestHistory.some(h => h.id === cheapest.id);
+                const pctDrop = (prevPrice && cheapest.price) ? ((prevPrice - cheapest.price) / prevPrice) : 0;
+                const isMeaningfulDrop = pctDrop >= REPRINT_ALERT_THRESHOLD;
+
+                // Update entry to track new cheapest
+                entry.cheapestId = cheapest.id;
+                entry.cheapestSet = cheapest.set;
+                entry.cheapestSetName = cheapest.setName;
+                entry.cheapestPrice = cheapest.price;
+                entry.cheapestPriceType = cheapest.priceType;
+                entry.cheapestImage = cheapest.image;
+                entry.lastCheapestCheck = new Date().toISOString();
+
+                // Append to history
+                entry.cheapestHistory = entry.cheapestHistory || [];
+                entry.cheapestHistory.push({
+                    id: cheapest.id,
+                    set: cheapest.set,
+                    setName: cheapest.setName,
+                    price: cheapest.price,
+                    priceType: cheapest.priceType,
+                    date: new Date().toISOString(),
+                    isNewPrinting: isNewPrinting,
+                    prevPrice: prevPrice,
+                    prevSet: prevSet
+                });
+                // Keep history reasonable
+                if (entry.cheapestHistory.length > 20) entry.cheapestHistory = entry.cheapestHistory.slice(-20);
+
+                // Always log to alerts page (silent audit trail)
+                logCheapestAlert(entry, cheapest, prevPrice, prevSet, isNewPrinting, isMeaningfulDrop);
+
+                // Toast only when it's a brand-new printing AND >10% cheaper
+                if (isNewPrinting && isMeaningfulDrop && prevPrice) {
+                    const savedPct = Math.round(pctDrop * 100);
+                    const msg = `🔄 ${entry.name}: $${cheapest.price.toFixed(2)} (${cheapest.setName}) — was $${prevPrice.toFixed(2)} from ${prevSet?.toUpperCase() || '?'} — ${savedPct}% cheaper`;
+                    showToast(msg, 'success');
+                }
+
+                // Snapshot the new cheapest printing's price so the chart picks it up
+                if (db) {
+                    try {
+                        const fullCard = await API.card(cheapest.id);
+                        await recordPriceSnapshot(fullCard);
+                    } catch(e) {}
+                }
+            }
+            State.save();
+            // Re-render watchlist to show updates
+            if (typeof renderWatchlist === 'function') {
+                try { renderWatchlist(); } catch(e) {}
+            }
+        }
+
+        // Log a cheapest-printing change to the Alerts page (silent audit trail).
+        // We piggyback on State.alertHistory if it exists, or create it.
+        function logCheapestAlert(entry, cheapest, prevPrice, prevSet, isNewPrinting, isMeaningful) {
+            State.alertHistory = State.alertHistory || [];
+            State.alertHistory.unshift({
+                id: 'cheapest_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                type: 'cheapest_change',
+                cardName: entry.name,
+                cardId: cheapest.id,
+                newSet: cheapest.set,
+                newSetName: cheapest.setName,
+                newPrice: cheapest.price,
+                prevSet: prevSet,
+                prevPrice: prevPrice,
+                isNewPrinting: isNewPrinting,
+                isMeaningful: isMeaningful,
+                date: new Date().toISOString()
+            });
+            // Cap log size
+            if (State.alertHistory.length > 200) State.alertHistory = State.alertHistory.slice(0, 200);
+        }
+
         async function recordWatchlistPrices() {
             if (!db || !State.watchlist.length) return;
             for (const card of State.watchlist.slice(0, 20)) { // Limit to avoid rate limiting
@@ -8007,6 +8317,14 @@
         }
 
         // ====== CANVAS PRICE CHART ======
+        // Get the best available price from a price-history snapshot.
+        // Falls back through usd → usd_foil → usd_etched so foil-only cards
+        // (e.g. Promo/Borderless/Pixel TMC printings) still chart correctly.
+        function getSnapshotPrice(h) {
+            if (!h) return null;
+            return h.usd || h.usd_foil || h.usd_etched || null;
+        }
+
         function drawPriceChart(canvas, history) {
             const ctx = canvas.getContext('2d');
             const width = canvas.width;
@@ -8019,7 +8337,7 @@
                 ctx.fillText('Not enough data yet', width/2, height/2);
                 return;
             }
-            const prices = history.map(h => h.usd).filter(p => p);
+            const prices = history.map(getSnapshotPrice).filter(p => p);
             if (prices.length < 2) {
                 ctx.fillStyle = '#666';
                 ctx.font = '12px Rajdhani';
@@ -8068,7 +8386,7 @@
             ctx.fillText('$' + min.toFixed(2), 2, height - 2);
 
             // Add interactive hover
-            const historyWithPrices = history.filter(h => h.usd);
+            const historyWithPrices = history.filter(h => getSnapshotPrice(h));
             canvas.onmousemove = canvas.ontouchmove = function(e) {
                 const rect = canvas.getBoundingClientRect();
                 const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
@@ -8089,8 +8407,8 @@
             const width = canvas.width;
             const height = canvas.height;
             ctx.clearRect(0, 0, width, height);
-            const prices = history.map(h => h.usd).filter(p => p);
-            const historyWithPrices = history.filter(h => h.usd);
+            const prices = history.map(getSnapshotPrice).filter(p => p);
+            const historyWithPrices = history.filter(h => getSnapshotPrice(h));
 
             // Draw background grid
             ctx.strokeStyle = 'rgba(255,255,255,0.1)';
@@ -8126,8 +8444,9 @@
             // Draw highlight point and tooltip
             if (highlightIdx >= 0 && highlightIdx < historyWithPrices.length) {
                 const point = historyWithPrices[highlightIdx];
+                const pointPrice = getSnapshotPrice(point);
                 const x = (highlightIdx / (prices.length - 1)) * width;
-                const y = height - ((point.usd - min) / range) * height;
+                const y = height - ((pointPrice - min) / range) * height;
 
                 // Draw vertical line
                 ctx.beginPath();
@@ -8149,7 +8468,7 @@
                 ctx.stroke();
 
                 // Draw tooltip
-                const tooltipText = '$' + point.usd.toFixed(2) + ' • ' + point.date;
+                const tooltipText = '$' + pointPrice.toFixed(2) + ' • ' + point.date;
                 ctx.font = 'bold 11px JetBrains Mono';
                 const textWidth = ctx.measureText(tooltipText).width;
                 const tooltipX = Math.min(Math.max(x - textWidth/2, 5), width - textWidth - 5);
@@ -8891,6 +9210,10 @@
                     if (!isMobile) {
                         recordWatchlistPrices();
                         updatePortfolioPrices();
+                        // Check if any watchlist entries have a cheaper printing available now
+                        // (e.g. a brand-new reprint dropped). This runs in the background and
+                        // fires a toast if a brand-new printing has displaced the floor by >10%.
+                        refreshWatchlistCheapest();
                     }
                 } else {
                     renderDashboardLists();
