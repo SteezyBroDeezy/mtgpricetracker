@@ -1545,8 +1545,12 @@
             <section class="category-movers-section desktop-only" id="spoilerReprintsSection" style="display:none;">
                 <div class="section-header">
                     <h2 class="section-title">💰 Spoiler Reprints — Buy the Dip</h2>
-                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
                         <p style="color:var(--text-secondary);font-size:0.85rem;margin:0;">Reprints confirmed in upcoming sets — prices drop at release, then recover</p>
+                        <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">
+                            <input type="checkbox" id="spoilerReprintsIncludeCmd" checked onchange="toggleSpoilerReprintsCmd(this.checked)" style="accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer;">
+                            🃏 Include Commander decks
+                        </label>
                     </div>
                 </div>
                 <div class="category-movers-grid" id="spoilerReprintsGrid"></div>
@@ -5640,6 +5644,16 @@
         }
 
         // ====== SPOILER REPRINTS — BUY THE DIP ======
+        // Toggle handler: re-runs loadSpoilerReprints when the user flips the
+        // "Include Commander decks" checkbox. The function reads the checkbox
+        // state itself, so we just need to trigger a re-render here.
+        function toggleSpoilerReprintsCmd(checked) {
+            // Show a quick loading state on the grid while we re-fetch
+            const grid = document.getElementById('spoilerReprintsGrid');
+            if (grid) grid.innerHTML = '<div class="loading-spinner" style="grid-column:1/-1;transform:scale(0.5);margin:1rem auto;"></div>';
+            loadSpoilerReprints();
+        }
+
         async function loadSpoilerReprints(spoilerResults) {
             // NOTE: We no longer rely on spoilerResults for set selection. This section now
             // shows the 5 most recent paper expansion sets (rolling window), so it auto-updates
@@ -5688,15 +5702,21 @@
             }
 
             // Parallelize fetches for all 5 sets — queue enforces 150ms spacing for rate-limit safety
+            // Toggle: if "Include Commander decks" is unchecked, query only the main set code
+            // (default ON — checkbox is checked by default in the HTML)
+            const includeCmdEl = document.getElementById('spoilerReprintsIncludeCmd');
+            const includeCmd = includeCmdEl ? includeCmdEl.checked : true;
             const fetchPromises = latestSets.map(async (s) => {
                 try {
-                    const familyCodes = familyLookup[s.code] || [s.code];
-                    const setQuery = familyCodes.length > 1
-                        ? '(' + familyCodes.map(c => 's:' + c).join(' or ') + ')'
-                        : 's:' + s.code;
+                    const fullFamilyCodes = familyLookup[s.code] || [s.code];
+                    // queryCodes = what we actually search; familyCodes = kept for the "incl. N Commander decks" badge
+                    const queryCodes = includeCmd ? fullFamilyCodes : [s.code];
+                    const setQuery = queryCodes.length > 1
+                        ? '(' + queryCodes.map(c => 's:' + c).join(' or ') + ')'
+                        : 's:' + queryCodes[0];
                     const fullQuery = encodeURIComponent(setQuery + ' is:reprint usd>0');
                     const d = await API.req('/cards/search?q=' + fullQuery + '&order=usd&dir=desc&unique=cards', { cacheTTL: 600000, priority: true });
-                    return { s, familyCodes, d };
+                    return { s, familyCodes: fullFamilyCodes, d };
                 } catch(e) {
                     if (e.message !== 'Cancelled') console.warn('Spoiler reprints failed for', s.code, e);
                     return { s, familyCodes: familyLookup[s.code] || [s.code], d: null };
@@ -5709,7 +5729,9 @@
 
             for (const { s, familyCodes, d } of fetched) {
                 const cmdCount = familyCodes.length > 1 ? familyCodes.length - 1 : 0;
-                const familyNote = cmdCount > 0 ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
+                // Only show the "incl. N Commander decks" note when the toggle is ON;
+                // when OFF, the displayed totals are main-set-only so the note would mislead.
+                const familyNote = (includeCmd && cmdCount > 0) ? ` <span style="font-size:0.6rem;color:var(--text-muted);">(incl. ${cmdCount} Commander deck${cmdCount>1?'s':''})</span>` : '';
                 // Days-since-release label for context (e.g. "Just Released" / "12 days ago")
                 const daysSince = Math.floor((new Date() - new Date(s.released_at)) / 86400000);
                 const releaseLabel = daysSince <= 7 ? 'Just Released' : daysSince + ' days ago';
@@ -5748,7 +5770,7 @@
                         </div>
                         <div style="padding:0.25rem 0.75rem 0.4rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
                             <span style="font-size:0.62rem;padding:0.12rem 0.4rem;border-radius:3px;background:rgba(255,255,255,0.05);color:var(--text-muted);">${releaseLabel}</span>
-                            ${cmdCount > 0 ? `<span style="font-size:0.62rem;color:var(--text-muted);">incl. ${cmdCount} Commander deck${cmdCount>1?'s':''}</span>` : ''}
+                            ${(includeCmd && cmdCount > 0) ? `<span style="font-size:0.62rem;color:var(--text-muted);">incl. ${cmdCount} Commander deck${cmdCount>1?'s':''}</span>` : ''}
                         </div>
                         <div class="category-mover-content"><div style="padding:1rem;color:var(--text-muted);font-size:0.8rem;text-align:center;">No priced reprints found yet</div></div>
                     </div>`;
@@ -5774,7 +5796,7 @@
                     <div style="padding:0.25rem 0.75rem 0.4rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
                         <span style="font-size:0.62rem;padding:0.12rem 0.4rem;border-radius:3px;background:rgba(0,255,136,0.15);color:var(--accent-green);">${releaseLabel}</span>
                         <span style="font-size:0.65rem;color:var(--accent-green);">🔄 ${totalReprints} reprints</span>
-                        ${cmdCount > 0 ? `<span style="font-size:0.62rem;color:var(--text-muted);">incl. ${cmdCount} Commander deck${cmdCount>1?'s':''}</span>` : ''}
+                        ${(includeCmd && cmdCount > 0) ? `<span style="font-size:0.62rem;color:var(--text-muted);">incl. ${cmdCount} Commander deck${cmdCount>1?'s':''}</span>` : ''}
                     </div>
                     <div class="category-mover-content">${cardRows}</div>
                     ${totalReprints > 8 ? `<div class="category-show-more" onclick="openReprintsFullView('${s.code}')" style="padding:0.5rem;text-align:center;cursor:pointer;border-top:1px solid var(--bg-tertiary);font-size:0.75rem;color:var(--accent-primary);"><span>▼</span> Show All ${totalReprints} Reprints</div>` : ''}
