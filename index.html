@@ -2545,6 +2545,7 @@
                     <div class="filter-group"><span class="filter-label">Rarity</span><select class="filter-select" id="setRarity" onchange="loadSetCards()"><option value="">All</option><option value="mythic">Mythic</option><option value="rare">Rare</option><option value="uncommon">Uncommon</option><option value="common">Common</option></select></div>
                     <div class="filter-group"><span class="filter-label">Sort</span><select class="filter-select" id="setSort" onchange="loadSetCards()"><option value="usd">Price ↓</option><option value="name">Name</option><option value="rarity">Rarity</option></select></div>
                     <div class="filter-group" style="display:flex;align-items:center;gap:0.5rem;"><label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);"><input type="checkbox" id="setReprintsOnly" onchange="loadSetCards()" style="accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer;">🔄 Reprints Only</label></div>
+                    <div class="filter-group" id="setIncludeCmdGroup" style="display:none;align-items:center;gap:0.5rem;"><label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);"><input type="checkbox" id="setIncludeCmd" checked onchange="loadSetCards()" style="accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer;">🃏 Include Commander deck</label></div>
                 </div>
                 <div class="card-grid" id="setCardsGrid"></div>
                 <div class="pagination" id="setPagination"></div>
@@ -4739,6 +4740,33 @@
             } else {
                 titleEl.textContent='📚 '+(code.toUpperCase());
             }
+            // Detect commander sub-set(s) attached to this main set and show the toggle if any exist.
+            // The dashboard's family lookup uses parent_set_code from the full Scryfall sets list.
+            try {
+                const allSets = (typeof allScryfallSets !== 'undefined' && allScryfallSets.length)
+                    ? allScryfallSets
+                    : (State.allSetsData || State.sets || []);
+                const cmdChildren = allSets.filter(x => !x.digital && x.parent_set_code === code && x.set_type === 'commander');
+                State.currentSetFamilyCodes = [code, ...cmdChildren.map(x => x.code)];
+                const cmdGroup = document.getElementById('setIncludeCmdGroup');
+                if (cmdGroup) {
+                    if (cmdChildren.length > 0) {
+                        cmdGroup.style.display = 'flex';
+                        // Update label to reflect actual count when more than one commander sub-set
+                        const lbl = cmdGroup.querySelector('label');
+                        if (lbl) {
+                            const lastNode = lbl.childNodes[lbl.childNodes.length - 1];
+                            if (lastNode && lastNode.nodeType === Node.TEXT_NODE) {
+                                lastNode.textContent = cmdChildren.length > 1
+                                    ? `🃏 Include Commander decks (${cmdChildren.length})`
+                                    : '🃏 Include Commander deck';
+                            }
+                        }
+                    } else {
+                        cmdGroup.style.display = 'none';
+                    }
+                }
+            } catch(e) { State.currentSetFamilyCodes = [code]; }
             // Cancel any background dashboard/spoiler loads so the user-initiated set view gets through fast
             try{API.cancelNonPriority();}catch(e){}
             loadSetCards();
@@ -4908,6 +4936,32 @@
                 titleEl.textContent = '📚 ' + code.toUpperCase();
             }
 
+            // Detect commander sub-set(s) attached to this main set and show the toggle if any exist.
+            try {
+                const allSets = (typeof allScryfallSets !== 'undefined' && allScryfallSets.length)
+                    ? allScryfallSets
+                    : (State.allSetsData || State.sets || []);
+                const cmdChildren = allSets.filter(x => !x.digital && x.parent_set_code === code && x.set_type === 'commander');
+                State.currentSetFamilyCodes = [code, ...cmdChildren.map(x => x.code)];
+                const cmdGroup = document.getElementById('setIncludeCmdGroup');
+                if (cmdGroup) {
+                    if (cmdChildren.length > 0) {
+                        cmdGroup.style.display = 'flex';
+                        const lbl = cmdGroup.querySelector('label');
+                        if (lbl) {
+                            const lastNode = lbl.childNodes[lbl.childNodes.length - 1];
+                            if (lastNode && lastNode.nodeType === Node.TEXT_NODE) {
+                                lastNode.textContent = cmdChildren.length > 1
+                                    ? `🃏 Include Commander decks (${cmdChildren.length})`
+                                    : '🃏 Include Commander deck';
+                            }
+                        }
+                    } else {
+                        cmdGroup.style.display = 'none';
+                    }
+                }
+            } catch(e) { State.currentSetFamilyCodes = [code]; }
+
             // Cancel any background dashboard/spoiler loads so the user-initiated set view gets through fast
             try{API.cancelNonPriority();}catch(e){}
 
@@ -4925,7 +4979,16 @@
             const rar=document.getElementById('setRarity').value,
                   sort=document.getElementById('setSort').value,
                   reprintsOnly=document.getElementById('setReprintsOnly')?.checked;
-            let q='set:'+State.currentSet;
+            // Build set query — if there are commander sub-sets attached and the toggle is ON, OR them in
+            const includeCmdEl = document.getElementById('setIncludeCmd');
+            const includeCmdGroupVisible = document.getElementById('setIncludeCmdGroup')?.style.display !== 'none';
+            const includeCmd = includeCmdGroupVisible && (includeCmdEl ? includeCmdEl.checked : true);
+            const familyCodes = (includeCmd && Array.isArray(State.currentSetFamilyCodes) && State.currentSetFamilyCodes.length > 1)
+                ? State.currentSetFamilyCodes
+                : [State.currentSet];
+            let q = familyCodes.length > 1
+                ? '(' + familyCodes.map(c => 'set:' + c).join(' or ') + ')'
+                : 'set:' + State.currentSet;
             if(rar)q+=' r:'+rar;
             if(reprintsOnly)q+=' is:reprint';
             try{
