@@ -4735,6 +4735,8 @@
             } else {
                 titleEl.textContent='📚 '+(code.toUpperCase());
             }
+            // Cancel any background dashboard/spoiler loads so the user-initiated set view gets through fast
+            try{API.cancelNonPriority();}catch(e){}
             loadSetCards();
         }
         function closeSetView(){document.getElementById('setCardsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';document.querySelector('#browsePage > .section-header').style.display='flex';State.currentBrowsingSet=null;}
@@ -4902,6 +4904,9 @@
                 titleEl.textContent = '📚 ' + code.toUpperCase();
             }
 
+            // Cancel any background dashboard/spoiler loads so the user-initiated set view gets through fast
+            try{API.cancelNonPriority();}catch(e){}
+
             loadSetCards();
         }
 
@@ -4910,7 +4915,53 @@
         document.getElementById('setsBrowserType')?.addEventListener('change', () => filterBrowserSets());
         document.getElementById('setsBrowserMajorOnly')?.addEventListener('change', () => filterBrowserSets());
 
-        async function loadSetCards(url=null){const grid=document.getElementById('setCardsGrid');grid.innerHTML='<div class="loading-spinner"></div>';const rar=document.getElementById('setRarity').value,sort=document.getElementById('setSort').value,reprintsOnly=document.getElementById('setReprintsOnly')?.checked;let q='set:'+State.currentSet;if(rar)q+=' r:'+rar;if(reprintsOnly)q+=' is:reprint';try{let d;if(url){const r=await fetch(url);d=await r.json();}else d=await API.search(q,{order:sort,dir:sort==='name'?'asc':'desc'});if(d.data){grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;}else{grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}catch(e){grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';document.getElementById('setPagination').innerHTML='';}}
+        async function loadSetCards(url=null){
+            const grid=document.getElementById('setCardsGrid');
+            grid.innerHTML='<div class="loading-spinner"></div>';
+            const rar=document.getElementById('setRarity').value,
+                  sort=document.getElementById('setSort').value,
+                  reprintsOnly=document.getElementById('setReprintsOnly')?.checked;
+            let q='set:'+State.currentSet;
+            if(rar)q+=' r:'+rar;
+            if(reprintsOnly)q+=' is:reprint';
+            try{
+                let d;
+                if(url){
+                    const r=await fetch(url);
+                    if(r.status===429)throw new Error('Rate limited');
+                    d=await r.json();
+                }else{
+                    // Use priority so user-initiated set browsing jumps ahead of background loads
+                    d=await API.searchPriority(q,{order:sort,dir:sort==='name'?'asc':'desc'});
+                }
+                if(d.data){
+                    grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');
+                    document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;
+                }else{
+                    grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';
+                    document.getElementById('setPagination').innerHTML='';
+                }
+            }catch(e){
+                if(e.message&&e.message.includes('Rate limited')){
+                    // Show real rate-limit state with auto-retry + manual retry button
+                    grid.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--text-muted);">
+                        <div style="font-size:2rem;margin-bottom:0.5rem;">⏳</div>
+                        <p style="margin-bottom:0.75rem;">Scryfall is rate-limiting requests.<br>Retrying automatically in a few seconds...</p>
+                        <button class="btn btn-secondary" onclick="loadSetCards()" style="font-size:0.85rem;">Retry now</button>
+                    </div>`;
+                    document.getElementById('setPagination').innerHTML='';
+                    // Auto-retry after a delay (only if we're still on this set view)
+                    setTimeout(()=>{
+                        if(document.getElementById('setCardsView').style.display!=='none'){
+                            loadSetCards(url);
+                        }
+                    },3000);
+                }else if(e.message!=='Cancelled'){
+                    grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';
+                    document.getElementById('setPagination').innerHTML='';
+                }
+            }
+        }
 
         // Trending - section removed but keeping function stub for compatibility
         async function loadTrending(f='all'){const grid=document.getElementById('trendingGrid');if(!grid)return;}
