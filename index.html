@@ -2530,6 +2530,16 @@
                 <div id="recentSetsPreviewGrid"></div>
             </div>
 
+            <!-- Commander Decks Section -->
+            <div id="commanderDecksSection">
+                <div class="section-header" style="margin-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+                    <h2 class="section-title" style="margin:0;">⚔️ Commander Decks</h2>
+                    <button class="btn btn-secondary" id="commanderDecksToggleBtn" onclick="toggleCommanderDecksExpanded()" style="padding:0.5rem 1rem;font-size:0.85rem;">Show All →</button>
+                </div>
+                <p style="color:var(--text-secondary);font-size:0.85rem;margin:0.25rem 0 0.75rem;">Browse cards by their Commander deck release. Toggle "Reprints Only" once inside to see just the reprints.</p>
+                <div class="sets-list" id="commanderDecksList" style="margin-top:0.5rem;"></div>
+            </div>
+
             <!-- Full Sets List -->
             <div id="fullSetsList">
                 <div class="section-header" style="margin-top:1.5rem;">
@@ -2547,6 +2557,7 @@
                     <div class="filter-group" style="display:flex;align-items:center;gap:0.5rem;"><label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);"><input type="checkbox" id="setReprintsOnly" onchange="loadSetCards()" style="accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer;">🔄 Reprints Only</label></div>
                     <div class="filter-group" id="setIncludeCmdGroup" style="display:none;align-items:center;gap:0.5rem;"><label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);"><input type="checkbox" id="setIncludeCmd" checked onchange="loadSetCards()" style="accent-color:var(--accent-green);width:16px;height:16px;cursor:pointer;">🃏 Include companion set</label></div>
                 </div>
+                <div id="setSubsetChips" style="display:none;flex-wrap:wrap;gap:0.4rem;margin:0.75rem 0 0.5rem;"></div>
                 <div class="card-grid" id="setCardsGrid"></div>
                 <div class="pagination" id="setPagination"></div>
             </div>
@@ -3510,7 +3521,7 @@
             }
             updateBackButton();
             if(p==='dashboard'&&!dashCategoriesLoaded){reloadDashCategories();}
-            if(p==='browse'){loadSets();loadRecentSetsPreview();}
+            if(p==='browse'){loadSets();loadRecentSetsPreview();loadCommanderDecks();}
             if(p==='watchlist')renderWatchlist();
             if(p==='portfolio')renderPortfolio();
             if(p==='lists')renderLists();
@@ -4251,6 +4262,7 @@
             document.getElementById('browseResultsView').style.display='block';
             document.getElementById('recentSetsPreview').style.display='none';
             document.getElementById('fullSetsList').style.display='none';
+            const cdSec=document.getElementById('commanderDecksSection');if(cdSec)cdSec.style.display='none';
             document.getElementById('setCardsView').style.display='none';
             document.getElementById('browseResultsTitle').textContent=title;
             browseCurrentQuery=query;
@@ -4269,7 +4281,7 @@
         }
         function reloadBrowseResults(){if(browseCurrentQuery)showBrowseResults(document.getElementById('browseResultsTitle').textContent,browseCurrentQuery);}
         async function loadMoreBrowseResults(){if(!browseResultData?.next_page)return;const btn=document.getElementById('browseResultsLoadMore');btn.textContent='Loading...';btn.disabled=true;try{const r=await fetch(browseResultData.next_page);const d=await r.json();browseResultData=d;document.getElementById('browseResultsCards').innerHTML+=d.data.map(c=>cardEl(c)).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}btn.textContent='Load More';btn.disabled=false;}
-        function closeBrowseResults(){document.getElementById('browseResultsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';}
+        function closeBrowseResults(){document.getElementById('browseResultsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';const cdSec=document.getElementById('commanderDecksSection');if(cdSec)cdSec.style.display='block';}
 
         // Recent Sets Preview (top 10 sets, 100+ cards, top 5 expandable to 50)
         let recentSetsLoaded=false;
@@ -4317,6 +4329,106 @@
             }else{grid.innerHTML='<p style="color:var(--text-muted);font-size:0.8rem;">No priced cards</p>';}}catch(e){if(e.message!=='Cancelled')grid.innerHTML='';}
         }
         function expandRS(code){const d=rsData[code];const grid=document.getElementById('rsCards_'+code);const btn=document.getElementById('rsMore_'+code);if(d&&d.data&&grid){grid.innerHTML=d.data.slice(0,50).map(c=>cardEl(c)).join('');if(btn)btn.style.display='none';}}
+
+        // ====== COMMANDER DECKS BROWSER ======
+        // Lists Commander deck releases (sub-sets of major sets) so they can be
+        // browsed as first-class entities. Reuses State.allSetsData (which is
+        // the full Scryfall sets list, already cached for an hour) so this is
+        // essentially free — just filter + render.
+        let commanderDecksLoaded = false;
+        let commanderDecksExpanded = false;
+        const COMMANDER_DECKS_RECENT_COUNT = 20;
+
+        async function loadCommanderDecks() {
+            if (commanderDecksLoaded) return;
+            const container = document.getElementById('commanderDecksList');
+            if (!container) return;
+            container.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
+            try {
+                // Make sure the all-sets list is loaded (it's the same source the
+                // sets browser uses; cached so usually instant)
+                if (!State.allSetsData || !State.allSetsData.length) {
+                    const d = await API.sets();
+                    State.allSetsData = d.data
+                        .filter(s => !s.digital && s.card_count > 0)
+                        .sort((a, b) => new Date(b.released_at) - new Date(a.released_at));
+                }
+                commanderDecksLoaded = true;
+                renderCommanderDecks();
+            } catch (e) {
+                container.innerHTML = '<p style="color:var(--text-muted);padding:1rem;">Failed to load commander decks.</p>';
+            }
+        }
+
+        // Identify which sets in allSetsData are commander decks. Two ways a set
+        // qualifies: explicit set_type='commander', OR it has a parent_set_code
+        // and the name contains "Commander" (catches edge cases like Universes
+        // Beyond commander products). We dedupe by code.
+        function getCommanderDeckSets() {
+            const all = State.allSetsData || [];
+            const out = [];
+            const seen = new Set();
+            for (const s of all) {
+                if (s.digital) continue;
+                if (seen.has(s.code)) continue;
+                const isCommanderType = s.set_type === 'commander';
+                const isCommanderNamed = s.parent_set_code && /commander/i.test(s.name);
+                if (isCommanderType || isCommanderNamed) {
+                    seen.add(s.code);
+                    out.push(s);
+                }
+            }
+            // Sort newest first
+            out.sort((a, b) => new Date(b.released_at) - new Date(a.released_at));
+            return out;
+        }
+
+        function renderCommanderDecks() {
+            const container = document.getElementById('commanderDecksList');
+            const toggleBtn = document.getElementById('commanderDecksToggleBtn');
+            if (!container) return;
+            const all = getCommanderDeckSets();
+            if (!all.length) {
+                container.innerHTML = '<p style="color:var(--text-muted);padding:1rem;">No commander decks found.</p>';
+                if (toggleBtn) toggleBtn.style.display = 'none';
+                return;
+            }
+            const visible = commanderDecksExpanded ? all : all.slice(0, COMMANDER_DECKS_RECENT_COUNT);
+            container.innerHTML = visible.map(s => {
+                // Find the parent set name for context (e.g. "Strixhaven Commander" → parent: Strixhaven)
+                const parent = s.parent_set_code
+                    ? (State.allSetsData || []).find(p => p.code === s.parent_set_code)
+                    : null;
+                const parentLabel = parent ? `<span style="color:var(--text-muted);font-size:0.75rem;margin-left:0.4rem;">↳ ${parent.name}</span>` : '';
+                const releaseDate = s.released_at || '?';
+                return `<div class="set-item" onclick="openSetView('${s.code}')" style="cursor:pointer;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;flex:1;min-width:0;">
+                        <img src="${s.icon_svg_uri || ''}" style="width:32px;height:32px;flex-shrink:0;filter:brightness(0) invert(1);" onerror="this.style.display='none'">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-family:var(--font-display);font-size:1rem;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}${parentLabel}</div>
+                            <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.15rem;">${(s.code || '').toUpperCase()} • ${s.card_count} cards • ${releaseDate}</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation();openSetView('${s.code}')" style="font-size:0.75rem;padding:0.4rem 0.8rem;flex-shrink:0;">View →</button>
+                </div>`;
+            }).join('');
+            // Toggle button visibility/text
+            if (toggleBtn) {
+                if (all.length <= COMMANDER_DECKS_RECENT_COUNT) {
+                    toggleBtn.style.display = 'none';
+                } else {
+                    toggleBtn.style.display = '';
+                    toggleBtn.textContent = commanderDecksExpanded
+                        ? `Show Recent Only ↑`
+                        : `Show All (${all.length}) →`;
+                }
+            }
+        }
+
+        function toggleCommanderDecksExpanded() {
+            commanderDecksExpanded = !commanderDecksExpanded;
+            renderCommanderDecks();
+        }
 
         // Advanced Card Search Functions
         let advSearchData = null;
@@ -4714,6 +4826,7 @@
             resultsSection.style.display = 'block';
             document.getElementById('recentSetsPreview').style.display = 'none';
             document.getElementById('fullSetsList').style.display = 'none';
+            { const cdSec=document.getElementById('commanderDecksSection');if(cdSec)cdSec.style.display='none'; }
             if (document.getElementById('browseResultsView')) document.getElementById('browseResultsView').style.display = 'none';
 
             grid.innerHTML = '<div class="loading-spinner"></div>';
@@ -4779,6 +4892,7 @@
             document.getElementById('advSearchResults').style.display = 'none';
             document.getElementById('recentSetsPreview').style.display = 'block';
             document.getElementById('fullSetsList').style.display = 'block';
+            { const cdSec=document.getElementById('commanderDecksSection');if(cdSec)cdSec.style.display='block'; }
             advSearchData = null;
         }
 
@@ -4837,6 +4951,7 @@
             document.getElementById('setsList').style.display='none';
             document.getElementById('recentSetsPreview').style.display='none';
             document.getElementById('fullSetsList').style.display='none';
+            { const cdSec=document.getElementById('commanderDecksSection');if(cdSec)cdSec.style.display='none'; }
             if(document.getElementById('browseResultsView'))document.getElementById('browseResultsView').style.display='none';
             document.querySelector('#browsePage > .section-header').style.display='none';
             document.getElementById('setCardsView').style.display='block';
@@ -4890,11 +5005,62 @@
                     }
                 }
             } catch(e) { State.currentSetFamilyCodes = [code]; }
+            // Reset sub-set focus whenever a new set is opened, then render chips
+            State.currentSubsetFocus = '';
+            renderSubsetChips(code);
             // Cancel any background dashboard/spoiler loads so the user-initiated set view gets through fast
             try{API.cancelNonPriority();}catch(e){}
             loadSetCards();
         }
-        function closeSetView(){document.getElementById('setCardsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';document.querySelector('#browsePage > .section-header').style.display='flex';State.currentBrowsingSet=null;}
+        // Render the sub-set chips row above the card grid in a set view.
+        // Lets the user click between "all sets" and individual codes (e.g.
+        // "SOX • 369" vs "SOC • 81") to filter the grid to one sub-set.
+        // Reads current state from State.currentSetFamilyCodes (set during open).
+        function renderSubsetChips(parentCode) {
+            const chipsEl = document.getElementById('setSubsetChips');
+            if (!chipsEl) return;
+            const fam = State.currentSetFamilyCodes || [];
+            // Only show chips when there's actually a sub-set family
+            if (!fam.length || fam.length < 2) {
+                chipsEl.style.display = 'none';
+                chipsEl.innerHTML = '';
+                return;
+            }
+            const allSets = (typeof allScryfallSets !== 'undefined' && allScryfallSets.length)
+                ? allScryfallSets
+                : (State.allSetsData || State.sets || []);
+            const setsByCode = {};
+            for (const s of allSets) setsByCode[s.code] = s;
+            const focusCode = State.currentSubsetFocus || '';  // '' means show all
+            const chips = [];
+            // "All" chip
+            const totalCount = fam.reduce((sum, c) => sum + (setsByCode[c]?.card_count || 0), 0);
+            chips.push({ code: '', label: `All • ${totalCount}`, active: !focusCode });
+            // Per-code chips
+            for (const c of fam) {
+                const s = setsByCode[c];
+                const label = s ? `${(c || '').toUpperCase()} • ${s.card_count}` : (c || '').toUpperCase();
+                chips.push({ code: c, label, active: focusCode === c, name: s?.name || c });
+            }
+            chipsEl.style.display = 'flex';
+            chipsEl.innerHTML = chips.map(chip => {
+                const bg = chip.active ? 'var(--accent-purple)' : 'var(--bg-tertiary)';
+                const color = chip.active ? '#fff' : 'var(--text-secondary)';
+                const border = chip.active ? 'var(--accent-purple)' : 'var(--bg-tertiary)';
+                const titleAttr = chip.name ? ` title="${chip.name.replace(/"/g, '&quot;')}"` : '';
+                return `<button onclick="setSubsetFocus('${chip.code}')"${titleAttr} style="padding:0.3rem 0.7rem;border-radius:999px;border:1px solid ${border};background:${bg};color:${color};font-size:0.75rem;cursor:pointer;font-weight:${chip.active ? '600' : '400'};">${chip.label}</button>`;
+            }).join('');
+        }
+
+        // Click handler for sub-set chips. Sets the focus and re-runs the query.
+        function setSubsetFocus(code) {
+            State.currentSubsetFocus = code || '';
+            // Re-render chips to update active state
+            renderSubsetChips(State.currentSet);
+            loadSetCards();
+        }
+
+        function closeSetView(){document.getElementById('setCardsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';const cdSec=document.getElementById('commanderDecksSection');if(cdSec)cdSec.style.display='block';document.querySelector('#browsePage > .section-header').style.display='flex';State.currentBrowsingSet=null;State.currentSubsetFocus='';const chips=document.getElementById('setSubsetChips');if(chips){chips.style.display='none';chips.innerHTML='';}}
 
         // === FULL SETS BROWSER ===
         State.allSetsData = [];
@@ -5086,6 +5252,10 @@
                 }
             } catch(e) { State.currentSetFamilyCodes = [code]; }
 
+            // Reset sub-set focus when a new set is opened, then render chips
+            State.currentSubsetFocus = '';
+            renderSubsetChips(code);
+
             // Cancel any background dashboard/spoiler loads so the user-initiated set view gets through fast
             try{API.cancelNonPriority();}catch(e){}
 
@@ -5107,12 +5277,19 @@
             const includeCmdEl = document.getElementById('setIncludeCmd');
             const includeCmdGroupVisible = document.getElementById('setIncludeCmdGroup')?.style.display !== 'none';
             const includeCmd = includeCmdGroupVisible && (includeCmdEl ? includeCmdEl.checked : true);
-            const familyCodes = (includeCmd && Array.isArray(State.currentSetFamilyCodes) && State.currentSetFamilyCodes.length > 1)
-                ? State.currentSetFamilyCodes
-                : [State.currentSet];
+            // If a sub-set chip is focused, the query is scoped to that single code.
+            // Otherwise, include the whole family (when toggle is on) or just the parent.
+            let familyCodes;
+            if (State.currentSubsetFocus) {
+                familyCodes = [State.currentSubsetFocus];
+            } else if (includeCmd && Array.isArray(State.currentSetFamilyCodes) && State.currentSetFamilyCodes.length > 1) {
+                familyCodes = State.currentSetFamilyCodes;
+            } else {
+                familyCodes = [State.currentSet];
+            }
             let q = familyCodes.length > 1
                 ? '(' + familyCodes.map(c => 'set:' + c).join(' or ') + ')'
-                : 'set:' + State.currentSet;
+                : 'set:' + familyCodes[0];
             if(rar)q+=' r:'+rar;
             if(reprintsOnly)q+=' is:reprint';
             try{
