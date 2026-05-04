@@ -4115,10 +4115,11 @@
             if (!name) { showToast('Enter a list name', 'warning'); return; }
             if (!currentUser || !db) { showToast('Please sign in', 'warning'); return; }
             try {
+                const nowIso = new Date().toISOString();
                 const listRef = await db.collection('users').doc(currentUser.uid).collection('lists').add({
-                    name, description: '', createdAt: new Date().toISOString()
+                    name, description: '', createdAt: nowIso, lastUsedAt: nowIso
                 });
-                const newList = { id: listRef.id, name, cards: [] };
+                const newList = { id: listRef.id, name, cards: [], createdAt: nowIso, lastUsedAt: nowIso };
                 State.userLists.push(newList);
                 State.save();
                 if (State.currentDetailCard) await addToList(listRef.id, State.currentDetailCard);
@@ -6247,11 +6248,13 @@
             if (!name) { showToast('Enter a list name', 'warning'); return; }
             if (!currentUser || !db) { showToast('Please sign in', 'warning'); return; }
             try {
-                // Create the list
+                const nowIso = new Date().toISOString();
+                // Create the list with both timestamps so it ranks at the top immediately
                 const listRef = await db.collection('users').doc(currentUser.uid).collection('lists').add({
                     name,
                     description: '',
-                    createdAt: new Date().toISOString()
+                    createdAt: nowIso,
+                    lastUsedAt: nowIso
                 });
                 // Add the current card to it
                 if (State.currentDetailCard) {
@@ -6263,7 +6266,7 @@
                         setName: c.set_name,
                         image: c.image_uris?.small || c.card_faces?.[0]?.image_uris?.small || '',
                         prices: c.prices,
-                        addedAt: new Date().toISOString()
+                        addedAt: nowIso
                     });
                 }
                 // Refresh lists
@@ -6297,6 +6300,13 @@
                     } catch(e) {}
                     return { id: doc.id, ...data };
                 }));
+                // Sort: most recently used first, falling back to createdAt for older lists
+                // that pre-date this feature (they won't have lastUsedAt set).
+                lists.sort((a, b) => {
+                    const aKey = a.lastUsedAt || a.createdAt || '';
+                    const bKey = b.lastUsedAt || b.createdAt || '';
+                    return bKey.localeCompare(aKey); // descending
+                });
                 return lists;
             } catch(e) { console.error('Failed to load lists:', e); return []; }
         }
@@ -6578,9 +6588,25 @@
                     image: card.image_uris?.small || card.card_faces?.[0]?.image_uris?.small || '',
                     addedAt: new Date().toISOString()
                 });
-                // Update card count
+                // Update card count and stamp lastUsedAt so this list bubbles to the top
+                // of the list-picker the next time the user adds a card.
                 const cardsSnap = await listRef.collection('cards').get();
-                await listRef.update({ cardCount: cardsSnap.size });
+                const nowIso = new Date().toISOString();
+                await listRef.update({ cardCount: cardsSnap.size, lastUsedAt: nowIso });
+                // Mirror to local State.userLists so the bubble-to-top happens immediately
+                // without waiting for a Firebase re-fetch.
+                if (State.userLists) {
+                    const local = State.userLists.find(l => l.id === listId);
+                    if (local) {
+                        local.lastUsedAt = nowIso;
+                        local.cardCount = cardsSnap.size;
+                        State.userLists.sort((a, b) => {
+                            const aKey = a.lastUsedAt || a.createdAt || '';
+                            const bKey = b.lastUsedAt || b.createdAt || '';
+                            return bKey.localeCompare(aKey);
+                        });
+                    }
+                }
                 showToast('Added to list!', 'success');
             } catch(e) { showToast('Failed to add', 'error'); }
         }
@@ -8507,19 +8533,29 @@
             const width = canvas.width;
             const height = canvas.height;
             ctx.clearRect(0, 0, width, height);
-            if (!history || history.length < 2) {
-                ctx.fillStyle = '#666';
+            // Draw a multi-line empty state with context based on how much data we have
+            const drawEmptyState = (lines) => {
+                ctx.fillStyle = '#888';
                 ctx.font = '12px Rajdhani';
                 ctx.textAlign = 'center';
-                ctx.fillText('Not enough data yet', width/2, height/2);
+                const lineHeight = 16;
+                const startY = height/2 - ((lines.length - 1) * lineHeight) / 2;
+                lines.forEach((ln, i) => {
+                    ctx.fillStyle = i === 0 ? '#aaa' : '#666';
+                    ctx.fillText(ln, width/2, startY + i * lineHeight);
+                });
+            };
+            if (!history || history.length === 0) {
+                drawEmptyState(['Not tracked yet', 'Add this card to your watchlist', 'so we can build its price history']);
+                return;
+            }
+            if (history.length < 2) {
+                drawEmptyState(['Building price history...', 'Check back in a day or two', 'for trend data']);
                 return;
             }
             const prices = history.map(getSnapshotPrice).filter(p => p);
             if (prices.length < 2) {
-                ctx.fillStyle = '#666';
-                ctx.font = '12px Rajdhani';
-                ctx.textAlign = 'center';
-                ctx.fillText('Not enough data yet', width/2, height/2);
+                drawEmptyState(['Not enough price data yet', 'Recorded ' + history.length + ' time(s) so far']);
                 return;
             }
             const min = Math.min(...prices) * 0.9;
@@ -9391,6 +9427,24 @@
                         // (e.g. a brand-new reprint dropped). This runs in the background and
                         // fires a toast if a brand-new printing has displaced the floor by >10%.
                         refreshWatchlistCheapest();
+                    } else {
+                        // On mobile, we don't want a burst of API calls on app boot.
+                        // But we still want to build up price history over time so the chart works.
+                        // Compromise: defer all three calls by 8 seconds so the UI is fully usable
+                        // first, then run them in the background. recordWatchlistPrices is the
+                        // one that actually feeds the chart, so we always run it; the others run
+                        // less often on mobile (only every ~6 hours since the last refresh).
+                        setTimeout(() => {
+                            try { recordWatchlistPrices(); } catch(e) {}
+                            const lastFull = State.lastRefresh ? (Date.now() - new Date(State.lastRefresh).getTime()) : Infinity;
+                            const SIX_HOURS = 6 * 60 * 60 * 1000;
+                            if (lastFull > SIX_HOURS) {
+                                try { updatePortfolioPrices(); } catch(e) {}
+                                try { refreshWatchlistCheapest(); } catch(e) {}
+                                State.lastRefresh = new Date().toISOString();
+                                State.save();
+                            }
+                        }, 8000);
                     }
                 } else {
                     renderDashboardLists();
