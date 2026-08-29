@@ -1,23 +1,42 @@
 name: Daily Price Tracker
 on:
   schedule:
-    # Run once daily at 8 AM UTC (2 AM MST) — after Scryfall's nightly price update
-    - cron: '0 8 * * *'
-  workflow_dispatch: # Allow manual trigger
+    # GitHub delays scheduled workflows by hours when its queue is busy,
+    # and drops them entirely often enough to matter: runs meant for
+    # 08:00 UTC landed at 18:43, 19:49 and 13:31 on consecutive days in
+    # August 2026. So this asks three times rather than once, and the
+    # tracker no-ops (two reads) on any attempt after the day is already
+    # recorded. Minute 37 on purpose — the top of the hour is when
+    # everyone else schedules, and is the most delayed slot.
+    - cron: '37 8 * * *'    # primary, after Scryfall's nightly price update
+    - cron: '37 13 * * *'   # backstop if the morning run was delayed or dropped
+    - cron: '37 19 * * *'   # last chance before the quota day rolls over
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rewrite today even if it is already recorded'
+        type: boolean
+        default: false
 jobs:
   track-prices:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # Never let two attempts overlap; a second pass mid-run would write
+    # the same day twice and double the quota cost.
+    concurrency:
+      group: price-tracker
+      cancel-in-progress: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Install dependencies
         run: npm install firebase-admin node-fetch@2
       - name: Run price tracker
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FORCE_RUN: ${{ inputs.force && '1' || '0' }}
         run: node scripts/track-prices.js

@@ -1,9 +1,21 @@
 /**
- * MTG Price Oracle - Daily Price Tracker v2.2
- * 
+ * MTG Price Oracle - Daily Price Tracker v3.0
+ *
  * ONE query: usd>=0.50, pages through all results.
  * Firestore batch writes with delays between batches to avoid quota spikes.
- * Runs once daily.
+ *
+ * v3.0: Halved the daily write cost and made the run idempotent.
+ *   - Meta docs (priceHistory/{id}) were rewritten every day for every
+ *     card: ~7,600 writes, an exact half of the 20k/day free tier, for
+ *     fields that never change (name/set/setName/rarity) and that
+ *     nothing in the app ever reads — the UI only queries the snapshots
+ *     subcollection. Now written once, for cards we have not seen before.
+ *     Finding out which those are costs reads, but reads are a separate
+ *     and larger quota (50k/day), so it is a good trade.
+ *   - A run marker (meta/lastRun) makes re-runs cheap no-ops, so the
+ *     workflow can schedule backstop attempts without doubling writes.
+ *     GitHub delays scheduled jobs by hours under load and sometimes
+ *     drops them, so one fixed daily attempt is not reliable.
  *
  * v2.2: Added 1s delay between Firebase batches to avoid RESOURCE_EXHAUSTED.
  *        Smaller batch size (200 ops) for smoother writes.
@@ -24,6 +36,8 @@ const SCRYFALL_DELAY = 110;
 const BATCH_SIZE = 200;          // Reduced from 500 — gentler on Firebase
 const BATCH_PAUSE = 1500;        // 1.5s pause between batches
 const MAX_RETRIES = 3;
+// Set FORCE_RUN=1 to rewrite a day that has already been recorded.
+const FORCE_RUN = process.env.FORCE_RUN === '1';
 
 // ====== SCRYFALL FETCHER ======
 let lastRequest = 0;
@@ -62,11 +76,30 @@ async function main() {
   const startTime = Date.now();
   const today = new Date().toISOString().split('T')[0];
   
-  console.log('=== MTG Price Oracle - Daily Price Tracker v2.2 ===');
+  console.log('=== MTG Price Oracle - Daily Price Tracker v3.0 ===');
   console.log(`Date: ${today}`);
   console.log(`Min price: $${MIN_PRICE}`);
   console.log(`Batch size: ${BATCH_SIZE} ops, ${BATCH_PAUSE}ms pause between`);
   console.log('');
+
+  // STEP 0: Has today already been recorded?
+  // The workflow schedules several attempts because GitHub delays cron
+  // jobs by hours under load and sometimes skips them outright. This
+  // marker makes every attempt after the first a two-read no-op instead
+  // of a second full pass over the write quota.
+  const runMarkerRef = db.collection('meta').doc('lastRun');
+  if (!FORCE_RUN) {
+    try {
+      const marker = await runMarkerRef.get();
+      if (marker.exists && marker.data().date === today) {
+        console.log(`Today (${today}) was already recorded at ${marker.data().finishedAt}.`);
+        console.log('Nothing to do. Set FORCE_RUN=1 to rewrite it.');
+        process.exit(0);
+      }
+    } catch (e) {
+      console.warn(`  Could not read run marker (${e.message}) — continuing.`);
+    }
+  }
 
   // STEP 1: Fetch all cards with usd >= $0.50
   console.log('Step 1: Fetching all priced cards from Scryfall...');
@@ -120,15 +153,42 @@ async function main() {
   let totalSkipped = 0;
   let totalErrors = 0;
   let batchNum = 0;
+  let metaWrites = 0;
+  let snapshotWrites = 0;
 
-  // Each card = 2 writes (snapshot + meta), so chunk at BATCH_SIZE/2
-  const chunkSize = Math.floor(BATCH_SIZE / 2);
-  
+  // Which cards already have a meta doc? The meta doc holds only fields
+  // that never change for a card id, and nothing in the app reads it —
+  // the UI queries the snapshots subcollection directly. Rewriting it
+  // daily was burning half the write quota, so fetch the ids once and
+  // write meta only for cards we have not seen. select() with no fields
+  // returns refs only, so this is cheap in bandwidth; it still costs one
+  // read per document, but reads have a separate 50k/day allowance
+  // against writes' 20k.
+  const knownMeta = new Set();
+  let metaReads = 0;
+  try {
+    const existing = await db.collection('priceHistory').select().get();
+    existing.forEach(d => knownMeta.add(d.id));
+    // knownMeta grows as new cards are added below, so record the read
+    // count now rather than reporting the final set size.
+    metaReads = knownMeta.size;
+    console.log(`  ${metaReads} cards already have a meta doc (${metaReads} reads)`);
+  } catch (e) {
+    // On failure, fall back to writing meta for everything — correct,
+    // just as expensive as the old behaviour.
+    console.warn(`  Could not list existing meta docs (${e.message}) — writing all.`);
+  }
+
+  // Ops per card is 1 (snapshot) or 2 (snapshot + first-time meta), so
+  // chunk by counting real ops rather than assuming the worst case.
+  const chunkSize = BATCH_SIZE;
+
   for (let i = 0; i < allCards.length; i += chunkSize) {
     batchNum++;
     const chunk = allCards.slice(i, i + chunkSize);
     const batch = db.batch();
     let batchCount = 0;
+    let batchOps = 0;
 
     for (const card of chunk) {
       const usd = parseFloat(card.prices?.usd) || null;
@@ -140,12 +200,17 @@ async function main() {
       const snapshotRef = db.collection('priceHistory').doc(card.id)
         .collection('snapshots').doc(today);
       batch.set(snapshotRef, { usd, usd_foil: usdFoil, eur, name: card.name, set: card.set });
+      batchOps++;
 
-      const metaRef = db.collection('priceHistory').doc(card.id);
-      batch.set(metaRef, {
-        name: card.name, set: card.set, setName: card.set_name || '',
-        rarity: card.rarity || '', lastUpdated: today
-      }, { merge: true });
+      if (!knownMeta.has(card.id)) {
+        const metaRef = db.collection('priceHistory').doc(card.id);
+        batch.set(metaRef, {
+          name: card.name, set: card.set, setName: card.set_name || '',
+          rarity: card.rarity || ''
+        }, { merge: true });
+        knownMeta.add(card.id);
+        batchOps++;
+      }
 
       batchCount++;
     }
@@ -154,6 +219,8 @@ async function main() {
       try {
         await batch.commit();
         totalWritten += batchCount;
+        snapshotWrites += batchCount;
+        metaWrites += batchOps - batchCount;
       } catch (e) {
         totalErrors += batchCount;
         console.error(`  Batch ${batchNum} FAILED: ${e.message}`);
@@ -181,10 +248,28 @@ async function main() {
     }
   }
 
-  // STEP 3: Summary
+  // STEP 3: Mark the day done, so later scheduled attempts no-op
+  const writeCount = snapshotWrites + metaWrites + 1; // +1 for this marker
+  if (totalWritten > 0 && totalErrors === 0) {
+    try {
+      await runMarkerRef.set({
+        date: today,
+        finishedAt: new Date().toISOString(),
+        cards: totalWritten,
+        writes: writeCount
+      });
+    } catch (e) {
+      // Not fatal: the prices are already stored. A later attempt will
+      // simply redo the day rather than skipping it.
+      console.warn(`  Could not write run marker: ${e.message}`);
+    }
+  } else if (totalErrors > 0) {
+    console.warn('  Errors occurred — leaving the day unmarked so a later run retries.');
+  }
+
+  // STEP 4: Summary
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   const minutes = (elapsed / 60).toFixed(1);
-  const writeCount = totalWritten * 2;
 
   console.log('\n========================================');
   console.log('=== Run Complete ===');
@@ -196,7 +281,10 @@ async function main() {
   console.log(`Errors:           ${totalErrors}`);
   console.log(`Scryfall pages:   ${pageNum}`);
   console.log(`Firebase batches: ${batchNum}`);
+  console.log(`  snapshot writes: ${snapshotWrites}`);
+  console.log(`  meta writes:     ${metaWrites} (new cards only)`);
   console.log(`Firebase writes:  ~${writeCount} (${(writeCount / 20000 * 100).toFixed(0)}% of free tier)`);
+  console.log(`Firebase reads:   ~${metaReads} (${(metaReads / 50000 * 100).toFixed(0)}% of free tier)`);
   console.log(`Total time:       ${minutes} min (${elapsed}s)`);
   console.log('========================================');
 
