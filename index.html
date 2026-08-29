@@ -637,6 +637,39 @@
         /* Version badges — two copies, one in the header next to the logo and one
            floating in the corner next to API status. Makes it obvious at a glance
            whether the deployed site is running the latest file. */
+        /* Update banner — shown when the deployed file differs from the
+           one this tab is running. A reload is the update: this is a
+           single 670KB HTML file, so re-executing it in place would
+           leave stale listeners and duplicate state. Nothing is lost on
+           reload; all state lives in Firestore and localStorage. */
+        .update-banner {
+            position: fixed; left: 50%; transform: translateX(-50%);
+            bottom: 1.25rem; z-index: 4000;
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.7rem 1rem;
+            background: var(--bg-card, #1a1a24);
+            border: 1px solid var(--accent-primary, #9d4edd);
+            border-radius: var(--radius-md, 10px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            font-size: 0.85rem; color: var(--text-primary, #fff);
+            max-width: calc(100vw - 2rem);
+            animation: updateBannerIn 0.25s ease-out;
+        }
+        @keyframes updateBannerIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .update-banner-text { display: flex; flex-direction: column; line-height: 1.3; }
+        .update-banner-sub { font-size: 0.7rem; color: var(--text-secondary, #aaa); }
+        .update-banner button { white-space: nowrap; }
+        .app-version-tag.checking { opacity: 0.5; }
+        .app-version-tag.stale {
+            color: var(--accent-primary, #9d4edd);
+            border-color: var(--accent-primary, #9d4edd);
+        }
+        .app-version-tag { cursor: pointer; }
+        .app-version-tag:hover { color: var(--text-primary, #fff); }
+
         .app-version-tag {
             display: inline-block;
             margin-left: 0.6rem;
@@ -1139,7 +1172,7 @@
 
     <nav class="navbar">
         <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.04.24.2114</span></div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.08.29.1500</span></div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -2814,7 +2847,7 @@
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
-    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.04.24.2114</div>
+    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.08.29.1500</div>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -3548,6 +3581,140 @@
         history.replaceState({page:'dashboard'},'',null);
         function reloadDashCategories(){const container=document.getElementById('dynamicCategories');if(!container||!container.innerHTML.trim())return;const empties=container.querySelectorAll('.category-mover-card[style*="display: none"], .category-mover-card[style*="display:none"]');if(empties.length>0){dashCategoriesLoaded=false;loadCategoryMovers().then(()=>{dashCategoriesLoaded=true;});}else{dashCategoriesLoaded=true;}}
         function goBackFromSettings(){switchPage(previousPage);}
+        // ====== UPDATE CHECKER ======
+        // GitHub Pages serves index.html with cache-control: max-age=600
+        // and an ETag that changes whenever the file does. The ETag is the
+        // reliable signal — it updates automatically on every deploy, so
+        // this keeps working even if nobody remembers to bump APP_VERSION.
+        // The version string is only used to say what you would be moving
+        // to, and is read back out of the served HTML rather than trusted.
+        const UpdateChecker = {
+            bootEtag: null,
+            runningVersion: null,
+            lastCheck: 0,
+            banner: null,
+            MIN_GAP_MS: 5 * 60 * 1000,      // don't re-check on every tab focus
+            POLL_MS: 30 * 60 * 1000,        // background cadence
+
+            async head() {
+                // no-store so we ask the origin, not the 10-minute browser cache
+                const r = await fetch(location.pathname + '?_=' + Date.now(), {
+                    method: 'HEAD', cache: 'no-store'
+                });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.headers.get('etag') || r.headers.get('last-modified');
+            },
+
+            // Pull the version string out of the copy the server would serve,
+            // so the banner names the real target rather than guessing.
+            async serverVersion() {
+                try {
+                    const r = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' });
+                    if (!r.ok) return null;
+                    const text = await r.text();
+                    // Built from pieces on purpose: a literal pattern here
+                    // would appear in this very file and match its own
+                    // source before reaching the real constant further down.
+                    const re = new RegExp('const APP_' + 'VERSION = .([^\'"]+).');
+                    const m = text.match(re);
+                    return m ? m[1] : null;
+                } catch { return null; }
+            },
+
+            async check(manual = false) {
+                const tag = document.querySelector('.app-version-tag');
+                if (manual && tag) tag.classList.add('checking');
+                this.lastCheck = Date.now();
+                try {
+                    const current = await this.head();
+                    if (!current) {
+                        if (manual) showToast('Could not read version info from the server', 'warning');
+                        return false;
+                    }
+                    if (this.bootEtag === null) { this.bootEtag = current; return false; }
+                    if (current === this.bootEtag) {
+                        if (manual) showToast('You are on the latest version', 'success');
+                        return false;
+                    }
+                    const newVersion = await this.serverVersion();
+                    // Same build stamp means the file changed in a way that
+                    // does not affect what is running (or the stamp was not
+                    // bumped) — still worth offering, but say so honestly.
+                    this.show(newVersion);
+                    return true;
+                } catch (e) {
+                    if (manual) showToast('Update check failed: ' + e.message, 'error');
+                    return false;
+                } finally {
+                    if (tag) tag.classList.remove('checking');
+                }
+            },
+
+            show(newVersion) {
+                const tag = document.querySelector('.app-version-tag');
+                if (tag) {
+                    tag.classList.add('stale');
+                    tag.title = 'A newer version is available — click to reload';
+                }
+                if (this.banner) return; // already showing
+                const el = document.createElement('div');
+                el.className = 'update-banner';
+                const label = newVersion && newVersion !== this.runningVersion
+                    ? 'Version ' + newVersion + ' is available'
+                    : 'A newer build is available';
+                el.innerHTML =
+                    '<span style="font-size:1.1rem;">\u21bb</span>' +
+                    '<span class="update-banner-text"><strong>' + label + '</strong>' +
+                    '<span class="update-banner-sub">Reloading applies it. Your lists and portfolio are unaffected.</span></span>' +
+                    '<button class="btn btn-primary" id="updateNowBtn" style="padding:0.4rem 0.9rem;">Update</button>' +
+                    '<button class="btn btn-secondary" id="updateLaterBtn" style="padding:0.4rem 0.7rem;">Later</button>';
+                document.body.appendChild(el);
+                this.banner = el;
+                el.querySelector('#updateNowBtn').onclick = () => this.apply();
+                el.querySelector('#updateLaterBtn').onclick = () => { el.remove(); this.banner = null; };
+            },
+
+            apply() {
+                // A reload IS the in-place update for a single-file app.
+                // Re-running 6k lines of script over a live DOM would leave
+                // duplicate listeners and half-migrated state; a reload is
+                // both cleaner and faster. Nothing is lost — everything the
+                // user owns lives in Firestore or localStorage.
+                try { if (typeof State !== 'undefined' && State.save) State.save(); } catch {}
+                const url = location.pathname + '?v=' + Date.now() + location.hash;
+                location.replace(url);
+            },
+
+            init(version) {
+                this.runningVersion = version;
+                // Record what the server has right now. On a normal load the
+                // browser just fetched this page, so this is the running
+                // build; anything different later is genuinely new.
+                this.head().then(e => { this.bootEtag = e; }).catch(() => {});
+
+                const tag = document.querySelector('.app-version-tag');
+                if (tag) {
+                    tag.style.cursor = 'pointer';
+                    tag.title = 'Build ' + version + ' — click to check for updates';
+                    tag.onclick = () => this.check(true);
+                }
+                const badge = document.querySelector('.app-version-badge');
+                if (badge) { badge.style.cursor = 'pointer'; badge.onclick = () => this.check(true); }
+
+                setInterval(() => this.check(false), this.POLL_MS);
+                // Coming back to the tab is the most likely moment for a
+                // deploy to have happened since you last looked.
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden && Date.now() - this.lastCheck > this.MIN_GAP_MS) {
+                        this.check(false);
+                    }
+                });
+            }
+        };
+
+        function initUpdateChecker(version) { UpdateChecker.init(version); }
+        function checkForUpdates() { return UpdateChecker.check(true); }
+
         function showToast(m,t='info'){const c=document.getElementById('toastContainer'),el=document.createElement('div');el.className='toast '+t;el.innerHTML='<span>'+{success:'✓',error:'✕',warning:'⚠',info:'ℹ'}[t]+'</span><span>'+m+'</span>';c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3000);}
         let alertFormDirty = false;
         function openModal(id){
@@ -9396,7 +9563,8 @@
             // Log build version to console so it's visible even if the badge is hidden.
             // If the version in the console doesn't match the file you last uploaded to GitHub,
             // the site is serving a stale build (deployment hasn't finished or wrong file).
-            const APP_VERSION = 'v2026.04.24.2114';
+            const APP_VERSION = 'v2026.08.29.1500';
+            initUpdateChecker(APP_VERSION);
             console.log('%c MTG Oracle ' + APP_VERSION + ' ', 'background:#9d4edd;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px;');
 
             // Make the corner badge copy its version to clipboard on click
