@@ -5342,7 +5342,15 @@
         }
 
         // Get card image for current face
-        function getCardFaceImage(c, size='small') {
+        // Grid cards render at .card-grid minmax(170px, 1fr), so they are
+        // 170px+ wide and stretch further on wide screens — and the
+        // container's aspect-ratio is literally 488/680, Scryfall's
+        // "normal" dimensions. Scryfall "small" is only 146px wide, so it
+        // was being upscaled ~1.5x at 1x DPR and ~3x on a Retina display:
+        // the blur that cleared as soon as you opened a card, because the
+        // detail modal already used "normal". The printings strip still
+        // asks for "small" explicitly, which is right at its 90px width.
+        function getCardFaceImage(c, size='normal') {
             const isFlipped = State.flippedCards[c.id] || false;
             if (isDoubleFaced(c)) {
                 const faceIndex = isFlipped ? 1 : 0;
