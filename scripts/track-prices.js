@@ -164,19 +164,27 @@ async function main() {
   // returns refs only, so this is cheap in bandwidth; it still costs one
   // read per document, but reads have a separate 50k/day allowance
   // against writes' 20k.
+  // Look up only the cards in this run, not the whole collection.
+  // Scanning it cost 24,638 reads (49% of the daily allowance) because
+  // priceHistory has accumulated far more documents than the ~7,700
+  // cards currently over the price floor — and that gap only widens.
+  // getAll on the exact refs is bounded by the run size instead.
   const knownMeta = new Set();
   let metaReads = 0;
+  const GET_ALL_CHUNK = 300;
   try {
-    const existing = await db.collection('priceHistory').select().get();
-    existing.forEach(d => knownMeta.add(d.id));
-    // knownMeta grows as new cards are added below, so record the read
-    // count now rather than reporting the final set size.
-    metaReads = knownMeta.size;
-    console.log(`  ${metaReads} cards already have a meta doc (${metaReads} reads)`);
+    for (let i = 0; i < allCards.length; i += GET_ALL_CHUNK) {
+      const refs = allCards.slice(i, i + GET_ALL_CHUNK)
+        .map(c => db.collection('priceHistory').doc(c.id));
+      const docs = await db.getAll(...refs);
+      metaReads += refs.length; // a miss is still billed as a read
+      docs.forEach(d => { if (d.exists) knownMeta.add(d.id); });
+    }
+    console.log(`  ${knownMeta.size}/${allCards.length} cards already have a meta doc (${metaReads} reads)`);
   } catch (e) {
     // On failure, fall back to writing meta for everything — correct,
     // just as expensive as the old behaviour.
-    console.warn(`  Could not list existing meta docs (${e.message}) — writing all.`);
+    console.warn(`  Could not check existing meta docs (${e.message}) — writing all.`);
   }
 
   // Ops per card is 1 (snapshot) or 2 (snapshot + first-time meta), so
