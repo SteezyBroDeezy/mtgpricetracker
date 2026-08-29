@@ -32,9 +32,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          # Stay on 20. Node 24 ships npm 11, which blocks package
+          # lifecycle scripts by default; protobufjs's postinstall then
+          # never runs and firebase-admin loads with admin.credential
+          # undefined. The "Node.js 20 is deprecated" warning in the log
+          # is about the runtime of actions/checkout and setup-node
+          # themselves, not about this input — bumping it here does not
+          # silence that warning and does break the job.
+          node-version: '20'
       - name: Install dependencies
-        run: npm install firebase-admin node-fetch@2
+        # Pinned to the major that is known to work here. Unpinned, a new
+        # major lands on some future run and breaks the job with no change
+        # to this repo. Note firebase-admin 14 declares engines node>=22
+        # while this runs on 20 — npm treats that as advisory, and it has
+        # worked in practice; revisit together, not separately.
+        run: npm install firebase-admin@14 node-fetch@2
       - name: Run price tracker
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

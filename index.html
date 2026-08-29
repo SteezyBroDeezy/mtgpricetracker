@@ -7803,6 +7803,12 @@
         async function renderTrackedSetsWidget() {
             const widget = document.getElementById('trackedSetsWidget');
             const container = document.getElementById('trackedSetsSummaries');
+            // This dashboard widget's markup is not currently in the page —
+            // only the tracked-sets bar and the settings panel are. Without
+            // this guard every call threw "Cannot read properties of null",
+            // twice per load, from the two init paths that call it. Same
+            // guard renderTrackedSets() already uses for its own elements.
+            if (!widget || !container) return;
             if (!State.trackedSets.length) { widget.style.display = 'none'; return; }
             widget.style.display = 'block';
             container.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
