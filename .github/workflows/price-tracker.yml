@@ -41,12 +41,22 @@ jobs:
           # silence that warning and does break the job.
           node-version: '20'
       - name: Install dependencies
-        # Pinned to the major that is known to work here. Unpinned, a new
-        # major lands on some future run and breaks the job with no change
-        # to this repo. Note firebase-admin 14 declares engines node>=22
-        # while this runs on 20 — npm treats that as advisory, and it has
-        # worked in practice; revisit together, not separately.
-        run: npm install firebase-admin@14 node-fetch@2
+        # Installs from scripts/package.json so the pinned versions live
+        # in one place instead of being duplicated in this command.
+        #
+        # firebase-admin is held at 13 on purpose: 14 removed
+        # admin.credential from the CommonJS export, and track-prices.js
+        # builds its credential with admin.credential.cert(). Upgrading
+        # means rewriting that init, not just bumping the number.
+        #
+        # This was previously an unpinned `npm install firebase-admin`,
+        # which only worked by accident: firebase-admin 14 declares
+        # engines node>=22, and npm silently resolves an unnamed version
+        # down to the newest one whose engines match the running Node.
+        # On Node 20 that quietly meant 13. Naming a version, or moving
+        # the runner to 24, defeats that fallback and installs 14.
+        working-directory: scripts
+        run: npm install
       - name: Run price tracker
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
