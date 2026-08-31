@@ -8,11 +8,19 @@
  *   90-365 days    one snapshot per ISO week
  *   365+ days      one snapshot per calendar month
  *
- * In every collapsed window it keeps three documents, not one: the
- * earliest (so the series has an evenly spaced anchor), the cheapest,
- * and the most expensive. Without the last two a weekly sample quietly
- * erases spikes — a card that briefly tripled mid-week would look flat
- * forever. Three docs per week still throws away 4 of 7.
+ * Nothing about a collapsed window is lost to rounding. The surviving
+ * document is the earliest of its window, so the series keeps an evenly
+ * spaced anchor, and it carries usd_lo and usd_hi describing the whole
+ * window. A card that briefly tripled mid-week and came back still
+ * reads as having tripled; a plain weekly sample would have shown it
+ * flat. Two extra numbers on one document cost 24 bytes, where keeping
+ * the cheapest and dearest days as their own documents would have cost
+ * 796 — enough to push five years past the 1 GiB free tier on its own.
+ *
+ * A window is only collapsed once it is closed, meaning every day in it
+ * has already aged past the 90-day line. Collapsing early would mean
+ * rewriting the anchor as each remaining day crossed over, seven writes
+ * per week per card instead of one.
  *
  * Budgets, not completeness. The collection holds far more cards than
  * the ~7,700 currently over the price floor, because the browser
@@ -54,8 +62,8 @@ function daysAgo(n) {
 }
 
 /**
- * Window key for a snapshot date. Snapshots that share a key compete
- * for the same three surviving slots.
+ * Window key for a snapshot date. Snapshots sharing a key collapse into
+ * the earliest of them.
  */
 function windowKey(dateStr, tier1Cutoff, tier2Cutoff) {
   if (dateStr >= tier1Cutoff) return null;          // tier 1: never pruned
@@ -68,20 +76,31 @@ function windowKey(dateStr, tier1Cutoff, tier2Cutoff) {
   return 'm' + dateStr.slice(0, 7);                 // tier 3: calendar month
 }
 
-/** Ids to keep out of one window's snapshots: earliest, cheapest, dearest. */
-function keepersFor(snaps) {
-  const keep = new Set([snaps[0].id]);
-  const priced = snaps.filter(s => typeof s.usd === 'number');
-  if (priced.length) {
-    let lo = priced[0], hi = priced[0];
-    for (const s of priced) {
-      if (s.usd < lo.usd) lo = s;
-      if (s.usd > hi.usd) hi = s;
-    }
-    keep.add(lo.id);
-    keep.add(hi.id);
+/**
+ * The last date a window can contain. A window is safe to collapse only
+ * once this day has itself aged out of tier 1 — otherwise days still
+ * arriving would each force the anchor to be rewritten.
+ */
+function windowEnd(key) {
+  if (key[0] === 'w') {
+    const d = new Date(key.slice(1) + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + 6);         // Monday + 6 = Sunday
+    return isoDate(d);
   }
-  return keep;
+  const [y, m] = key.slice(1).split('-').map(Number);
+  return isoDate(new Date(Date.UTC(y, m, 0))); // day 0 of next month
+}
+
+/** Lowest and highest usd seen across a window, ignoring unpriced days. */
+function rangeOf(snaps) {
+  const priced = snaps.filter(s => typeof s.usd === 'number');
+  if (!priced.length) return null;
+  let lo = priced[0].usd, hi = priced[0].usd;
+  for (const s of priced) {
+    if (s.usd < lo) lo = s.usd;
+    if (s.usd > hi) hi = s.usd;
+  }
+  return { lo, hi };
 }
 
 async function main() {
@@ -115,7 +134,7 @@ async function main() {
   }
   console.log(cursor ? `Resuming after ${cursor}` : 'Starting from the beginning of the collection');
 
-  let reads = 0, deletes = 0, cardsSeen = 0, cardsTouched = 0;
+  let reads = 0, deletes = 0, rewrites = 0, cardsSeen = 0, cardsTouched = 0;
   let pending = db.batch(), pendingCount = 0;
   let exhausted = false;
 
@@ -164,28 +183,45 @@ async function main() {
           if (!key) continue;
           const usd = s.get('usd');
           if (!windows.has(key)) windows.set(key, []);
-          windows.get(key).push({ id: s.id, ref: s.ref, usd: typeof usd === 'number' ? usd : null });
+          windows.get(key).push({
+            id: s.id,
+            ref: s.ref,
+            usd: typeof usd === 'number' ? usd : null,
+            collapsed: s.get('usd_hi') !== undefined
+          });
         }
 
         let doomed = 0;
-        for (const snaps of windows.values()) {
-          if (snaps.length <= 3) continue;
-          const keep = keepersFor(snaps);
-          for (const s of snaps) {
-            if (keep.has(s.id)) continue;
+        for (const [key, snaps] of windows) {
+          // Already down to its anchor, and the anchor already carries
+          // the window's range: nothing left to do. Without this the
+          // sweep would rewrite every old document on every pass.
+          if (snaps.length === 1 && snaps[0].collapsed) continue;
+          // Wait for the window to close. Days still to come would each
+          // force another rewrite of the anchor.
+          if (windowEnd(key) >= tier1Cutoff) continue;
+
+          const anchor = snaps[0];
+          const range = rangeOf(snaps);
+          if (range) {
+            pending.set(anchor.ref, { usd_lo: range.lo, usd_hi: range.hi }, { merge: true });
+            pendingCount++;
+            rewrites++;
+          }
+          for (const s of snaps.slice(1)) {
             pending.delete(s.ref);
             pendingCount++;
             deletes++;
             doomed++;
-            if (pendingCount >= BATCH_SIZE) await flush();
           }
+          if (pendingCount >= BATCH_SIZE) await flush();
         }
         if (doomed) cardsTouched++;
       }
 
-      if (deletes >= DELETE_BUDGET || reads >= READ_BUDGET) {
+      if (deletes + rewrites >= DELETE_BUDGET || reads >= READ_BUDGET) {
         exhausted = true;
-        console.log(`\nBudget reached (${reads} reads, ${deletes} deletes). Stopping here.`);
+        console.log(`\nBudget reached (${reads} reads, ${deletes + rewrites} writes). Stopping here.`);
         break outer;
       }
     }
@@ -203,6 +239,7 @@ async function main() {
         ranOn: isoDate(new Date()),
         updatedAt: new Date().toISOString(),
         lastRunDeletes: deletes,
+        lastRunRewrites: rewrites,
         lastRunReads: reads
       });
     } catch (e) {
@@ -217,8 +254,9 @@ async function main() {
   console.log(`Cards scanned:     ${cardsSeen}`);
   console.log(`Cards thinned:     ${cardsTouched}`);
   console.log(`Snapshots dropped: ${deletes}`);
+  console.log(`Anchors rewritten: ${rewrites}`);
   console.log(`Reads used:        ~${reads} (${(reads / 50000 * 100).toFixed(0)}% of free tier)`);
-  console.log(`Deletes used:      ~${deletes} (${(deletes / 20000 * 100).toFixed(0)}% of the write tier)`);
+  console.log(`Writes used:       ~${deletes + rewrites} (${((deletes + rewrites) / 20000 * 100).toFixed(0)}% of the write tier)`);
   console.log(`Cursor now:        ${cursor || '(start of collection)'}`);
   console.log(`Time:              ${elapsed}s`);
   console.log('========================================');

@@ -23,6 +23,16 @@
     },
     {
       "collectionGroup": "snapshots",
+      "fieldPath": "usd_lo",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "snapshots",
+      "fieldPath": "usd_hi",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "snapshots",
       "fieldPath": "name",
       "indexes": []
     },
