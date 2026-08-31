@@ -6962,12 +6962,17 @@
             cutoff.setDate(cutoff.getDate() - days);
             const cutoffStr = cutoff.toISOString().split('T')[0];
             try {
-                // Simple query without orderBy to avoid needing composite index
-                const snapshot = await db.collection('priceHistory').doc(cardId).collection('snapshots').get();
-                // Filter and sort client-side
+                // Bound the read to the window asked for. This used to fetch
+                // every snapshot ever recorded and filter client-side, which
+                // is billed per document — so the cost of opening one card
+                // grew every single day. Document ids are dates, so a range
+                // on __name__ does the filtering server-side for free.
+                const snapshot = await db.collection('priceHistory').doc(cardId)
+                    .collection('snapshots')
+                    .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
+                    .get();
                 return snapshot.docs
                     .map(d => ({ date: d.id, ...d.data() }))
-                    .filter(d => d.date >= cutoffStr)
                     .sort((a, b) => a.date.localeCompare(b.date));
             } catch(e) { console.log('getPriceHistory error:', e); return []; }
         }
@@ -7159,8 +7164,14 @@
                 const movers = [];
                 let cardsWithData = 0;
                 for (const doc of historyDocs.docs) {
-                    // Simple query without orderBy to avoid needing composite index
-                    const snapshots = await doc.ref.collection('snapshots').limit(30).get();
+                    // Must order by document id DESC. Document ids are date
+                    // strings, and Firestore's default order is id ASCENDING,
+                    // so a bare limit(30) returns the OLDEST 30 snapshots and
+                    // silently freezes once a card has more than 30 days of
+                    // history. Ordering by __name__ needs no composite index.
+                    const snapshots = await doc.ref.collection('snapshots')
+                        .orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
+                        .limit(30).get();
                     if (snapshots.docs.length >= 2) {
                         cardsWithData++;
                         // Sort by document ID (date) client-side
@@ -8427,7 +8438,12 @@
             for (const card of cards) {
                 if (State.priceHistory[card.id]) continue; // Already loaded
                 try {
-                    const snapshots = await db.collection('priceHistory').doc(card.id).collection('snapshots').limit(30).get();
+                    // Newest 30, not oldest 30 — see the note in the movers
+                    // query above; a bare limit() here showed stale prices.
+                    const snapshots = await db.collection('priceHistory').doc(card.id)
+                        .collection('snapshots')
+                        .orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
+                        .limit(30).get();
                     if (snapshots.docs.length >= 2) {
                         const sorted = snapshots.docs.sort((a, b) => a.id.localeCompare(b.id));
                         State.priceHistory[card.id] = sorted.map(d => ({ date: d.id, ...d.data() }));
