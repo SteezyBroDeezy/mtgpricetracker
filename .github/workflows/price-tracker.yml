@@ -21,6 +21,11 @@ jobs:
   track-prices:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # Needed by the heartbeat step below, which pushes a commit. The
+    # repository's default token is read-only, so this has to be asked
+    # for explicitly rather than inherited.
+    permissions:
+      contents: write
     # Never let two attempts overlap; a second pass mid-run would write
     # the same day twice and double the quota cost.
     concurrency:
@@ -73,3 +78,36 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/prune-history.js
+      - name: Heartbeat
+        # GitHub disables a scheduled workflow after 60 days with no
+        # repository activity, and only tells you by email. That is what
+        # killed this tracker in 2026: the last commit was 2026-05-04,
+        # sixty days later is 2026-07-03, and price collection stopped
+        # on 2026-07-08. Nothing was broken, the schedule had simply
+        # been switched off, and it stayed off for a month.
+        #
+        # A push is what resets that clock, so once a month this pushes
+        # one. Thirty days leaves a wide margin against the sixty-day
+        # limit while keeping the noise to about twelve commits a year.
+        #
+        # always() so it still runs when the tracker failed — a broken
+        # run needs the schedule kept alive more than a healthy one
+        # does, not less. continue-on-error for the same reason in
+        # reverse: never fail a run that already recorded prices.
+        if: always() && github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          age=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
+          echo "Last commit was $age days ago (limit is 60)."
+          if [ "$age" -lt 30 ]; then
+            echo "Recent enough — no heartbeat needed."
+            exit 0
+          fi
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/heartbeat
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/heartbeat
+          git commit -m "Heartbeat: keep the scheduled tracker from being auto-disabled"
+          git push
+          echo "Pushed a heartbeat. The 60-day clock is reset."
