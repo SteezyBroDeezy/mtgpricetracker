@@ -207,7 +207,12 @@ async function main() {
 
       const snapshotRef = db.collection('priceHistory').doc(card.id)
         .collection('snapshots').doc(today);
-      batch.set(snapshotRef, { usd, usd_foil: usdFoil, eur, name: card.name, set: card.set });
+      // No name/set here. They never change for a card id, they are
+      // already on the meta doc, and repeating them in every daily
+      // snapshot cost 30 bytes plus four index entries per card per
+      // day — about a fifth of the collection's storage for two fields
+      // nothing reads out of a snapshot.
+      batch.set(snapshotRef, { usd, usd_foil: usdFoil, eur });
       batchOps++;
 
       if (!knownMeta.has(card.id)) {

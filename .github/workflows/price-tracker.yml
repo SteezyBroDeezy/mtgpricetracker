@@ -62,3 +62,14 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FORCE_RUN: ${{ inputs.force && '1' || '0' }}
         run: node scripts/track-prices.js
+      - name: Prune old history
+        # Thins snapshots older than 90 days so storage stops growing
+        # linearly. Budget-capped and cursor-driven, so it does part of
+        # the collection per day and never competes with the tracker for
+        # the write quota. continue-on-error because a failed prune is a
+        # storage problem, not a data problem — never let it fail a run
+        # that already recorded today's prices.
+        continue-on-error: true
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/prune-history.js

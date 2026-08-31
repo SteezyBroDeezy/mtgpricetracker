@@ -1,0 +1,35 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "snapshots",
+      "fieldPath": "usd",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "snapshots",
+      "fieldPath": "usd_foil",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "snapshots",
+      "fieldPath": "usd_etched",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "snapshots",
+      "fieldPath": "eur",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "snapshots",
+      "fieldPath": "name",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "snapshots",
+      "fieldPath": "set",
+      "indexes": []
+    }
+  ]
+}

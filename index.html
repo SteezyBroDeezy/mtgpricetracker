@@ -6948,9 +6948,22 @@
                 set: card.set
             };
             if (!prices.usd && !prices.usd_foil && !prices.usd_etched) return; // No price data at all
+            // The daily tracker already records every card at or above
+            // $0.50, so writing one here is a duplicate that spends the
+            // same 20k/day write quota the tracker needs — and browsing
+            // is what filled the collection with tens of thousands of
+            // printings that get one lonely snapshot and nothing after.
+            // Only record what the tracker will never pick up.
+            if (prices.usd !== null && prices.usd >= 0.50) return;
             try {
                 await db.collection('priceHistory').doc(card.id).collection('snapshots').doc(today).set(prices);
-                await db.collection('priceHistory').doc(card.id).set({ name: card.name, set: card.set, lastUpdated: today }, { merge: true });
+                // merge:true still costs a full write, and these fields
+                // never change, so only write the meta doc when it is
+                // genuinely new.
+                const metaRef = db.collection('priceHistory').doc(card.id);
+                if (!(await metaRef.get()).exists) {
+                    await metaRef.set({ name: card.name, set: card.set, lastUpdated: today }, { merge: true });
+                }
                 State.lastPriceRecord[card.id] = today;
                 State.save();
             } catch(e) { console.log('Price record failed:', e); }
