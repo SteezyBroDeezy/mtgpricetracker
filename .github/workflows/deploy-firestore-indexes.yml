@@ -62,6 +62,14 @@ jobs:
         # exist in the project but not in the file, so a mistake here
         # costs a warning rather than an index rebuild.
         run: npx --yes firebase-tools@15 deploy --only firestore:indexes --project mtg-card-search-e0ed3
+      - name: Deploy security rules
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        # firestore.rules is a faithful copy of what was live, read back
+        # with show-rules.js, plus the cardHistory block. Deploying
+        # replaces the whole ruleset, so it must stay complete: anything
+        # dropped from that file is access removed from the live site.
+        run: npx --yes firebase-tools@15 deploy --only firestore:rules --project mtg-card-search-e0ed3
       - name: Remove key
         if: always()
         run: rm -f "$RUNNER_TEMP/sa.json"
