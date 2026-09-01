@@ -32,6 +32,12 @@ jobs:
         # address is an identifier, not a credential; the key itself
         # never leaves the runner.
         run: python3 -c "import json;d=json.load(open('$RUNNER_TEMP/sa.json'));print('service account:',d['client_email']);print('project:',d['project_id'])"
+      - name: Install dependencies
+        # show-rules.js needs firebase-admin to mint a token. This
+        # workflow previously ran only the firebase CLI via npx and had
+        # no node_modules at all.
+        working-directory: scripts
+        run: npm install
       - name: Show the live security rules
         # Rules are not in this repo. Printing them is the only safe
         # prelude to changing them, and a new collection is invisible to
