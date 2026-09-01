@@ -32,6 +32,14 @@ jobs:
         # address is an identifier, not a credential; the key itself
         # never leaves the runner.
         run: python3 -c "import json;d=json.load(open('$RUNNER_TEMP/sa.json'));print('service account:',d['client_email']);print('project:',d['project_id'])"
+      - name: Show the live security rules
+        # Rules are not in this repo. Printing them is the only safe
+        # prelude to changing them, and a new collection is invisible to
+        # the site until they name it.
+        continue-on-error: true
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/show-rules.js
       - name: Show the index configuration already in the project
         # Printed before any change so the composite indexes that exist
         # in the project are on the record. firestore.indexes.json is
