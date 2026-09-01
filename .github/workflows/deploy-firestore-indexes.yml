@@ -1,0 +1,37 @@
+name: Deploy Firestore Indexes
+# Manual only. Index configuration changes rarely, and applying it is
+# not something that should ride along with the daily price run.
+#
+# This exists because the exemptions cannot be applied from a laptop
+# without an interactive `firebase login`, while the service account
+# that already writes prices every day is sitting right here as a
+# secret. Same credential, no new one to manage.
+on:
+  workflow_dispatch:
+jobs:
+  deploy-indexes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Write service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$RUNNER_TEMP/sa.json"
+      - name: Deploy index configuration
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        # No --force. Without it the CLI will not delete indexes that
+        # exist in the project but not in the file, so a mistake here
+        # costs a warning rather than an index rebuild.
+        run: npx --yes firebase-tools@15 deploy --only firestore:indexes --project mtg-card-search-e0ed3
+      - name: Remove key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
