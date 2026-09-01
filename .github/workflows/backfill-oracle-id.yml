@@ -1,0 +1,30 @@
+name: Backfill oracle_id History
+# Manual only, and expected to take several days of runs. Each run does
+# what its read and write budgets allow and saves its place, so the safe
+# way to use this is to dispatch it once a day until it reports COMPLETE.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report what would be copied, write nothing'
+        type: boolean
+        default: false
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: price-tracker
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - working-directory: scripts
+        run: npm install
+      - name: Backfill
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          MIGRATE_DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: node scripts/migrate-to-oracle-id.js
