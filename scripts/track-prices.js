@@ -49,7 +49,7 @@ const MIN_PRICE = 0.50;
 const SCRYFALL_DELAY = 110;
 const BATCH_SIZE = 200;          // Reduced from 500 — gentler on Firebase
 const BATCH_PAUSE = 1500;        // 1.5s pause between batches
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 6;
 // Set FORCE_RUN=1 to rewrite a day that has already been recorded.
 const FORCE_RUN = process.env.FORCE_RUN === '1';
 // Collection keyed by oracle_id. The old printing-id-keyed `priceHistory`
@@ -58,6 +58,15 @@ const FORCE_RUN = process.env.FORCE_RUN === '1';
 const HISTORY = 'cardHistory';
 
 // ====== SCRYFALL FETCHER ======
+// Scryfall asks for a User-Agent and an Accept header and throttles
+// anonymous callers harder without them. This ran for months without
+// either and mostly got away with it; a backfill script hitting the
+// same API from a GitHub runner did not.
+const SCRYFALL_HEADERS = {
+  'User-Agent': 'mtgpricetracker/1.0 (+https://github.com/SteezyBroDeezy/mtgpricetracker)',
+  'Accept': 'application/json'
+};
+
 let lastRequest = 0;
 let totalApiCalls = 0;
 
@@ -69,9 +78,12 @@ async function scryfallFetch(url, retries = 0) {
   totalApiCalls++;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: SCRYFALL_HEADERS });
     if (response.status === 429) {
-      const backoff = Math.pow(2, retries + 1) * 1000;
+      const after = Number(response.headers.get('retry-after'));
+      const backoff = Number.isFinite(after) && after > 0
+        ? after * 1000
+        : Math.min(Math.pow(2, retries + 1) * 1000, 60000);
       console.warn(`  Rate limited! Waiting ${backoff/1000}s...`);
       await new Promise(r => setTimeout(r, backoff));
       if (retries < MAX_RETRIES) return scryfallFetch(url, retries + 1);

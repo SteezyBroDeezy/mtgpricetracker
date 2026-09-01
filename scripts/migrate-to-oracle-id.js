@@ -65,14 +65,31 @@ function daysAgo(n) {
   return isoDate(d);
 }
 
+// Scryfall asks for a User-Agent and an Accept header on every request
+// and throttles anonymous callers harder without them. Omitting these
+// is what made a dry run die on 429 partway through the card list.
+const SCRYFALL_HEADERS = {
+  'User-Agent': 'mtgpricetracker/1.0 (+https://github.com/SteezyBroDeezy/mtgpricetracker)',
+  'Accept': 'application/json'
+};
+const MAX_RETRIES = 8;
+
 let lastRequest = 0;
 async function scryfall(url, retries = 0) {
   const wait = SCRYFALL_DELAY - (Date.now() - lastRequest);
   if (wait > 0) await new Promise(r => setTimeout(r, wait));
   lastRequest = Date.now();
-  const res = await fetch(url);
-  if (res.status === 429 && retries < 4) {
-    await new Promise(r => setTimeout(r, 2 ** (retries + 1) * 1000));
+  const res = await fetch(url, { headers: SCRYFALL_HEADERS });
+  if (res.status === 429) {
+    if (retries >= MAX_RETRIES) throw new Error('Scryfall rate limited after max retries');
+    // Honour Retry-After when Scryfall sends it; otherwise back off
+    // exponentially but cap the wait so one run cannot stall for hours.
+    const after = Number(res.headers.get('retry-after'));
+    const backoff = Number.isFinite(after) && after > 0
+      ? after * 1000
+      : Math.min(2 ** (retries + 1) * 1000, 60000);
+    console.warn(`  Rate limited — waiting ${(backoff / 1000).toFixed(0)}s (retry ${retries + 1}/${MAX_RETRIES})`);
+    await new Promise(r => setTimeout(r, backoff));
     return scryfall(url, retries + 1);
   }
   if (!res.ok) throw new Error(`Scryfall HTTP ${res.status}`);
