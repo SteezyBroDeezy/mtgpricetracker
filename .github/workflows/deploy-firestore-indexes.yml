@@ -25,6 +25,15 @@ jobs:
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
           python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$RUNNER_TEMP/sa.json"
+      - name: Show the index configuration already in the project
+        # Printed before any change so the composite indexes that exist
+        # in the project are on the record. firestore.indexes.json is
+        # the input to a --force deploy, and anything missing from it
+        # would be what --force deletes.
+        continue-on-error: true
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        run: npx --yes firebase-tools@15 firestore:indexes --project mtg-card-search-e0ed3
       - name: Deploy index configuration
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
