@@ -4217,7 +4217,7 @@
             // Store current card for add-to-list
             State.currentDetailCard=c;openModal('cardModal');
             // Load and draw price chart
-            const history = await getPriceHistory(c.id, 30);
+            const history = await getPriceHistory(c, 30);
             State.priceHistory[c.id] = history;
             const canvas = document.getElementById('priceChartCanvas');
             if (canvas) drawPriceChart(canvas, history);
@@ -6955,12 +6955,18 @@
             // printings that get one lonely snapshot and nothing after.
             // Only record what the tracker will never pick up.
             if (prices.usd !== null && prices.usd >= 0.50) return;
+            // Same key as the tracker uses: oracle_id, so a card recorded
+            // here and later picked up by the tracker continues one series
+            // instead of starting a second. Without an oracle_id there is
+            // nothing stable to key on, so record nothing.
+            if (!card.oracle_id) return;
             try {
-                await db.collection('priceHistory').doc(card.id).collection('snapshots').doc(today).set(prices);
+                await db.collection('cardHistory').doc(card.oracle_id)
+                    .collection('snapshots').doc(today).set(prices);
                 // merge:true still costs a full write, and these fields
                 // never change, so only write the meta doc when it is
                 // genuinely new.
-                const metaRef = db.collection('priceHistory').doc(card.id);
+                const metaRef = db.collection('cardHistory').doc(card.oracle_id);
                 if (!(await metaRef.get()).exists) {
                     await metaRef.set({ name: card.name, set: card.set, lastUpdated: today }, { merge: true });
                 }
@@ -6969,25 +6975,48 @@
             } catch(e) { console.log('Price record failed:', e); }
         }
 
-        async function getPriceHistory(cardId, days = 30) {
+        // History moved from priceHistory, keyed by printing id, to
+        // cardHistory, keyed by oracle_id. The tracker records the CHEAPEST
+        // printing of each card, and which printing that is changes whenever
+        // a cheaper reprint releases — so keyed by printing, a reprint
+        // silently ended one series and began another with no past. oracle_id
+        // is the same on every printing of a card forever.
+        //
+        // Cards tracked before the switch still have their days under the old
+        // key, so both are tried, newest scheme first. Accepts a card object
+        // or a bare printing id, since some callers only have the id.
+        function historyRefs(card) {
+            const isObj = card && typeof card === 'object';
+            const oracleId = isObj ? card.oracle_id : null;
+            const printingId = isObj ? card.id : card;
+            const refs = [];
+            if (oracleId) refs.push(db.collection('cardHistory').doc(oracleId));
+            if (printingId) refs.push(db.collection('priceHistory').doc(printingId));
+            return refs;
+        }
+
+        async function getPriceHistory(card, days = 30) {
             if (!db) return [];
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - days);
             const cutoffStr = cutoff.toISOString().split('T')[0];
-            try {
-                // Bound the read to the window asked for. This used to fetch
-                // every snapshot ever recorded and filter client-side, which
-                // is billed per document — so the cost of opening one card
-                // grew every single day. Document ids are dates, so a range
-                // on __name__ does the filtering server-side for free.
-                const snapshot = await db.collection('priceHistory').doc(cardId)
-                    .collection('snapshots')
-                    .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
-                    .get();
-                return snapshot.docs
-                    .map(d => ({ date: d.id, ...d.data() }))
-                    .sort((a, b) => a.date.localeCompare(b.date));
-            } catch(e) { console.log('getPriceHistory error:', e); return []; }
+            for (const ref of historyRefs(card)) {
+                try {
+                    // Bound the read to the window asked for. This used to fetch
+                    // every snapshot ever recorded and filter client-side, which
+                    // is billed per document — so the cost of opening one card
+                    // grew every single day. Document ids are dates, so a range
+                    // on __name__ does the filtering server-side for free.
+                    const snapshot = await ref.collection('snapshots')
+                        .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
+                        .get();
+                    if (!snapshot.docs.length) continue;
+                    return snapshot.docs
+                        .map(d => ({ date: d.id, ...d.data() }))
+                        .sort((a, b) => a.date.localeCompare(b.date));
+                } catch(e) { console.log('getPriceHistory error:', e); }
+            }
+            return [];
         }
 
         function calculatePriceChange(history, currentPrice) {
@@ -7172,7 +7201,7 @@
             gainersEl.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
             losersEl.innerHTML = '<div class="loading-spinner" style="margin:1rem auto;"></div>';
             try {
-                const historyDocs = await db.collection('priceHistory').limit(200).get();
+                const historyDocs = await db.collection('cardHistory').limit(200).get();
                 console.log('Price history docs found:', historyDocs.size);
                 const movers = [];
                 let cardsWithData = 0;
@@ -8453,14 +8482,16 @@
                 try {
                     // Newest 30, not oldest 30 — see the note in the movers
                     // query above; a bare limit() here showed stale prices.
-                    const snapshots = await db.collection('priceHistory').doc(card.id)
-                        .collection('snapshots')
-                        .orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
-                        .limit(30).get();
-                    if (snapshots.docs.length >= 2) {
-                        const sorted = snapshots.docs.sort((a, b) => a.id.localeCompare(b.id));
-                        State.priceHistory[card.id] = sorted.map(d => ({ date: d.id, ...d.data() }));
-                        updated = true;
+                    for (const ref of historyRefs(card)) {
+                        const snapshots = await ref.collection('snapshots')
+                            .orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
+                            .limit(30).get();
+                        if (snapshots.docs.length >= 2) {
+                            const sorted = snapshots.docs.sort((a, b) => a.id.localeCompare(b.id));
+                            State.priceHistory[card.id] = sorted.map(d => ({ date: d.id, ...d.data() }));
+                            updated = true;
+                            break;
+                        }
                     }
                 } catch(e) { /* ignore */ }
             }
@@ -8717,7 +8748,11 @@
         async function updatePriceChart(cardId, days) {
             State.currentChartDays = days;
             document.querySelectorAll('.chart-time-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.days) === days));
-            const history = await getPriceHistory(cardId, days);
+            // Prefer the open card object — the range buttons only pass an
+            // id, and the id alone cannot reach the oracle-keyed series.
+            const forCard = (State.currentDetailCard && State.currentDetailCard.id === cardId)
+                ? State.currentDetailCard : cardId;
+            const history = await getPriceHistory(forCard, days);
             State.priceHistory[cardId] = history;
             const canvas = document.getElementById('priceChartCanvas');
             if (canvas) drawPriceChart(canvas, history);

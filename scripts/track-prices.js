@@ -1,8 +1,22 @@
 /**
- * MTG Price Oracle - Daily Price Tracker v3.0
+ * MTG Price Oracle - Daily Price Tracker v4.0
  *
  * ONE query: usd>=0.50, pages through all results.
  * Firestore batch writes with delays between batches to avoid quota spikes.
+ *
+ * v4.0: History is keyed by oracle_id, in a new `cardHistory` collection.
+ *   Scryfall's unique=cards hands back the CHEAPEST printing of each
+ *   card, so what is tracked is a card's market floor. Which printing
+ *   supplies that floor moves whenever a cheaper reprint releases, and
+ *   keyed by printing id that silently ended one series and started
+ *   another with no history -- the reprint looked like a card with no
+ *   past instead of a price drop. oracle_id is identical across every
+ *   printing of a card, forever. Each snapshot now also carries `set`,
+ *   which is what makes a step in the line legible as a reprint.
+ *
+ *   The old printing-keyed `priceHistory` is left untouched; the
+ *   frontend falls back to it until a card's oracle series is long
+ *   enough to chart.
  *
  * v3.0: Halved the daily write cost and made the run idempotent.
  *   - Meta docs (priceHistory/{id}) were rewritten every day for every
@@ -38,6 +52,10 @@ const BATCH_PAUSE = 1500;        // 1.5s pause between batches
 const MAX_RETRIES = 3;
 // Set FORCE_RUN=1 to rewrite a day that has already been recorded.
 const FORCE_RUN = process.env.FORCE_RUN === '1';
+// Collection keyed by oracle_id. The old printing-id-keyed `priceHistory`
+// is left in place: the frontend still falls back to it for cards whose
+// oracle series has not accumulated enough days yet.
+const HISTORY = 'cardHistory';
 
 // ====== SCRYFALL FETCHER ======
 let lastRequest = 0;
@@ -106,6 +124,7 @@ async function main() {
   
   const allCards = [];
   const seenIds = new Set();
+  let droppedNoOracleId = 0;
   let pageUrl = `https://api.scryfall.com/cards/search?q=usd>=${MIN_PRICE}&order=usd&dir=desc`;
   let pageNum = 0;
   let totalCards = null;
@@ -120,8 +139,18 @@ async function main() {
       }
 
       for (const card of data.data) {
-        if (!seenIds.has(card.id)) {
-          seenIds.add(card.id);
+        // Dropped here rather than at write time: oracle_id is the
+        // document key, and the meta lookup below builds refs from it
+        // before the write loop ever runs. A card without one would
+        // throw on doc(undefined). Scryfall always sends it, so this
+        // guards a malformed response, not an expected case.
+        if (!card.oracle_id) { droppedNoOracleId++; continue; }
+        // Dedupe on oracle_id, since that is now the document key. With
+        // unique=cards these should already be distinct; a duplicate here
+        // would mean two writes to the same document in one batch, which
+        // Firestore rejects outright.
+        if (!seenIds.has(card.oracle_id)) {
+          seenIds.add(card.oracle_id);
           allCards.push(card);
         }
       }
@@ -140,6 +169,9 @@ async function main() {
   }
 
   console.log(`\n  Total: ${allCards.length} unique cards, ${pageNum} pages, ${totalApiCalls} API calls`);
+  if (droppedNoOracleId) {
+    console.warn(`  ${droppedNoOracleId} rows had no oracle_id and were dropped.`);
+  }
 
   if (!allCards.length) {
     console.error('No cards fetched! Aborting.');
@@ -175,7 +207,7 @@ async function main() {
   try {
     for (let i = 0; i < allCards.length; i += GET_ALL_CHUNK) {
       const refs = allCards.slice(i, i + GET_ALL_CHUNK)
-        .map(c => db.collection('priceHistory').doc(c.id));
+        .map(c => db.collection(HISTORY).doc(c.oracle_id));
       const docs = await db.getAll(...refs);
       metaReads += refs.length; // a miss is still billed as a read
       docs.forEach(d => { if (d.exists) knownMeta.add(d.id); });
@@ -205,23 +237,35 @@ async function main() {
 
       if (!usd && !usdFoil) { totalSkipped++; continue; }
 
-      const snapshotRef = db.collection('priceHistory').doc(card.id)
+      // Keyed by oracle_id, not by printing id. Scryfall hands back the
+      // CHEAPEST printing of each card, so the series is a card's market
+      // floor -- but which printing supplies that floor moves whenever a
+      // cheaper reprint releases. Keyed by printing, that silently ended
+      // one series and began another with no history: Sol Ring's Marvel
+      // printing has nothing before 2026-07-01 because that is when it
+      // became the cheapest one, and the years before it live under a
+      // different id. oracle_id is the same on every printing of a card,
+      // forever, so the series stays continuous and a reprint reads as
+      // what it is -- a price drop, with the set that caused it named.
+      const snapshotRef = db.collection(HISTORY).doc(card.oracle_id)
         .collection('snapshots').doc(today);
       // No name/set here. They never change for a card id, they are
       // already on the meta doc, and repeating them in every daily
       // snapshot cost 30 bytes plus four index entries per card per
       // day — about a fifth of the collection's storage for two fields
       // nothing reads out of a snapshot.
-      batch.set(snapshotRef, { usd, usd_foil: usdFoil, eur });
+      // `set` earns its 9 bytes here: it is what makes a step in the line
+      // legible as a reprint rather than an unexplained crash.
+      batch.set(snapshotRef, { usd, usd_foil: usdFoil, eur, set: card.set });
       batchOps++;
 
-      if (!knownMeta.has(card.id)) {
-        const metaRef = db.collection('priceHistory').doc(card.id);
+      if (!knownMeta.has(card.oracle_id)) {
+        const metaRef = db.collection(HISTORY).doc(card.oracle_id);
         batch.set(metaRef, {
           name: card.name, set: card.set, setName: card.set_name || '',
           rarity: card.rarity || ''
         }, { merge: true });
-        knownMeta.add(card.id);
+        knownMeta.add(card.oracle_id);
         batchOps++;
       }
 

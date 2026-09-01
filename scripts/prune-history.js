@@ -52,6 +52,11 @@ const CARD_PAGE = 200;    // cards listed per page
 const BATCH_SIZE = 200;   // deletes per commit
 const BATCH_PAUSE = 500;
 const DRY_RUN = process.env.PRUNE_DRY_RUN === '1';
+// Which collection to thin. `cardHistory` (oracle_id-keyed) is the live
+// one. The legacy printing-keyed `priceHistory` is still readable by the
+// frontend as a fallback, and can be swept later by setting this --
+// each collection carries its own cursor so the two do not collide.
+const HISTORY = process.env.PRUNE_COLLECTION || 'cardHistory';
 
 function isoDate(d) { return d.toISOString().split('T')[0]; }
 
@@ -109,11 +114,13 @@ async function main() {
   const tier2Cutoff = daysAgo(TIER2_DAYS);
 
   console.log('=== MTG Price Oracle - History Pruner ===');
+  console.log(`Collection: ${HISTORY}`);
   console.log(`Daily below ${tier1Cutoff}, weekly to ${tier2Cutoff}, monthly before that.`);
   console.log(`Budgets: ${READ_BUDGET} reads, ${DELETE_BUDGET} deletes.${DRY_RUN ? ' DRY RUN.' : ''}`);
   console.log('');
 
-  const cursorRef = db.collection('meta').doc('pruneCursor');
+  const cursorRef = db.collection('meta').doc(
+    HISTORY === 'cardHistory' ? 'pruneCursor' : `pruneCursor_${HISTORY}`);
   let cursor = null;
   try {
     const snap = await cursorRef.get();
@@ -150,7 +157,7 @@ async function main() {
 
   outer:
   while (!exhausted) {
-    let q = db.collection('priceHistory').orderBy(FieldPath.documentId()).limit(CARD_PAGE);
+    let q = db.collection(HISTORY).orderBy(FieldPath.documentId()).limit(CARD_PAGE);
     if (cursor) q = q.startAfter(cursor);
 
     // select() with no fields returns document refs only — still one

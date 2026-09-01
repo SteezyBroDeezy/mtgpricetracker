@@ -15,9 +15,10 @@
  *   node scripts/report-coverage.js                 # overall health
  *   node scripts/report-coverage.js "Sol Ring" ...  # plus named cards
  *
- * Named cards are resolved through Scryfall, so the exact printing
- * checked is the one Scryfall treats as canonical. Prices are tracked
- * per printing, and a card can have dozens.
+ * Named cards are resolved through Scryfall to their oracle_id, which is
+ * how history is keyed: one series per card, whichever printing happens
+ * to be the cheapest on a given day. A `set` change inside the window is
+ * a reprint taking over as the floor, and is reported as such.
  */
 
 const admin = require('firebase-admin');
@@ -27,6 +28,10 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 const { FieldPath } = admin.firestore;
+
+// Keyed by oracle_id, matching the tracker. The legacy printing-keyed
+// `priceHistory` is still readable; set COVERAGE_COLLECTION to inspect it.
+const HISTORY = process.env.COVERAGE_COLLECTION || 'cardHistory';
 
 const SAMPLE = 40;   // random-ish cards checked for the freshness estimate
 const WINDOW = 14;   // days of recent history summarised per card
@@ -43,15 +48,18 @@ async function scryfallId(name) {
   const res = await fetch(url);
   if (!res.ok) return null;
   const card = await res.json();
-  return { id: card.id, set: card.set, name: card.name, price: card.prices?.usd || null };
+  return {
+    id: card.oracle_id || card.id, printing: card.id,
+    set: card.set, name: card.name, price: card.prices?.usd || null
+  };
 }
 
 async function coverage(cardId, since) {
-  const snaps = await db.collection('priceHistory').doc(cardId).collection('snapshots')
+  const snaps = await db.collection(HISTORY).doc(cardId).collection('snapshots')
     .where(FieldPath.documentId(), '>=', since)
     .orderBy(FieldPath.documentId())
     .get();
-  return snaps.docs.map(d => ({ date: d.id, usd: d.get('usd') }));
+  return snaps.docs.map(d => ({ date: d.id, usd: d.get('usd'), set: d.get('set') }));
 }
 
 async function main() {
@@ -78,7 +86,7 @@ async function main() {
   //    log, and the cards it drops are always the cheap ones, because
   //    the tracker pages Scryfall in descending price order.
   console.log(`Sampling ${SAMPLE} tracked cards across the price range...`);
-  const sample = await db.collection('priceHistory').limit(SAMPLE).get();
+  const sample = await db.collection(HISTORY).limit(SAMPLE).get();
   let fresh = 0, stale = 0, empty = 0;
   const staleExamples = [];
   for (const doc of sample.docs) {
@@ -128,6 +136,13 @@ async function main() {
     if (rows.length) {
       const first = rows[0], last = rows[rows.length - 1];
       console.log(`    ${first.date} $${first.usd} -> ${last.date} $${last.usd}`);
+      // A change of set mid-window is a reprint taking over as the
+      // cheapest printing. Before the move to oracle_id keying this was
+      // invisible: the series simply stopped and a new one began.
+      const sets = [...new Set(rows.map(r => r.set).filter(Boolean))];
+      if (sets.length > 1) {
+        console.log(`    cheapest printing changed within the window: ${sets.join(' -> ')}`);
+      }
     }
     if (card.price !== null && parseFloat(card.price) < 0.50) {
       console.log('    below the $0.50 tracking floor — gaps here are by design');
