@@ -1,6 +1,20 @@
 /**
  * MTG Price Oracle - Backfill cardHistory from the old priceHistory
  *
+ * PROBABLY DO NOT RUN THIS. Measured on a real dry run: 48 cards
+ * produced 4,038 snapshots, so a full pass is roughly 649,000 writes.
+ * At a budget that leaves the daily tracker safe, that is about five
+ * months of running to buy history the new series accumulates for free
+ * in ninety days. The frontend merges the old and new series when it
+ * charts a card, so nothing looks empty in the meantime and there is
+ * no user-visible problem to solve.
+ *
+ * It is kept because consolidating into one collection has a real (if
+ * small) benefit — the pruner would manage a single collection — and
+ * because a narrower run is defensible: MIGRATE_DAYS=30 against a few
+ * hundred cards you actually care about is cheap. A full default run is
+ * not.
+ *
  * History used to be keyed by printing id. It is now keyed by oracle_id
  * (see track-prices.js v4.0). This copies what the old scheme recorded
  * into the new one so a card's chart does not start empty on the day of

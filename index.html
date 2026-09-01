@@ -6995,11 +6995,33 @@
             return refs;
         }
 
+        // Both series are read and merged, rather than taking the first
+        // that answers. The oracle-keyed series starts on the day of the
+        // switch, so preferring it wholesale would replace months of chart
+        // with a single point. Backfilling instead was measured at roughly
+        // 649,000 writes — about five months of safe daily budget — to buy
+        // history that the new series accumulates for free in ninety days.
+        // Merging costs one extra query per card until the legacy days fall
+        // out of the window, and then that query returns nothing.
+        //
+        // Where a date exists in both, the oracle series wins: same source,
+        // but it carries `set`.
+        function mergeByDate(...series) {
+            const byDate = new Map();
+            for (const rows of series) {
+                for (const row of rows) {
+                    if (!byDate.has(row.date)) byDate.set(row.date, row);
+                }
+            }
+            return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+        }
+
         async function getPriceHistory(card, days = 30) {
             if (!db) return [];
             const cutoff = new Date();
             cutoff.setDate(cutoff.getDate() - days);
             const cutoffStr = cutoff.toISOString().split('T')[0];
+            const series = [];
             for (const ref of historyRefs(card)) {
                 try {
                     // Bound the read to the window asked for. This used to fetch
@@ -7010,13 +7032,10 @@
                     const snapshot = await ref.collection('snapshots')
                         .where(firebase.firestore.FieldPath.documentId(), '>=', cutoffStr)
                         .get();
-                    if (!snapshot.docs.length) continue;
-                    return snapshot.docs
-                        .map(d => ({ date: d.id, ...d.data() }))
-                        .sort((a, b) => a.date.localeCompare(b.date));
+                    series.push(snapshot.docs.map(d => ({ date: d.id, ...d.data() })));
                 } catch(e) { console.log('getPriceHistory error:', e); }
             }
-            return [];
+            return mergeByDate(...series);
         }
 
         function calculatePriceChange(history, currentPrice) {
@@ -8482,16 +8501,17 @@
                 try {
                     // Newest 30, not oldest 30 — see the note in the movers
                     // query above; a bare limit() here showed stale prices.
+                    const series = [];
                     for (const ref of historyRefs(card)) {
                         const snapshots = await ref.collection('snapshots')
                             .orderBy(firebase.firestore.FieldPath.documentId(), 'desc')
                             .limit(30).get();
-                        if (snapshots.docs.length >= 2) {
-                            const sorted = snapshots.docs.sort((a, b) => a.id.localeCompare(b.id));
-                            State.priceHistory[card.id] = sorted.map(d => ({ date: d.id, ...d.data() }));
-                            updated = true;
-                            break;
-                        }
+                        series.push(snapshots.docs.map(d => ({ date: d.id, ...d.data() })));
+                    }
+                    const merged = mergeByDate(...series);
+                    if (merged.length >= 2) {
+                        State.priceHistory[card.id] = merged;
+                        updated = true;
                     }
                 } catch(e) { /* ignore */ }
             }
