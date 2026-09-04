@@ -4211,7 +4211,7 @@
             const portfolioBtn = currentUser ? `<button class="btn ${inPortfolio?'btn-secondary':'btn-gold'}" onclick="${inPortfolio?`removeFromPortfolio('${c.id}');this.textContent='💼 Portfolio';this.className='btn btn-gold';showToast('Removed from portfolio','info')`:`addCardToPortfolioFromModal('${c.id}')`};">${inPortfolio?'✓ In Portfolio':'💼 Portfolio'}</button>` : '';
             // Price chart with time toggle
             const chartHtml = `<div class="price-chart-container">
-                <div class="price-chart-title">Price History</div>
+                <div class="price-chart-title" id="priceChartTitle">Price History</div>
                 <div class="chart-time-toggle">
                     <button class="chart-time-btn" data-days="7" onclick="updatePriceChart('${c.id}', 7)">7d</button>
                     <button class="chart-time-btn active" data-days="30" onclick="updatePriceChart('${c.id}', 30)">30d</button>
@@ -4230,6 +4230,7 @@
             // Load and draw price chart
             const history = await getPriceHistory(c, 30);
             State.priceHistory[c.id] = history;
+            updateChartCaption(history, c);
             const canvas = document.getElementById('priceChartCanvas');
             if (canvas) drawPriceChart(canvas, history);
             // Load printings
@@ -7031,6 +7032,30 @@
             return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
         }
 
+        // The chart plots the cheapest printing of a card, which is often not
+        // the printing whose image and price are shown above it — open the
+        // $1,685 Lord of the Rings Sol Ring and the line underneath it is the
+        // $1.41 Marvel one. Unlabelled, that reads as this printing crashing.
+        // Snapshots carry the set that supplied each day's floor, so say so.
+        function updateChartCaption(history, card) {
+            const el = document.getElementById('priceChartTitle');
+            if (!el) return;
+            const sets = [...new Set((history || []).map(r => r.set).filter(Boolean))];
+            if (!sets.length) { el.textContent = 'Price History'; return; }
+            const latest = sets[sets.length - 1];
+            let text = `Price History — cheapest printing (${latest.toUpperCase()})`;
+            if (sets.length > 1) {
+                // A change of set inside the window IS a reprint undercutting
+                // the old floor. It is the most interesting thing the chart
+                // can show, so name it rather than leaving a mystery step.
+                text += ` · reprint took over from ${sets[sets.length - 2].toUpperCase()}`;
+            }
+            if (card && card.set && card.set.toLowerCase() !== latest.toLowerCase()) {
+                text += ` · you are viewing ${card.set.toUpperCase()}`;
+            }
+            el.textContent = text;
+        }
+
         async function getPriceHistory(card, days = 30) {
             if (!db) return [];
             const cutoff = new Date();
@@ -8800,6 +8825,7 @@
                 ? State.currentDetailCard : cardId;
             const history = await getPriceHistory(forCard, days);
             State.priceHistory[cardId] = history;
+            updateChartCaption(history, typeof forCard === 'object' ? forCard : null);
             const canvas = document.getElementById('priceChartCanvas');
             if (canvas) drawPriceChart(canvas, history);
         }
