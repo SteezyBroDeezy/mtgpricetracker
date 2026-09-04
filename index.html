@@ -3951,12 +3951,36 @@
         }
         document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.classList.remove('active');});
 
+        // The tracker records, and the chart plots, a card's CHEAPEST printing.
+        // /cards/named returns Scryfall's default printing instead — for Heroic
+        // Intervention that is the $15.56 Commander Masters one, sitting above a
+        // chart tracking the $8.34 Marvel reprint. Opening the cheapest makes the
+        // image, the listed price and the chart agree with each other.
+        //
+        // Same rule the search site uses to choose a representative printing:
+        // cheapest wins, newest breaks ties.
+        async function cheapestPrintingId(name) {
+            try {
+                const d = await API.searchPriority(`!"${name}"`, { unique: 'prints' });
+                const priced = (d.data || [])
+                    .map(c => ({ id: c.id, usd: parseFloat(c.prices?.usd), released: c.released_at || '' }))
+                    .filter(c => Number.isFinite(c.usd));
+                if (!priced.length) return null;
+                priced.sort((a, b) => (a.usd - b.usd) || b.released.localeCompare(a.released));
+                return priced[0].id;
+            } catch(e) { return null; }
+        }
+
         // Quick search by name and open card
         async function searchAndOpenCard(name){
             searchResults.classList.remove('active');
             searchInput.value=name;
             try{
-                // Use named endpoint - single direct lookup, much faster than search
+                // Cheapest printing first, so the card shown is the card charted.
+                const cheapest = await cheapestPrintingId(name);
+                if(cheapest){openCardDetail(cheapest);return;}
+                // Nothing priced, or the lookup failed: fall back to the named
+                // endpoint, which at least always resolves to a real card.
                 const c = await API.req('/cards/named?exact='+encodeURIComponent(name), {priority:true});
                 if(c && c.id){openCardDetail(c.id);return;}
             }catch(e){
