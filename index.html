@@ -6983,7 +6983,6 @@
                 usd: parseFloat(card.prices?.usd) || null,
                 usd_foil: parseFloat(card.prices?.usd_foil) || null,
                 usd_etched: parseFloat(card.prices?.usd_etched) || null,
-                eur: parseFloat(card.prices?.eur) || null,
                 name: card.name,
                 set: card.set
             };
@@ -8064,6 +8063,10 @@
             portfolioSearchResults.innerHTML = '';
             portfolioSearchInput.value = name;
             try {
+                // Same rule as the search box: the cheapest printing, so a
+                // portfolio entry matches the price and history shown for it.
+                const cheapest = await cheapestPrintingId(name);
+                if (cheapest) { await selectPortfolioCard(cheapest); return; }
                 const c = await API.req('/cards/named?exact='+encodeURIComponent(name), {priority:true});
                 if (c && c.id) { await selectPortfolioCard(c.id); }
             } catch(e) {

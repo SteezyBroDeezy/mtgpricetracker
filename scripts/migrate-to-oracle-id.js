@@ -198,10 +198,12 @@ async function main() {
       // every one came from the printing the tracker was recording.
       const target = db.collection('cardHistory').doc(card.oracle)
         .collection('snapshots').doc(doc.id);
+      // eur is deliberately not carried over — nothing reads it, and
+      // copying it would reintroduce the field the tracker just stopped
+      // writing.
       pending.set(target, {
         usd: d.usd ?? null,
         usd_foil: d.usd_foil ?? null,
-        eur: d.eur ?? null,
         ...(d.set ? { set: d.set } : {})
       }, { merge: true });
       pendingCount++; writes++; copied++;

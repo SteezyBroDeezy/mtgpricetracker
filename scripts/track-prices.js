@@ -245,7 +245,6 @@ async function main() {
     for (const card of chunk) {
       const usd = parseFloat(card.prices?.usd) || null;
       const usdFoil = parseFloat(card.prices?.usd_foil) || null;
-      const eur = parseFloat(card.prices?.eur) || null;
 
       if (!usd && !usdFoil) { totalSkipped++; continue; }
 
@@ -266,9 +265,17 @@ async function main() {
       // snapshot cost 30 bytes plus four index entries per card per
       // day — about a fifth of the collection's storage for two fields
       // nothing reads out of a snapshot.
-      // `set` earns its 9 bytes here: it is what makes a step in the line
-      // legible as a reprint rather than an unexplained crash.
-      batch.set(snapshotRef, { usd, usd_foil: usdFoil, eur, set: card.set });
+      // No eur. It was written every day for every card and never read
+      // back: the euro price the site displays comes from live Scryfall
+      // data, and getSnapshotPrice() -- the only thing that reads a
+      // stored snapshot -- uses usd || usd_foil || usd_etched. Twelve
+      // bytes a document, about 34 MB a year, for a field nothing asks
+      // for.
+      //
+      // `set` by contrast earns its nine bytes: it is what makes a step
+      // in the line legible as a reprint rather than an unexplained
+      // crash.
+      batch.set(snapshotRef, { usd, usd_foil: usdFoil, set: card.set });
       batchOps++;
 
       if (!knownMeta.has(card.oracle_id)) {
