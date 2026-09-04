@@ -3264,7 +3264,18 @@
                             // Drop non-priority items from the queue during cooldown —
                             // they'll either retry later via lazy-load or be abandoned.
                             // Keeps priority (user search) requests, retries the failed one.
+                            // Reject what we drop. Filtering these out without
+                            // settling them left their promises pending forever,
+                            // and anything awaiting one hung silently — which is
+                            // why a rate-limited card detail rendered with its
+                            // "All Printings" section simply missing rather than
+                            // reporting a problem. cancelNonPriority() below has
+                            // always done this correctly; this path did not.
+                            const dropped=this.queue.filter(item=>!item.priority);
                             this.queue=this.queue.filter(item=>item.priority);
+                            for(const item of dropped){
+                                try{item.rej(new Error('Rate limited'));}catch(e){}
+                            }
                             if(r<3){this.queue.unshift({ep,res,rej,r:r+1,cacheTTL,priority});continue;}
                             rej(new Error('Rate limited'));continue;
                         }
@@ -3957,7 +3968,7 @@
                     const fj=await fd.json();
                     if(fj.data?.length){openCardDetailByFlavorId(fj.data[0].id, fj.data[0].name);}
                     else showToast('Card not found','error');
-                }catch(e2){showToast('Card not found','error');}
+                }catch(e2){showToast(rateLimited(e2)||rateLimited(e)?'Scryfall is rate limiting us — wait a moment and try again':'Card not found','error');}
             }
         }
 
@@ -4224,8 +4235,12 @@
             // Load printings
             const printings = await loadCardPrintings(c.name);
             const printingsContainer = document.getElementById('printingsContainer');
-            if (printingsContainer && printings.length > 1) {
-                printingsContainer.innerHTML = renderPrintings(printings, c.id);
+            if (printingsContainer) {
+                if (printings === null) {
+                    printingsContainer.innerHTML = '<div class="printings-section"><div class="printings-title"><span>Other printings unavailable — Scryfall is rate limiting. Reopen the card in a moment.</span></div></div>';
+                } else if (printings.length > 1) {
+                    printingsContainer.innerHTML = renderPrintings(printings, c.id);
+                }
             }
         }catch(e){
             document.getElementById('cardModalTitle').textContent='Error';
@@ -8733,11 +8748,22 @@
         }
 
         // ====== CARD PRINTINGS ======
+        // Distinguishes "Scryfall throttled us" from any other failure. Both
+        // arrive as plain Errors, and telling a user their card does not exist
+        // when it does is worse than telling them nothing.
+        function rateLimited(e) {
+            return !!e && typeof e.message === 'string' &&
+                (e.message.includes('Rate limited') || e.message.includes('Rate limit cooldown'));
+        }
+
+        // Returns null on failure, [] when the card genuinely has one printing.
+        // Collapsing those two into [] is what made a throttled lookup look
+        // like a card with no reprints — Heroic Intervention has 29.
         async function loadCardPrintings(cardName) {
             try {
                 const d = await API.search(`!"${cardName}" unique:prints`, { order: 'released', dir: 'desc' });
                 return d.data || [];
-            } catch(e) { return []; }
+            } catch(e) { return null; }
         }
 
         function renderPrintings(printings, currentId) {
