@@ -5403,8 +5403,14 @@
             State.currentBrowsingSet = set;
             State.currentSet = code;
 
-            // Switch to browse page if not there
+            // switchPage('browse') kicks off loadSets, loadRecentSetsPreview
+            // and loadCommanderDecks. None of them are wanted here — we are
+            // heading straight to a set view — and they compete with the card
+            // query for Scryfall. Cancel on both sides of it: before, to clear
+            // anything already queued, and after, to drop what it just queued.
+            API.cancelNonPriority();
             switchPage('browse');
+            try{API.cancelNonPriority();}catch(e){}
 
             // Hide other views and show set cards
             document.getElementById('setsList').style.display = 'none';
@@ -5475,7 +5481,17 @@
         document.getElementById('setsBrowserType')?.addEventListener('change', () => filterBrowserSets());
         document.getElementById('setsBrowserMajorOnly')?.addEventListener('change', () => filterBrowserSets());
 
+        // Every load claims a ticket. Only the newest one is allowed to write
+        // to the grid, because responses do not come back in the order they
+        // were sent: opening a set with sub-sets fires background loads from
+        // switchPage() alongside the card query, and whichever finished last
+        // won the DOM. That is why a set would render its cards and then
+        // replace them with "No cards found matching filters" a moment later —
+        // an older, failed request landing on top of a good one.
+        State.setLoadToken = 0;
         async function loadSetCards(url=null){
+            const myToken = ++State.setLoadToken;
+            const isCurrent = () => myToken === State.setLoadToken;
             const grid=document.getElementById('setCardsGrid');
             grid.innerHTML='<div class="loading-spinner"></div>';
             const rar=document.getElementById('setRarity').value,
@@ -5510,6 +5526,7 @@
                     // Use priority so user-initiated set browsing jumps ahead of background loads
                     d=await API.searchPriority(q,{order:sort,dir:sort==='name'?'asc':'desc'});
                 }
+                if(!isCurrent())return;
                 if(d.data){
                     grid.innerHTML=d.data.map(c=>cardEl(c,c.rarity)).join('');
                     document.getElementById('setPagination').innerHTML=`<button class="pagination-btn" onclick="loadSetCards('${d.previous_page||''}')" ${d.previous_page?'':'disabled'}>← Prev</button><span style="color:var(--text-secondary);">Showing ${d.data.length}${d.total_cards?' of '+d.total_cards:''}</span><button class="pagination-btn" onclick="loadSetCards('${d.next_page||''}')" ${d.has_more?'':'disabled'}>Next →</button>`;
@@ -5518,6 +5535,7 @@
                     document.getElementById('setPagination').innerHTML='';
                 }
             }catch(e){
+                if(!isCurrent())return;
                 if(e.message&&e.message.includes('Rate limited')){
                     // Show real rate-limit state with auto-retry + manual retry button
                     grid.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--text-muted);">
@@ -5528,7 +5546,8 @@
                     document.getElementById('setPagination').innerHTML='';
                     // Auto-retry after a delay (only if we're still on this set view)
                     setTimeout(()=>{
-                        if(document.getElementById('setCardsView').style.display!=='none'){
+                        // Do not resurrect a retry for a set the user has left.
+                        if(isCurrent()&&document.getElementById('setCardsView').style.display!=='none'){
                             loadSetCards(url);
                         }
                     },3000);
