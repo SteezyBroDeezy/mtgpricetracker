@@ -1172,7 +1172,7 @@
 
     <nav class="navbar">
         <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.09.05.0249</span></div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.09.05.0256</span></div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -2847,7 +2847,7 @@
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
-    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.09.05.0249</div>
+    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.09.05.0256</div>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -3257,7 +3257,10 @@
                     try{
                         this.last=Date.now();
                         this.status('active');
-                        const resp=await fetch(this.base+ep);
+                        // next_page links come back from Scryfall absolute.
+                        // Accepting them here is what lets pagination go
+                        // through the limiter instead of around it.
+                        const resp=await fetch(ep.startsWith('http')?ep:this.base+ep);
                         if(resp.status===429){
                             this.status('warning');
                             // GLOBAL cooldown: pause the entire queue, don't just retry this one
@@ -3927,7 +3930,7 @@
                 // Use prefer:unierse to find Universe Beyond/Secret Lair cards with flavor names
                 const [acResult, fnResult] = await Promise.allSettled([
                     API.autocomplete(q),
-                    fetch('https://api.scryfall.com/cards/search?q=prefer%3Auniverse+'+encodeURIComponent(q)+'&unique=cards&order=name').then(r=>r.ok?r.json():{data:[]}).catch(()=>({data:[]}))
+                    API.req('/cards/search?q=prefer%3Auniverse+'+encodeURIComponent(q)+'&unique=cards&order=name',{priority:true}).catch(()=>({data:[]}))
                 ]);
                 const nameList = acResult.status==='fulfilled' ? (acResult.value?.data||[]) : [];
                 const fnResult2  = fnResult.status==='fulfilled'  ? (fnResult.value?.data||[]) : [];
@@ -4015,8 +4018,7 @@
                 try{
                     const d=await API.searchPriority('!"'+name+'"',{unique:'cards'});
                     if(d.data?.length){openCardDetail(d.data[0].id);return;}
-                    const fd=await fetch(`https://api.scryfall.com/cards/search?q=fn%3A%22${encodeURIComponent(name)}%22&unique=cards`);
-                    const fj=await fd.json();
+                    const fj=await API.req(`/cards/search?q=fn%3A%22${encodeURIComponent(name)}%22&unique=cards`,{priority:true});
                     if(fj.data?.length){openCardDetailByFlavorId(fj.data[0].id, fj.data[0].name);}
                     else showToast('Card not found','error');
                 }catch(e2){showToast(rateLimited(e2)||rateLimited(e)?'Scryfall is rate limiting us — wait a moment and try again':'Card not found','error');}
@@ -4515,7 +4517,7 @@
             }catch(e){grid.innerHTML='<p>No cards found</p>';}
         }
         function reloadBrowseResults(){if(browseCurrentQuery)showBrowseResults(document.getElementById('browseResultsTitle').textContent,browseCurrentQuery);}
-        async function loadMoreBrowseResults(){if(!browseResultData?.next_page)return;const btn=document.getElementById('browseResultsLoadMore');btn.textContent='Loading...';btn.disabled=true;try{const r=await fetch(browseResultData.next_page);const d=await r.json();browseResultData=d;document.getElementById('browseResultsCards').innerHTML+=d.data.map(c=>cardEl(c)).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}btn.textContent='Load More';btn.disabled=false;}
+        async function loadMoreBrowseResults(){if(!browseResultData?.next_page)return;const btn=document.getElementById('browseResultsLoadMore');btn.textContent='Loading...';btn.disabled=true;try{const d=await API.req(browseResultData.next_page,{priority:true});browseResultData=d;document.getElementById('browseResultsCards').innerHTML+=d.data.map(c=>cardEl(c)).join('');btn.style.display=d.has_more?'inline-flex':'none';}catch(e){}btn.textContent='Load More';btn.disabled=false;}
         function closeBrowseResults(){document.getElementById('browseResultsView').style.display='none';document.getElementById('recentSetsPreview').style.display='block';document.getElementById('fullSetsList').style.display='block';const cdSec=document.getElementById('commanderDecksSection');if(cdSec)cdSec.style.display='block';}
 
         // Recent Sets Preview (top 10 sets, 100+ cards, top 5 expandable to 50)
@@ -4840,14 +4842,11 @@
             try {
                 // Use Scryfall search API
                 const encodedQuery = encodeURIComponent(query.trim());
-                const response = await fetch(`https://api.scryfall.com/cards/search?q=${encodedQuery}&order=usd&dir=desc`);
-
-                if (!response.ok) {
-                    showToast('No cards found matching your search', 'warning');
-                    return;
-                }
-
-                const data = await response.json();
+                // API.req returns parsed JSON and throws on a bad status, so
+                // there is no Response to inspect — an empty result reaches
+                // the catch below as "HTTP 404", which is how Scryfall says
+                // "nothing matched".
+                const data = await API.req(`/cards/search?q=${encodedQuery}&order=usd&dir=desc`,{priority:true});
 
                 // Switch to browse page and display results
                 switchPage('browse');
@@ -4860,7 +4859,13 @@
 
             } catch (error) {
                 console.error('Dashboard search error:', error);
-                showToast('Search failed. Please try again.', 'error');
+                if (rateLimited(error)) {
+                    showToast('Scryfall is rate limiting us — wait a moment and try again', 'error');
+                } else if (error.message && error.message.includes('HTTP 404')) {
+                    showToast('No cards found matching your search', 'warning');
+                } else {
+                    showToast('Search failed. Please try again.', 'error');
+                }
             }
         }
 
@@ -5078,8 +5083,7 @@
                 } else {
                     // Try flavor name search as fallback
                     try {
-                        const fd = await fetch(`https://api.scryfall.com/cards/search?q=fn%3A${encodeURIComponent(query)}&order=usd&dir=desc`);
-                        const fj = await fd.json();
+                        const fj = await API.req(`/cards/search?q=fn%3A${encodeURIComponent(query)}&order=usd&dir=desc`,{priority:true});
                         if (fj.data && fj.data.length) {
                             grid.innerHTML = fj.data.map(c => cardEl(c, c.rarity)).join('');
                             document.getElementById('advResultsTitle').textContent = `🎭 Flavor name results for: "${query}" (${fj.total_cards || fj.data.length} cards)`;
@@ -5106,8 +5110,7 @@
             loadMoreBtn.disabled = true;
 
             try {
-                const resp = await fetch(advSearchData.next_page);
-                const data = await resp.json();
+                const data = await API.req(advSearchData.next_page,{priority:true});
                 advSearchData = data;
 
                 if (data.data) {
@@ -5546,9 +5549,11 @@
             try{
                 let d;
                 if(url){
-                    const r=await fetch(url);
-                    if(r.status===429)throw new Error('Rate limited');
-                    d=await r.json();
+                    // Through the queue, so a Next/Prev click is paced and
+                    // cooled down like everything else. The old raw fetch
+                    // also had to hand-roll its own 429 check, which a
+                    // CORS-masked throttle defeats anyway.
+                    d=await API.req(url,{priority:true});
                 }else{
                     // Use priority so user-initiated set browsing jumps ahead of background loads
                     d=await API.searchPriority(q,{order:sort,dir:sort==='name'?'asc':'desc'});
@@ -9809,7 +9814,7 @@
             // Log build version to console so it's visible even if the badge is hidden.
             // If the version in the console doesn't match the file you last uploaded to GitHub,
             // the site is serving a stale build (deployment hasn't finished or wrong file).
-            const APP_VERSION = 'v2026.09.05.0249';
+            const APP_VERSION = 'v2026.09.05.0256';
             initUpdateChecker(APP_VERSION);
             console.log('%c MTG Oracle ' + APP_VERSION + ' ', 'background:#9d4edd;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px;');
 
