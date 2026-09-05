@@ -1172,7 +1172,7 @@
 
     <nav class="navbar">
         <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.08.29.1500</span></div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.09.05.0240</span></div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -2847,7 +2847,7 @@
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
-    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.08.29.1500</div>
+    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.09.05.0240</div>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -5552,7 +5552,23 @@
                         }
                     },3000);
                 }else if(e.message!=='Cancelled'){
-                    grid.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards found matching filters</p>';
+                    // Say what actually went wrong. This branch catches every
+                    // failure that is not a rate limit or a cancellation —
+                    // network drops, Scryfall errors, a throw inside the card
+                    // renderer — and it used to report all of them as "no cards
+                    // found matching filters", which describes a filter problem
+                    // when the real problem was a lost request. That cost real
+                    // debugging time on a set whose query was fine all along.
+                    const detail = (e && e.message) ? String(e.message) : 'unknown error';
+                    const looksEmpty = detail.includes('HTTP 404');
+                    grid.innerHTML = looksEmpty
+                        ? '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No cards match these filters</p>'
+                        : `<div style="text-align:center;padding:2rem;color:var(--text-muted);">
+                             <p style="margin-bottom:0.5rem;">Could not load this set.</p>
+                             <p style="font-size:0.8rem;opacity:0.8;">${detail.replace(/</g,'&lt;')}</p>
+                             <p style="font-size:0.75rem;opacity:0.6;margin-top:0.5rem;">query: ${q.replace(/</g,'&lt;')}</p>
+                             <button class="btn btn-secondary" onclick="loadSetCards()" style="font-size:0.85rem;margin-top:0.75rem;">Retry</button>
+                           </div>`;
                     document.getElementById('setPagination').innerHTML='';
                 }
             }
@@ -9751,7 +9767,7 @@
             // Log build version to console so it's visible even if the badge is hidden.
             // If the version in the console doesn't match the file you last uploaded to GitHub,
             // the site is serving a stale build (deployment hasn't finished or wrong file).
-            const APP_VERSION = 'v2026.08.29.1500';
+            const APP_VERSION = 'v2026.09.05.0240';
             initUpdateChecker(APP_VERSION);
             console.log('%c MTG Oracle ' + APP_VERSION + ' ', 'background:#9d4edd;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px;');
 
