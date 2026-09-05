@@ -1172,7 +1172,7 @@
 
     <nav class="navbar">
         <button id="navBackBtn" class="nav-back-btn" onclick="goBackNav()" style="display:none;" title="Go back">← Back</button>
-        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.09.05.0240</span></div></div>
+        <div class="nav-brand" onclick="switchPage('dashboard')"><div class="nav-logo"><span class="nav-logo-icon">◆</span>MTG Oracle<span class="app-version-tag" title="Build version — if this doesn't match your local file, the site is serving a stale version">v2026.09.05.0243</span></div></div>
         <div class="nav-center">
             <button class="nav-tab active" data-page="dashboard">📊 Dashboard</button>
             <button class="nav-tab" data-page="browse">📚 Browse</button>
@@ -2847,7 +2847,7 @@
     </main>
 
     <div class="api-status"><div class="api-status-dot" id="apiStatusDot"></div><span id="apiStatusText">Scryfall: Ready</span></div>
-    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.09.05.0240</div>
+    <div class="app-version-badge" title="Build version — if this doesn't match your local file, the site is serving a stale version. Click to copy.">v2026.09.05.0243</div>
 
     <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
@@ -3285,12 +3285,35 @@
                         APICache.set(ep,data);
                         res(data);
                     }catch(e){
-                        // Retry network errors up to 3 times with jittered backoff
-                        if(r<3&&(e.message.includes('Failed to fetch')||e.message.includes('NetworkError')||e.message.includes('network'))){
+                        // A throttled response from Scryfall carries no CORS
+                        // headers, so the browser rejects fetch() before any
+                        // status is readable: the 429 branch above never runs
+                        // and this lands here as "Failed to fetch", reported
+                        // in the console as a CORS error. Retrying it as a
+                        // network blip is the worst possible response — it
+                        // triples the request storm that caused the throttle.
+                        //
+                        // Indistinguishable from a genuine network drop, so
+                        // treat both the same way: cool the whole queue down
+                        // and drop background work, exactly as a visible 429
+                        // would. A real offline user loses nothing; a
+                        // throttled one stops making it worse.
+                        const looksThrottled = e.message && (
+                            e.message.includes('Failed to fetch') ||
+                            e.message.includes('NetworkError') ||
+                            e.message.includes('network'));
+                        if(looksThrottled){
                             this.status('warning');
-                            await this._sleep(this._jitter(500*(r+1)));
-                            this.queue.unshift({ep,res,rej,r:r+1,cacheTTL,priority});
-                            continue;
+                            const backoffs=[2000,5000,12000];
+                            const wait=this._jitter(backoffs[Math.min(r,backoffs.length-1)]);
+                            this.cooldownUntil=Date.now()+wait;
+                            const dropped=this.queue.filter(item=>!item.priority);
+                            this.queue=this.queue.filter(item=>item.priority);
+                            for(const item of dropped){
+                                try{item.rej(new Error('Rate limited'));}catch(_){}
+                            }
+                            if(r<3){this.queue.unshift({ep,res,rej,r:r+1,cacheTTL,priority});continue;}
+                            rej(new Error('Rate limited'));continue;
                         }
                         this.status('error');
                         rej(e);
@@ -9767,7 +9790,7 @@
             // Log build version to console so it's visible even if the badge is hidden.
             // If the version in the console doesn't match the file you last uploaded to GitHub,
             // the site is serving a stale build (deployment hasn't finished or wrong file).
-            const APP_VERSION = 'v2026.09.05.0240';
+            const APP_VERSION = 'v2026.09.05.0243';
             initUpdateChecker(APP_VERSION);
             console.log('%c MTG Oracle ' + APP_VERSION + ' ', 'background:#9d4edd;color:#fff;font-weight:bold;padding:4px 8px;border-radius:4px;');
 
